@@ -1,0 +1,37 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "BookVerse Project - Introduction to Software Engineering",
+  "homepage": "https://github.com/hVie1314/BookVerse#readme",
+  "bugs": {
+    "url": "https://github.com/hVie1314/BookVerse/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hVie1314/BookVerse.git"
+  },
+  "license": "ISC",
+  "author": "hVie1314",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "method-override": "^3.0.0",
+    "mongoose": "^8.13.0",
+    "mongoose-sequence": "^6.0.1",
+    "mongoose-slug-updater": "^3.3.0"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.9",
+    "prettier": "^3.5.3"
+  }
+}
