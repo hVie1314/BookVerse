@@ -4,7 +4,7 @@ const morgan = require('morgan');
 const methodOverride = require('method-override');
 
 const route = require('./routes'); // import route from routes/index.js
-const db = require('./config/db'); // import db from config/db/index.js
+const db = require('./configs/db'); // import db from config/db/index.js
 //const middleware = require('./app/middlewares/...');
 
 const app = express();
