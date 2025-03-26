@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "BookVerse",
   "version": "1.0.0",
   "description": "BookVerse Project - Introduction to Software Engineering",
   "homepage": "https://github.com/hVie1314/BookVerse#readme",
@@ -15,6 +15,8 @@
   "type": "commonjs",
   "main": "server.js",
   "scripts": {
+    "start": "nodemon --inspect src/index.js",
+    "beautify": "lint-staged",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -33,5 +35,13 @@
     "morgan": "^1.10.0",
     "nodemon": "^3.1.9",
     "prettier": "^3.5.3"
+  },
+  "lint-staged": {
+    "src/**/*.{js, json}": "prettier --single-quote --trailing-comma all --tab-width 4 --write"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }
