@@ -102,5 +102,8 @@ npm start
 - Docker
 - GitHub Actions (CI/CD)
 
+## Contributing
+We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING) before making any changes.
+
 ## License
 This project is licensed under the MIT License. See the full license [here](LICENSE).
