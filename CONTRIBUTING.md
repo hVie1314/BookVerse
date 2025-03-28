@@ -17,13 +17,19 @@ We appreciate your time and effort in making this project better.
 We welcome contributions from everyone! Whether you want to report a bug, suggest a feature, or contribute code, this guide will help you get started.
 
 ## Branches
-We follow a structured branching model:
+We follow a structured branching model to ensure smooth development and collaboration:
+
 - **main**: The stable production branch.
-- **develop**: The active development branch.
-- **feature/\<feature-name>**: New features are developed in separate branches.
+- **develop**: The main development branch where all features are merged before moving to `main`.
+- **feature/frontend**: The branch dedicated to frontend development.
+- **feature/backend**: The branch dedicated to backend development.
+- **feature/frontend/\<feature-name>**: Specific frontend features are developed in separate branches.
+- **feature/backend/\<feature-name>**: Specific backend features are developed in separate branches.
 - **bugfix/\<issue-name>**: Bug fixes are handled in these branches.
 - **hotfix/\<fix-name>**: Critical production fixes.
 
+All feature branches should be merged into `feature/frontend` or `feature/backend` before being merged into `develop`.  
+Once `develop` is stable, it will be merged into `main` for release.
 
 ## Workflow
 Follow these steps to contribute:
