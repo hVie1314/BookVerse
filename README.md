@@ -2,7 +2,7 @@
 
 ## Overview
 This repository contains the source code and materials for **BookVerse**, an e-commerce platform for buying and reading books.  
-Built with **React.js**, **Node.js**, and **MongoDB**, BookVerse offers a seamless, secure, and user-friendly experience for book lovers.
+Built with **Express handlebars**, **Node.js**, and **MongoDB**, BookVerse offers a seamless, secure, and user-friendly experience for book lovers.
 
 ## Team Information
 
@@ -21,11 +21,15 @@ Built with **React.js**, **Node.js**, and **MongoDB**, BookVerse offers a seamle
 | Nguyễn Mạnh Văn         | 22120427   |
 | Hoàng Quốc Việt         | 22120429   |
 
-## Repository Structure
-The repository is organized into three main branches:
+  ## Repository Structure
+The repository is organized into the following main branches:
+
 - **main**: The production-ready branch with the latest stable version of both frontend and backend.
-- **frontend**: Contains the frontend code, built with **Express handlebars** and **TailwindCSS**.
-- **backend**: Contains the backend code, built with **Node.js** and **Express.js**.
+- **develop**: The main development branch where all features are merged before being pushed to `main`.
+- **feature/frontend**: Contains the frontend code, built with **ExpressJs handlebars** and **TailwindCSS**.
+- **feature/backend**: Contains the backend code, built with **Node.js** and **Express.js**.
+
+Feature branches are created under `feature/frontend` or `feature/backend` for specific functionalities before merging into their respective branches.
 
 ## Features
 - 📖 **Wide range of books** – Browse and explore various categories.
@@ -63,7 +67,7 @@ npm install
 
 ##### Backend
 ```bash
-cd frontend
+cd backend
 npm install
 ```
 
