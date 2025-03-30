@@ -23,8 +23,8 @@ We follow a structured branching model to ensure smooth development and collabor
 - **develop**: The main development branch where all features are merged before moving to `main`.
 - **feature/frontend**: The branch dedicated to frontend development.
 - **feature/backend**: The branch dedicated to backend development.
-- **feature/frontend/\<feature-name>**: Specific frontend features are developed in separate branches.
-- **feature/backend/\<feature-name>**: Specific backend features are developed in separate branches.
+- **feature/frontend-\<feature-name>**: Specific frontend features are developed in separate branches.
+- **feature/backend-\<feature-name>**: Specific backend features are developed in separate branches.
 - **bugfix/\<issue-name>**: Bug fixes are handled in these branches.
 - **hotfix/\<fix-name>**: Critical production fixes.
 
