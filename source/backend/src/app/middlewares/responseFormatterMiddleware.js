@@ -6,8 +6,18 @@ const responseFormatterMiddleware = (req, res, next) => {
 
   // Override the send method
   res.send = function (data) {
+    let parsedData = null;
     // Parse data if it's a string to avoid double-stringifying
-    const parsedData = JSON.parse(data);
+    if (typeof data === 'string') {
+      try {
+        parsedData = JSON.parse(data);
+      } catch (e) {
+        console.error('Failed to parse JSON:', e);
+        return originalSend.call(this, data);
+      }
+    } else {
+      parsedData = data;
+    }
 
     // error response format
     if (res.statusCode >= 400) {
