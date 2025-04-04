@@ -6,7 +6,7 @@ const { redisClient } = require('../../configs/db/redis');
 class AuthController {
 
    // [POST] /auth/register
-   register(req, res) {
+   register(req, res, next) {
       // get data from request
       const { username, email, password, role } = req.body;
 
@@ -15,9 +15,9 @@ class AuthController {
       .then(user => {
          // if username or email already exists, then return error
          if (user) {
-            return res.status(400).json({
+            res.status(400).json({
                success: false,
-               errorCode: "USER_ALREADY_EXISTS"
+               errorCode: "USERNAME_OR_EMAIL_ALREADY_EXISTS",
             });
          }
 
@@ -37,24 +37,16 @@ class AuthController {
          newUser.save()
             .then(user => {
                res.status(201).json({
-                  success: true,
-                  data: {
-                     id: user._id,
-                     username: user.username,
-                     email: user.email,
-                     role: user.role,
-                     avatar: user.avatar
-                  },
+                  id: user._id,
+                  username: user.username,
+                  email: user.email,
+                  role: user.role,
+                  avatar: user.avatar
                })
             })
       })
       .catch(err => {
-         console.error(err);
-
-         res.status(500).json({
-            success: false,
-            errorCode: "INTERNAL_SERVER_ERROR",
-         })
+         
       });
    }
 
@@ -109,16 +101,13 @@ class AuthController {
 
             // return user data and token
             res.status(200).json({
-               success: true,
-               data: {
-                  id: user._id,
-                  username: user.username,
-                  email: user.email,
-                  role: user.role,
-                  avatar: user.avatar,
-                  accessToken: accessToken,
-               }
-            })
+              id: user._id,
+              username: user.username,
+              email: user.email,
+              role: user.role,
+              avatar: user.avatar,
+              accessToken: accessToken,
+            });
          })
          .catch(err => {
             console.error(err);
