@@ -9,14 +9,19 @@ const responseFormatterMiddleware = (req, res, next) => {
     // Parse data if it's a string to avoid double-stringifying
     const parsedData = JSON.parse(data);
 
-    // Format the response data
-    const formattedResponse = {
+    // error response format
+    if (res.statusCode >= 400) {
+      return originalSend.call(this, JSON.stringify({
+        success: false,
+        errorCode: parsedData.errorCode,
+      }));
+    }
+
+    // success response format
+    return originalSend.call(this, JSON.stringify({
       success: true,
       data: parsedData,
-    };
-
-    // Call the original send method with the formatted response
-    originalSend.call(this, JSON.stringify(formattedResponse));
+    }));
   };
 
   next();

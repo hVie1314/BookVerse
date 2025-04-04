@@ -9,6 +9,7 @@ const route = require('./routes'); // import route from routes/index.js
 const mongodb = require('./configs/db/mongo'); 
 const redis = require('./configs/db/redis'); 
 const responseFormatterMiddleware = require('./app/middlewares/responseFormatterMiddleware'); 
+const errorHandlerMiddleware = require('./app/middlewares/errorHandlerMiddleware');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -31,6 +32,9 @@ app.use(methodOverride('_method'))
 
 // routes init
 route(app);
+
+// error handler middleware
+app.use(errorHandlerMiddleware);
 
 // connect to DB
 mongodb.connect();
