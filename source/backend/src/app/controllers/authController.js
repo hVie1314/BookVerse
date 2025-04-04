@@ -2,6 +2,7 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { redisClient } = require('../../configs/db/redis');
+const AppError = require('../../utils/appError');
 
 class AuthController {
 
@@ -15,10 +16,7 @@ class AuthController {
       .then(user => {
          // if username or email already exists, then return error
          if (user) {
-            res.status(400).json({
-               success: false,
-               errorCode: "USERNAME_OR_EMAIL_ALREADY_EXISTS",
-            });
+            return next(new AppError(400, "USER_ALREADY_EXISTS"));
          }
 
          // gen hash password
@@ -46,12 +44,12 @@ class AuthController {
             })
       })
       .catch(err => {
-         
+         return next(new AppError());
       });
    }
 
    // [POST] /auth/login
-   login(req, res) {
+   login(req, res, next) {
 
       // get data from request
       const { username, password } = req.body;
@@ -62,19 +60,13 @@ class AuthController {
             
             // if user does not exist then return error
             if (!user) {
-               return res.status(404).json({
-                  success: false,
-                  errorCode: "INVALID_CREDENTIALS"
-               })
+               return next(new AppError(404, "INVALID_CREDENTIALS"));
             }
 
             // check password
             const isPasswordMatch = bcrypt.compareSync(password, user.password);
             if (!isPasswordMatch) {
-               return res.status(400).json({
-                  success: false,
-                  errorCode: "INVALID_CREDENTIALS"
-               })
+               return next(new AppError(400, "INVALID_CREDENTIALS"));
             }
 
             // create token
@@ -110,12 +102,7 @@ class AuthController {
             });
          })
          .catch(err => {
-            console.error(err);
-
-            res.status(500).json({
-               success: false,
-               errorCode: "INTERNAL_SERVER_ERROR",
-            })
+            return next(new AppError());
          });
    }
 
