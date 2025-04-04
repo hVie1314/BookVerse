@@ -1,15 +1,16 @@
+require('dotenv').config(); // load env variables from .env file
 const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const methodOverride = require('method-override');
 
 const route = require('./routes'); // import route from routes/index.js
-const db = require('./configs/db'); // import db from config/db/index.js
+const mongodb = require('./configs/db/mongo'); // import db from configs/db/mongo.js
+const redis = require('./configs/db/redis'); // import db from configs/db/redis.js
 //const middleware = require('./app/middlewares/...');
 
 const app = express();
-const port = 3000;
-
+const port = process.env.PORT || 3000;
 
 // static file
 app.use(express.static(path.join(__dirname, 'public')));
@@ -31,7 +32,8 @@ app.use(methodOverride('_method'))
 route(app);
 
 // connect to DB
-db.connect();
+mongodb.connect();
+redis.connect();
 
 // start server
 app.listen(port, () => {
