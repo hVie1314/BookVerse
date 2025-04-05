@@ -101,6 +101,47 @@ class AuthController {
    // [POST] /auth/refresh-token
    refreshToken(req, res, next) {
 
+      // get token 
+      const { token } = req.body;
+
+      // check if token is valid
+      if (!token) {
+         return next(new AppError(401, "UNAUTHORIZED"));
+      }
+
+      // verify token
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
+         if (err) {
+            return next(new AppError(401, "UNAUTHORIZED"));
+         }
+
+         // get cached token from redis
+         const redisToken = await redisClient.get(user.id.toString());
+         
+         // if token not found (refreshable duration expired)
+         if (! redisToken || redisToken != token) {
+            return next(new AppError(401, "UNAUTHORIZED"));
+         }
+
+         // after passing all checks
+
+         // create new access token
+         const newAccessToken = jwt.sign({
+            id: user.id,
+            role: user.role,
+         }, 
+            process.env.ACCESS_TOKEN_SECRET, {
+            expiresIn: '10m'
+         });
+
+         // save new token to redis
+         redisClient.set(user.id.toString(), newAccessToken, 'EX', 3 * 24 * 60 * 60);
+
+         // return new token
+         res.status(200).json({
+            accessToken: newAccessToken,
+         });
+      });
    };
 
 }
