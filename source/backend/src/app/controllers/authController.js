@@ -78,18 +78,10 @@ class AuthController {
                expiresIn: '10m'
             });
 
-            // create refresh token
-            const refreshToken = jwt.sign({
-               id: user._id,
-               role: user.role,
-            }, 
-               process.env.REFRESH_TOKEN_SECRET, {
-               expiresIn: '3d'
-            });
-
-            // save refresh token to redis
+            // save token to redis
             // automatically expire after 3 days
-            redisClient.set(user._id.toString(), refreshToken, 'EX', 3 * 24 * 60 * 60); 
+            // 3 day is refresh token expiration time
+            redisClient.set(user._id.toString(), accessToken, 'EX', 3 * 24 * 60 * 60); 
 
             // return user data and token
             res.status(200).json({
@@ -105,6 +97,11 @@ class AuthController {
             return next(new AppError());
          });
    }
+
+   // [POST] /auth/refresh-token
+   refreshToken(req, res, next) {
+
+   };
 
 }
 
