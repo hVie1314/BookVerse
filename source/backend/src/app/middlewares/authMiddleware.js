@@ -1,6 +1,7 @@
 require("dotenv").config();
 const jwt = require('jsonwebtoken');
 const { redisClient } = require("../../configs/db/redis");
+const AppError = require("../../utils/appError");
 
 class AuthMiddleware {
 
@@ -8,17 +9,13 @@ class AuthMiddleware {
       const authHeader = req.headers["authorization"];
       const token = authHeader && authHeader.split(" ")[1];
       if (!token) {
-         return res.status(403).json({
-            errorCode: "FORBIDDEN",
-         });
+         return next(new AppError(401, "FORBIDDEN"));
       }
 
       // verify token
       jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decoded) => {
          if (err) {
-            return res.status(401).json({
-               errorCode: "UNAUTHORIZED",
-            });
+            return next(new AppError(401, "UNAUTHORIZED"));
          }
 
          try {
@@ -26,9 +23,7 @@ class AuthMiddleware {
             const isInBlacklist = await redisClient.get(`blacklist:${token}`);
 
             if (isInBlacklist) {
-               return res.status(401).json({
-                  errorCode: "UNAUTHORIZED",
-               });
+               return next(new AppError(401, "UNAUTHORIZED"));
             }
 
             // passed all checks
@@ -36,9 +31,7 @@ class AuthMiddleware {
             next();
             
          } catch (error) {
-            return res.status(500).json({
-               errorCode: "INTERNAL_SERVER_ERROR",
-            });
+            return next(new AppError(500, "INTERNAL_SERVER_ERROR"));
          }
       });
    }
