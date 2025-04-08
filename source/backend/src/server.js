@@ -9,6 +9,7 @@ const route = require('./routes'); // import route from routes/index.js
 const mongodb = require('./configs/db/mongo'); 
 const redis = require('./configs/db/redis'); 
 const responseFormatterMiddleware = require('./app/middlewares/responseFormatterMiddleware'); 
+const notFoundMiddleware = require('./app/middlewares/notFoundMiddleware'); 
 const errorHandlerMiddleware = require('./app/middlewares/errorHandlerMiddleware');
 
 const app = express();
@@ -32,6 +33,9 @@ app.use(methodOverride('_method'))
 
 // routes init
 route(app);
+
+// 404 handler
+app.use(notFoundMiddleware);
 
 // error handler middleware
 app.use(errorHandlerMiddleware);
