@@ -140,18 +140,11 @@ class AuthController {
    // [POST] /auth/logout
    logout(req, res) {
 
-      const { token } = req.body;
-      // check if token is valid
-      if (!token) {
-         return next(new AppError(401, "UNAUTHORIZED"));
-      }
-      
-      // get user id from token
-      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-      const userId = decoded.id;
+      const token = req.headers["authorization"].split(" ")[1];
+      const userId = req.userInfo.id.toString();
 
       // delete token from redis
-      redisClient.del(userId.toString(), (err, reply) => {
+      redisClient.del(userId, (err, reply) => {
          if (err) {
             return next(new AppError(500, "INTERNAL_SERVER_ERROR"));
          }
