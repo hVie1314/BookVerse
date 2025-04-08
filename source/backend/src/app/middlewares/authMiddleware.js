@@ -36,6 +36,27 @@ class AuthMiddleware {
       });
    }
 
+   isAdmin(req, res, next) {
+      if (req.userInfo.role !== "admin") {
+         return next(new AppError(403, "FORBIDDEN"));
+      }
+      next();
+   }
+
+   isStaff(req, res, next) {
+      if (req.userInfo.role !== "staff") {
+         return next(new AppError(403, "FORBIDDEN"));
+      }
+      next();
+   }
+
+   isUser(req, res, next) {
+      if (req.userInfo.role !== "user") {
+         return next(new AppError(403, "FORBIDDEN"));
+      }
+      next();
+   }
+
 }
 
 module.exports = new AuthMiddleware();
