@@ -144,6 +144,34 @@ class AuthController {
       });
    };
 
+   // [POST] /auth/logout
+   logout(req, res) {
+
+      const { token } = req.body;
+      // check if token is valid
+      if (!token) {
+         return next(new AppError(401, "UNAUTHORIZED"));
+      }
+      
+      // get user id from token
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      const userId = decoded.id;
+
+      // delete token from redis
+      redisClient.del(userId.toString(), (err, reply) => {
+         if (err) {
+            return next(new AppError(500, "INTERNAL_SERVER_ERROR"));
+         }
+      });
+
+      // add access token to blacklist
+      // automatically expire after 10 minutes
+      redisClient.set(`blacklist:${token}`, "blacklisted", 'EX', 10 * 60);
+
+      // return success message
+      res.status(200).json({});
+   }
+
 }
 
 module.exports = new AuthController();
