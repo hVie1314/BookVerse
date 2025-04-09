@@ -1,4 +1,10 @@
 <template>
+  <Alert 
+  v-model:show="alert.show" 
+  :type="alert.type" 
+  :title="alert.title" 
+  :message="alert.message" 
+  />
   <div>
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap"
@@ -73,10 +79,22 @@
 </template>
 
 <script>
+import AuthenticationService from '@/services/AuthenticationService';
+import Alert from '@/components/Alert.vue';
+
 export default {
   name: 'RegisterForm',
+  components: {
+    Alert
+  }, 
   data() {
     return {
+      alert: {
+        show: false,
+        type: 'success',
+        title: 'Success',
+        message: 'Registration successful!'
+      },
       formData: {
         username: "",
         email: "",
@@ -98,30 +116,68 @@ export default {
     toggleConfirmPasswordVisibility() {
       this.isConfirmPasswordVisible = !this.isConfirmPasswordVisible;
     },
-    handleRegister() {
-      // Kiểm tra mật khẩu xác nhận
-      if (this.formData.password !== this.formData.confirmPassword) {
-        alert("Passwork does not match!");
-        return;
+    async handleRegister() {
+      try {
+        // Kiểm tra mật khẩu xác nhận
+        if (this.formData.password !== this.formData.confirmPassword) {
+          alert("Password does not match!");
+          return;
+        }
+        
+        // Kiểm tra độ dài mật khẩu
+        if (this.formData.password.length < 4) {
+          alert("Password must have at least 4 characters!");
+          return;
+        }
+        
+        // Kiểm tra email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(this.formData.email)) {
+          alert("Invalid Email!");
+          return;
+        }
+        
+        // Tiến hành đăng ký
+        console.log("Processing registration: ", this.formData);
+        // TODO: Gửi yêu cầu API đăng ký
+        // this.$axios.post('/api/register', this.formData);
+
+        const response = await AuthenticationService.register({
+          username: this.formData.username,
+          email: this.formData.email,
+          password: this.formData.password
+        });
+        
+        if (response.data.success) {
+          // Hiển thị alert thành công thay vì alert()
+          this.alert = {
+            show: true,
+            type: 'success',
+            title: 'Đăng ký thành công',
+            message: 'Tài khoản của bạn đã được tạo. Bây giờ bạn có thể đăng nhập!'
+          };
+          
+          // Chuyển hướng sau khi hiển thị alert (delay 2 giây)
+          setTimeout(() => {
+            this.$router.push('/login');
+          }, 2000);
+        } else {
+          this.alert = {
+            show: true,
+            type: 'error',
+            title: 'Đăng ký thất bại',
+            message: response.data.errorCode || 'Vui lòng thử lại sau'
+          };
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        this.alert = {
+          show: true,
+          type: 'error',
+          title: 'Đăng ký thất bại',
+          message: error.response?.data?.errorCode || 'Không thể kết nối đến máy chủ'
+        };
       }
-      
-      // Kiểm tra độ dài mật khẩu
-      if (this.formData.password.length < 8) {
-        alert("Passwork must have at least 8 characters!");
-        return;
-      }
-      
-      // Kiểm tra email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(this.formData.email)) {
-        alert("Invalid Email!");
-        return;
-      }
-      
-      // Tiến hành đăng ký
-      console.log("Processing registration: ", this.formData);
-      // TODO: Gửi yêu cầu API đăng ký
-      // this.$axios.post('/api/register', this.formData);
     }
   }
 }
