@@ -1,6 +1,7 @@
 require('dotenv').config(); // load env variables from .env file
 const path = require('path');
 const express = require('express');
+const cors = require('cors');
 const morgan = require('morgan');
 const methodOverride = require('method-override');
 
@@ -28,6 +29,10 @@ app.use(methodOverride('_method'))
 // custome middleware
 //app.use(middleware);
 
+app.use(cors({
+  origin: 'http://localhost:8080',
+  credentials: true
+}));
 // routes init
 route(app);
 

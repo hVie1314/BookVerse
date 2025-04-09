@@ -3,7 +3,7 @@
     <div class="login-overlay"></div>
     
     <form @submit.prevent="handleSubmit" class="login-container">
-      <header>
+      <header class="login-header">
         <h1 class="login-title">Welcome Back</h1>
         <p class="login-subtitle">Sign in to continue</p>
       </header>
@@ -136,6 +136,12 @@ export default {
   background-color: rgba(255, 255, 255, 0.97);
 }
 
+.login-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
 .login-title {
   color: #724e4e;
   font-family: "Poppins", sans-serif;
@@ -157,7 +163,8 @@ export default {
 /* FormInput styles */
 .input-container {
   position: relative;
-  width: 356px;
+  width: 100%;
+  max-width: 340px;
   margin-bottom: 16px;
 }
 
@@ -171,6 +178,7 @@ export default {
   font-size: 14px;
   color: #000;
   background-color: #fff;
+  box-sizing: border-box;
 }
 
 .icon-container {
@@ -186,7 +194,8 @@ export default {
 }
 
 .form-options {
-  width: 356px;
+  width: 100%;
+  max-width: 340px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -311,6 +320,11 @@ export default {
 
   .sign-in-button {
     width: 280px;
+  }
+  .input-container,
+  .form-options,
+  .sign-in-button {
+    max-width: 280px;
   }
 }
 </style>
