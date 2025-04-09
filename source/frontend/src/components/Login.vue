@@ -1,4 +1,10 @@
 <template>
+  <Alert 
+  v-model:show="alert.show" 
+  :type="alert.type" 
+  :title="alert.title" 
+  :message="alert.message" 
+  />
   <main class="login-page">
     <div class="login-overlay"></div>
     
@@ -50,14 +56,24 @@
 
 <script>
 import AuthenticationService from '@/services/AuthenticationService';
+import Alert from '@/components/Alert.vue';
 
 export default {
   name: 'LoginForm',
+  components: {
+    Alert
+  },
   data() {
     return {
       email: '',
       password: '',
       rememberMe: false,
+      alert: {
+        show: false,
+        type: 'success',
+        title: '',
+        message: ''
+      },
       emailIcon: `<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M2.10358 6.5693L10.1006 10.5673L18.0976 6.5693C18.068 6.05975 17.8447 5.58079 17.4734 5.23053C17.1021 4.88027 16.611 4.68521 16.1006 4.6853H4.10058C3.59016 4.68521 3.09902 4.88027 2.72775 5.23053C2.35648 5.58079 2.13318 6.05975 2.10358 6.5693Z" fill="#724E4E"/>
         <path d="M18.1006 8.80334L10.1006 12.8033L2.10059 8.80334V14.6853C2.10059 15.2158 2.3113 15.7245 2.68637 16.0996C3.06144 16.4746 3.57015 16.6853 4.10059 16.6853H16.1006C16.631 16.6853 17.1397 16.4746 17.5148 16.0996C17.8899 15.7245 18.1006 15.2158 18.1006 14.6853V8.80334Z" fill="#724E4E"/>
@@ -87,17 +103,36 @@ export default {
           // Lưu thông tin người dùng vào localStorage
           AuthenticationService.setUser(response.data);
           
-          // Chuyển hướng người dùng về trang chủ hoặc trang được yêu cầu trước đó
-          const redirectPath = this.$route.query.redirect || '/';
-          this.$router.push(redirectPath);
+          // Hiển thị alert thành công thay vì console.log
+          this.alert = {
+            show: true,
+            type: 'success',
+            title: 'Đăng nhập thành công',
+            message: 'Chào mừng bạn quay trở lại BookVerse!'
+          };
+          
+          // Chuyển hướng sau khi hiển thị alert (delay 1.5 giây)
+          setTimeout(() => {
+            const redirectPath = this.$route.query.redirect || '/';
+            this.$router.push(redirectPath);
+          }, 1500);
         } else {
           // Xử lý lỗi đăng nhập
-          console.error('Login failed:', response.data.errorCode);
-          // Hiển thị thông báo lỗi
+          this.alert = {
+            show: true,
+            type: 'error',
+            title: 'Đăng nhập thất bại',
+            message: response.data.errorCode || 'Vui lòng kiểm tra lại thông tin đăng nhập'
+          };
         }
       } catch (error) {
         console.error('Login error:', error);
-        // Hiển thị thông báo lỗi
+        this.alert = {
+          show: true,
+          type: 'error',
+          title: 'Đăng nhập thất bại',
+          message: error.response?.data?.errorCode || 'Không thể kết nối đến máy chủ'
+        };
       }
     }
   }
