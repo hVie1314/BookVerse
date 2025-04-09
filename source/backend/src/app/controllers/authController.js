@@ -78,18 +78,10 @@ class AuthController {
                expiresIn: '10m'
             });
 
-            // create refresh token
-            const refreshToken = jwt.sign({
-               id: user._id,
-               role: user.role,
-            }, 
-               process.env.REFRESH_TOKEN_SECRET, {
-               expiresIn: '3d'
-            });
-
-            // save refresh token to redis
+            // save token to redis
             // automatically expire after 3 days
-            redisClient.set(user._id.toString(), refreshToken, 'EX', 3 * 24 * 60 * 60); 
+            // 3 day is refresh token expiration time
+            redisClient.set(user._id.toString(), accessToken, 'EX', 3 * 24 * 60 * 60); 
 
             // return user data and token
             res.status(200).json({
@@ -105,6 +97,52 @@ class AuthController {
             return next(new AppError());
          });
    }
+
+   // [POST] /auth/refresh-token
+   refreshToken(req, res, next) {
+
+      // get token 
+      const { token } = req.body;
+
+      // check if token is valid
+      if (!token) {
+         return next(new AppError(401, "UNAUTHORIZED"));
+      }
+
+      // verify token
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
+         if (err) {
+            return next(new AppError(401, "UNAUTHORIZED"));
+         }
+
+         // get cached token from redis
+         const redisToken = await redisClient.get(user.id.toString());
+         
+         // if token not found (refreshable duration expired)
+         if (! redisToken || redisToken != token) {
+            return next(new AppError(401, "UNAUTHORIZED"));
+         }
+
+         // after passing all checks
+
+         // create new access token
+         const newAccessToken = jwt.sign({
+            id: user.id,
+            role: user.role,
+         }, 
+            process.env.ACCESS_TOKEN_SECRET, {
+            expiresIn: '10m'
+         });
+
+         // save new token to redis
+         redisClient.set(user.id.toString(), newAccessToken, 'EX', 3 * 24 * 60 * 60);
+
+         // return new token
+         res.status(200).json({
+            accessToken: newAccessToken,
+         });
+      });
+   };
 
 }
 
