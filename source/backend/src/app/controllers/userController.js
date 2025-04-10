@@ -1,4 +1,4 @@
-const user = require('../models/user');
+const user = require('../models/User');
 const AppError = require('../../utils/appError');
 
 class UserController {
