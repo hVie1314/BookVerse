@@ -129,6 +129,27 @@ class CartController {
       }
    }
 
+   // [GET] /cart/:userId
+   async getCartByUserId(req, res, next) {
+      try {
+         const { userId } = req.params;
+         const cart = await Cart.findOne({ userId }).populate({
+            path: 'products.productId', // join with Book model
+            select: 'title price image', // only select necessary fields
+         });
+         
+         if (!cart) {
+            return next(new AppError(404, 'EMPTY_CART'));
+         }
+
+         return res.status(200).json(mongooseToObject(cart));
+      }
+
+      catch (err) {
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+      }
+   }
+
 }
 
 module.exports = new CartController();
