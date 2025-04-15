@@ -55,6 +55,51 @@ class CartController {
       }
    }
 
+   // [PUT] /cart
+   async updateCart(req, res, next) {
+      try {
+         const { userId, productId, quantity } = req.body;
+         const cart = await Cart.findOne({ userId });
+
+         // check if cart not exists, create new empty one
+         if (!cart) {
+            return next(new AppError(404, 'EMPTY_CART'));
+         }
+         
+         // check if product not exists in cart
+         const productIndex = cart.products.findIndex(
+            item => item.productId.toString() === productId);
+         if (productIndex === -1) {
+            return next(new AppError(404, 'PRODUCT_NOT_FOUND'));
+         }
+
+         // update quantity and totalPrice
+         // check if quantity > 0, if not remove product from cart
+         if (quantity > 0) {
+            console.warn('quantity > 0', quantity);
+            const quantityChange = quantity - cart.products[productIndex].quantity;
+            console.warn('quantityChange', quantityChange);
+
+            cart.products[productIndex].quantity = quantity;
+            console.warn('cart.products[productIndex].quantity', cart.products[productIndex].quantity);
+
+            // update totalPrice
+            const bookInfo = await BookHelper.getBookInfoForCartById(productId);
+            cart.totalPrice += (quantityChange * bookInfo.price);
+         }
+         else {
+            cart.products.splice(productIndex, 1);
+         }
+
+         cart.save();
+         return res.status(200).json({});
+      }
+
+      catch (err) {
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+      }
+   }
+
 }
 
 module.exports = new CartController();
