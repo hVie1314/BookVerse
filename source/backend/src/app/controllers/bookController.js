@@ -1,5 +1,8 @@
+
 const Category = require('../models/Category');
 const AppError = require('../../utils/appError');
+const { mongooseToObject } = require('../../utils/mongoose');
+const { multipleMongooseToObject } = require('../../utils/mongoose');
 
 class BookController {
    
@@ -8,10 +11,7 @@ class BookController {
       Category.find()
          .then(categories => {
             res.status(200).json({
-               categories: categories.map(category => ({
-                  id: category._id,
-                  categoryName: category.categoryName,
-               })),
+               categories: multipleMongooseToObject(categories)
             });
          })
          .catch(err => {
