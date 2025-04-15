@@ -1,8 +1,7 @@
-
+const Book = require('../models/Book');
 const Category = require('../models/Category');
 const AppError = require('../../utils/appError');
-const { mongooseToObject } = require('../../utils/mongoose');
-const { multipleMongooseToObject } = require('../../utils/mongoose');
+const { mongooseToObject, multipleMongooseToObject } = require('../../utils/mongoose');
 
 class BookController {
    
@@ -15,7 +14,7 @@ class BookController {
             });
          })
          .catch(err => {
-            return next(new AppError(500, 'SERVER_ERROR'));
+            return next(new AppError(500, 'SERVER_ERROR', err.message));
          });
    }
 }
