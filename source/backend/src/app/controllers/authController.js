@@ -28,7 +28,7 @@ class AuthController {
             username: username,
             email: email,
             password: hashPassword,
-            role: role
+            role: role,
          });
 
          // save user to database
@@ -39,7 +39,8 @@ class AuthController {
                   username: user.username,
                   email: user.email,
                   role: user.role,
-                  avatar: user.avatar
+                  address: user.address,
+                  avatar: user.avatar,
                })
             })
       })
@@ -89,6 +90,7 @@ class AuthController {
               username: user.username,
               email: user.email,
               role: user.role,
+              address: user.address,
               avatar: user.avatar,
               accessToken: accessToken,
             });
