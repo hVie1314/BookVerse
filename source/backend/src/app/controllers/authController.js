@@ -45,7 +45,7 @@ class AuthController {
             })
       })
       .catch(err => {
-         return next(new AppError());
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
       });
    }
 
@@ -96,7 +96,7 @@ class AuthController {
             });
          })
          .catch(err => {
-            return next(new AppError());
+            return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
          });
    }
 
@@ -135,7 +135,7 @@ class AuthController {
             accessToken: newAccessToken,
          });
       } catch (err) {
-         return next(new AppError(500, "INTERNAL_SERVER_ERROR"));
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
       }
    };
 
