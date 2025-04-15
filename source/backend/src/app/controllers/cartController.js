@@ -1,4 +1,4 @@
-
+const { v4: uuidv4 } = require('uuid');
 const Cart = require('../models/Cart');
 const AppError = require('../../utils/appError');
 const BookHelper = require('../../helpers/bookHelper');
@@ -6,6 +6,8 @@ const { mongooseToObject, multipleMongooseToObject } = require('../../utils/mong
 
 class CartController {
    
+   // USER CART
+
    // [POST] /cart
    async addToCart(req, res, next) {
 
@@ -76,12 +78,9 @@ class CartController {
          // update quantity and totalPrice
          // check if quantity > 0, if not remove product from cart
          if (quantity > 0) {
-            console.warn('quantity > 0', quantity);
             const quantityChange = quantity - cart.products[productIndex].quantity;
-            console.warn('quantityChange', quantityChange);
 
             cart.products[productIndex].quantity = quantity;
-            console.warn('cart.products[productIndex].quantity', cart.products[productIndex].quantity);
 
             // update totalPrice
             const bookInfo = await BookHelper.getBookInfoForCartById(productId);
