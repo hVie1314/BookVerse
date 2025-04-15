@@ -61,7 +61,7 @@ class CartController {
          const { userId, productId, quantity } = req.body;
          const cart = await Cart.findOne({ userId });
 
-         // check if cart not exists, create new empty one
+         // check if cart not exists
          if (!cart) {
             return next(new AppError(404, 'EMPTY_CART'));
          }
@@ -92,6 +92,35 @@ class CartController {
          }
 
          cart.save();
+         return res.status(200).json({});
+      }
+
+      catch (err) {
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+      }
+   }
+
+   // [DELETE] /cart
+   async deleteProductInCart(req, res, next) {
+      try {
+         const { userId, productId } = req.body;
+         const cart = await Cart.findOne({ userId });
+
+         // check if cart not exists
+         if (!cart) {
+            return next(new AppError(404, 'EMPTY_CART'));
+         }
+
+         // check if product not exists in cart
+         const productIndex = cart.products.findIndex(
+            item => item.productId.toString() === productId);
+         if (productIndex === -1) {
+            return next(new AppError(404, 'PRODUCT_NOT_FOUND'));
+         }
+
+         // remove product from cart
+         cart.products.splice(productIndex, 1);
+         await cart.save();
          return res.status(200).json({});
       }
 
