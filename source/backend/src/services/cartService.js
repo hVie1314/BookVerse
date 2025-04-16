@@ -32,7 +32,8 @@ class CartService {
          // check if cart not exists, create new one
          if (!cart) {
             cart = await Cart.create({
-               userId,
+               userId: userId || null,
+               cartId: cartId || null,
                products: [
                   { 
                      productId, 
@@ -75,14 +76,14 @@ class CartService {
 
          // check if cart not exists
          if (!cart) {
-            return next(new AppError(404, 'EMPTY_CART'));
+            throw new AppError(404, 'EMPTY_CART');
          }
          
          // check if product not exists in cart
          const productIndex = cart.products.findIndex(
             item => item.productId.toString() === productId);
          if (productIndex === -1) {
-            return next(new AppError(404, 'PRODUCT_NOT_FOUND'));
+            throw new AppError(404, 'PRODUCT_NOT_FOUND');
          }
 
          // update quantity and totalPrice
@@ -117,7 +118,7 @@ class CartService {
 
          // check if cart not exists
          if (!cart) {
-            return next(new AppError(404, 'EMPTY_CART'));
+            throw new AppError(404, 'EMPTY_CART');
          }
 
          // clear cart
@@ -137,7 +138,7 @@ class CartService {
       try {
          let cart = await this.findCart(userId, cartId);
          if (!cart) {
-            return next(new AppError(404, 'EMPTY_CART'));
+            throw new AppError(404, 'EMPTY_CART');
          }
 
          cart = await cart.populate({
