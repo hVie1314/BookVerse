@@ -104,7 +104,7 @@ class CartService {
             cart.products.splice(productIndex, 1);
          }
 
-         cart.save();
+         await cart.save();
          return cart;
       }
 
