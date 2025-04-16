@@ -17,7 +17,10 @@ class CartService {
          return cart;
 
       } catch (error) {
-         throw new AppError(500, "INTERNAL_SERVER_ERROR", error.message);
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
       }
    }
 
@@ -106,6 +109,9 @@ class CartService {
       }
 
       catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
          throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
       }
    }
@@ -128,6 +134,9 @@ class CartService {
       }
 
       catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
          throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
       }
    }
@@ -149,6 +158,9 @@ class CartService {
       }
 
       catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
          throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
       }
    }
@@ -172,7 +184,6 @@ class CartService {
                totalPrice: 0,
             });
          }
-
 
          // check if guest cart not exists
          if (!guestCart) {
@@ -206,6 +217,9 @@ class CartService {
       }
 
       catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
          throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
       }
    }
