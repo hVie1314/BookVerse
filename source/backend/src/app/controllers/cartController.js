@@ -1,6 +1,5 @@
-const { v4: uuidv4 } = require('uuid');
-const Cart = require('../models/Cart');
 const AppError = require('../../utils/appError');
+const CartService = require('../../services/cartService');
 const BookHelper = require('../../helpers/bookHelper');
 const { mongooseToObject, multipleMongooseToObject } = require('../../utils/mongoose');
 
@@ -9,143 +8,50 @@ class CartController {
    // USER CART
 
    // [POST] /cart
-   async addToCart(req, res, next) {
-
+   async addToUserCart(req, res, next) {
       try {
          const { userId, productId, quantity } = req.body;
-         let cart = await Cart.findOne({ userId });
-
-         // get book info for cart
-         const bookInfo = await BookHelper.getBookInfoForCartById(productId);
-
-         // check if cart not exists, create new one
-         if (!cart) {
-            cart = await Cart.create({
-               userId,
-               products: [
-                  { 
-                     productId, 
-                     quantity,
-                  }
-               ],
-               totalPrice: bookInfo.price * quantity,
-            });  
-         }
-         else {
-            // check if cart already has product, update totalPrice
-            const productIndex = cart.products.findIndex(
-               item => item.productId.toString() === productId);
-            
-            // if exists, update totalPrice
-            if (productIndex > -1) {
-               cart.products[productIndex].quantity += quantity;
-            }
-            else { // if not exists, add new product to cart
-               cart.products.push({ productId, quantity });
-            }
-
-            // update totalPrice
-            cart.totalPrice += bookInfo.price * quantity;
-         }
-
-         await cart.save();
+         await CartService.addToCart(userId, null, productId, quantity);
          return res.status(200).json({});
       }
-
-      catch (err) {
-         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+      catch (error) {
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', error.message));
       }
    }
 
    // [PUT] /cart
-   async updateCart(req, res, next) {
+   async updateUserCart(req, res, next) {
       try {
          const { userId, productId, quantity } = req.body;
-         const cart = await Cart.findOne({ userId });
-
-         // check if cart not exists
-         if (!cart) {
-            return next(new AppError(404, 'EMPTY_CART'));
-         }
-         
-         // check if product not exists in cart
-         const productIndex = cart.products.findIndex(
-            item => item.productId.toString() === productId);
-         if (productIndex === -1) {
-            return next(new AppError(404, 'PRODUCT_NOT_FOUND'));
-         }
-
-         // update quantity and totalPrice
-         // check if quantity > 0, if not remove product from cart
-         if (quantity > 0) {
-            const quantityChange = quantity - cart.products[productIndex].quantity;
-
-            cart.products[productIndex].quantity = quantity;
-
-            // update totalPrice
-            const bookInfo = await BookHelper.getBookInfoForCartById(productId);
-            cart.totalPrice += (quantityChange * bookInfo.price);
-         }
-         else {
-            cart.products.splice(productIndex, 1);
-         }
-
-         cart.save();
+         await CartService.updateCart(userId, null, productId, quantity);
          return res.status(200).json({});
       }
-
-      catch (err) {
-         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+      catch (error) {
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', error.message));
       }
    }
 
-   // [DELETE] /cart
-   async deleteProductInCart(req, res, next) {
+   // [DELETE] /cart/:userId
+   async clearUserCart(req, res, next) {
       try {
-         const { userId, productId } = req.body;
-         const cart = await Cart.findOne({ userId });
-
-         // check if cart not exists
-         if (!cart) {
-            return next(new AppError(404, 'EMPTY_CART'));
-         }
-
-         // check if product not exists in cart
-         const productIndex = cart.products.findIndex(
-            item => item.productId.toString() === productId);
-         if (productIndex === -1) {
-            return next(new AppError(404, 'PRODUCT_NOT_FOUND'));
-         }
-
-         // remove product from cart
-         cart.products.splice(productIndex, 1);
-         await cart.save();
+         const { userId } = req.params;
+         await CartService.clearCart(userId, null);
          return res.status(200).json({});
       }
-
-      catch (err) {
-         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+      catch (error) {
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', error.message));
       }
    }
 
    // [GET] /cart/:userId
-   async getCartByUserId(req, res, next) {
+   async getUserCartByUserId(req, res, next) {
       try {
          const { userId } = req.params;
-         const cart = await Cart.findOne({ userId }).populate({
-            path: 'products.productId', // join with Book model
-            select: 'title price image', // only select necessary fields
-         });
-         
-         if (!cart) {
-            return next(new AppError(404, 'EMPTY_CART'));
-         }
-
+         const cart = await CartService.findCart(userId, null);
          return res.status(200).json(mongooseToObject(cart));
       }
-
-      catch (err) {
-         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+      catch (error) {
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', error.message));
       }
    }
 
