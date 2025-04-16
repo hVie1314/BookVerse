@@ -12,6 +12,9 @@ router.get('/staffs', userController.getAllStaff);
 // Get all admins
 router.get('/admins', userController.getAllAdmin);
 
+// Get user by ID
+router.get('/:id', userController.getUserById);
+
 // Update user info
 router.put('/:id', userController.updateUserInfo);
 
