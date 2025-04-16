@@ -28,7 +28,7 @@ class AuthController {
             username: username,
             email: email,
             password: hashPassword,
-            role: role
+            role: role,
          });
 
          // save user to database
@@ -39,12 +39,13 @@ class AuthController {
                   username: user.username,
                   email: user.email,
                   role: user.role,
-                  avatar: user.avatar
+                  address: user.address,
+                  avatar: user.avatar,
                })
             })
       })
       .catch(err => {
-         return next(new AppError());
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
       });
    }
 
@@ -89,37 +90,29 @@ class AuthController {
               username: user.username,
               email: user.email,
               role: user.role,
+              address: user.address,
               avatar: user.avatar,
               accessToken: accessToken,
             });
          })
          .catch(err => {
-            return next(new AppError());
+            return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
          });
    }
 
    // [POST] /auth/refresh-token
-   refreshToken(req, res, next) {
-
-      // get token 
-      const { token } = req.body;
-
-      // check if token is valid
-      if (!token) {
-         return next(new AppError(401, "UNAUTHORIZED"));
-      }
-
-      // verify token
-      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
-         if (err) {
-            return next(new AppError(401, "UNAUTHORIZED"));
-         }
+   async refreshToken(req, res, next) {
+      try {
+         // get info from request
+         const token = req.headers["authorization"].split(" ")[1];
+         const userId = req.userInfo.id.toString();
+         const userRole = req.userInfo.role;
 
          // get cached token from redis
-         const redisToken = await redisClient.get(user.id.toString());
-         
+         const redisToken = await redisClient.get(userId);
+
          // if token not found (refreshable duration expired)
-         if (! redisToken || redisToken != token) {
+         if (!redisToken || redisToken != token) {
             return next(new AppError(401, "UNAUTHORIZED"));
          }
 
@@ -127,38 +120,33 @@ class AuthController {
 
          // create new access token
          const newAccessToken = jwt.sign({
-            id: user.id,
-            role: user.role,
+            id: userId,
+            role: userRole,
          }, 
             process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '10m'
          });
 
          // save new token to redis
-         redisClient.set(user.id.toString(), newAccessToken, 'EX', 3 * 24 * 60 * 60);
+         redisClient.set(userId, newAccessToken, 'EX', 3 * 24 * 60 * 60);
 
          // return new token
          res.status(200).json({
             accessToken: newAccessToken,
          });
-      });
+      } catch (err) {
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+      }
    };
 
    // [POST] /auth/logout
    logout(req, res) {
 
-      const { token } = req.body;
-      // check if token is valid
-      if (!token) {
-         return next(new AppError(401, "UNAUTHORIZED"));
-      }
-      
-      // get user id from token
-      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-      const userId = decoded.id;
+      const token = req.headers["authorization"].split(" ")[1];
+      const userId = req.userInfo.id.toString();
 
       // delete token from redis
-      redisClient.del(userId.toString(), (err, reply) => {
+      redisClient.del(userId, (err, reply) => {
          if (err) {
             return next(new AppError(500, "INTERNAL_SERVER_ERROR"));
          }
