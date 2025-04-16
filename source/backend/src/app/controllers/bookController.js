@@ -1,21 +1,55 @@
 const Book = require('../models/Book');
-const Category = require('../models/Category');
-const AppError = require('../../utils/appError');
-const { mongooseToObject, multipleMongooseToObject } = require('../../utils/mongoose');
 
 class BookController {
-   
-   // [GET] /book/category
-   getCategory(req, res, next) {
-      Category.find()
-         .then(categories => {
-            res.status(200).json({
-               categories: multipleMongooseToObject(categories)
-            });
-         })
-         .catch(err => {
-            return next(new AppError(500, 'SERVER_ERROR', err.message));
-         });
+   // [POST] /book/create
+   async create(req, res) {
+      try {
+         const newBook = new Book(req.body);
+         const savedBook = await newBook.save();
+         res.status(201).json({ success: true, data: savedBook });
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ success: false, errorCode: 'INTERNAL_SERVER_ERROR' });
+      }
+   }
+
+   // [PUT] /book/update/:id
+   async update(req, res) {
+      try {
+         const updatedBook = await Book.findByIdAndUpdate(req.params.id, req.body, { new: true });
+         if (!updatedBook) {
+            return res.status(404).json({ success: false, errorCode: 'NOT_FOUND' });
+         }
+         res.json({ success: true, data: updatedBook });
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ success: false, errorCode: 'INTERNAL_SERVER_ERROR' });
+      }
+   }
+
+   // [DELETE] /book/delete/:id
+   async delete(req, res) {
+      try {
+         const deletedBook = await Book.findByIdAndDelete(req.params.id);
+         if (!deletedBook) {
+            return res.status(404).json({ success: false, errorCode: 'NOT_FOUND' });
+         }
+         res.json({ success: true, message: 'Book deleted successfully' });
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ success: false, errorCode: 'INTERNAL_SERVER_ERROR' });
+      }
+   }
+
+   // [GET] /book
+   async getAll(req, res) {
+      try {
+         const books = await Book.find();
+         res.json({ success: true, data: books });
+      } catch (err) {
+         console.error(err);
+         res.status(500).json({ success: false, errorCode: 'INTERNAL_SERVER_ERROR' });
+      }
    }
 }
 
