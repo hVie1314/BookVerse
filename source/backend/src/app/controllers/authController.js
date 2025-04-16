@@ -28,7 +28,7 @@ class AuthController {
             username: username,
             email: email,
             password: hashPassword,
-            role: role
+            role: role,
          });
 
          // save user to database
@@ -39,12 +39,13 @@ class AuthController {
                   username: user.username,
                   email: user.email,
                   role: user.role,
-                  avatar: user.avatar
+                  address: user.address,
+                  avatar: user.avatar,
                })
             })
       })
       .catch(err => {
-         return next(new AppError());
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
       });
    }
 
@@ -89,12 +90,13 @@ class AuthController {
               username: user.username,
               email: user.email,
               role: user.role,
+              address: user.address,
               avatar: user.avatar,
               accessToken: accessToken,
             });
          })
          .catch(err => {
-            return next(new AppError());
+            return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
          });
    }
 
@@ -133,7 +135,7 @@ class AuthController {
             accessToken: newAccessToken,
          });
       } catch (err) {
-         return next(new AppError(500, "INTERNAL_SERVER_ERROR"));
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
       }
    };
 
