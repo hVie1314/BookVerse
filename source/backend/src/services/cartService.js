@@ -114,7 +114,6 @@ class CartService {
    async clearCart(userId, cartId) {
       try {
          let cart = await this.findCart(userId, cartId);
-         console.warn(cart);
 
          // check if cart not exists
          if (!cart) {
@@ -147,6 +146,63 @@ class CartService {
          });
 
          return cart;
+      }
+
+      catch (error) {
+         throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
+      }
+   }
+
+   // merge guest cart to user cart
+   async mergeGuestCartToUserCart(userId, cartId) {
+      try {
+         const guestCart = await this.findCart(null, cartId);
+         let userCart = await this.findCart(userId, null);
+
+         // check guest carts exists
+         if (!guestCart) {
+            throw new AppError(404, 'EMPTY_CART');
+         }
+
+         // check user cart exists, create new one
+         if (!userCart) {
+            userCart = await Cart.create({
+               userId,
+               products: [],
+               totalPrice: 0,
+            });
+         }
+
+
+         // check if guest cart not exists
+         if (!guestCart) {
+            throw new AppError(404, 'EMPTY_CART');
+         }
+
+         // merge guest cart to user cart
+         for (const item of guestCart.products) {
+            const productIndex = userCart.products.findIndex(
+               product => product.productId.toString() === item.productId.toString()
+            );
+
+            // if product exists in user cart, update quantity
+            if (productIndex > -1) {
+               userCart.products[productIndex].quantity += item.quantity;
+            }
+            else { // if not exists, add new product to user cart
+               userCart.products.push(item);
+            }
+
+            // update totalPrice
+            const bookInfo = await BookHelper.getBookInfoForCartById(item.productId);
+            userCart.totalPrice += (item.quantity * bookInfo.price);
+         }
+
+         // save user cart and delete guest cart
+         await userCart.save();
+         await Cart.deleteOne({ cartId });
+
+         return userCart;
       }
 
       catch (error) {

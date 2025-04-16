@@ -16,4 +16,7 @@ router.put('/guest', cartController.updateGuestCart);
 router.delete('/guest/:cartId', cartController.clearGuestCart);
 router.get('/guest/:cartId', cartController.getGuestCartByCartId);
 
+// merge guest cart to user cart
+router.post('/merge', cartController.mergeGuestCartToUserCart);
+
 module.exports = router;

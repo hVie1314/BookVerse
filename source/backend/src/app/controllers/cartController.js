@@ -107,6 +107,18 @@ class CartController {
       }
    }
 
+   // [POST] /cart/merge
+   async mergeGuestCartToUserCart(req, res, next) {
+      try {
+         const { userId, cartId } = req.body;
+         await CartService.mergeGuestCartToUserCart(userId, cartId);
+         return res.status(200).json({});
+      }
+      catch (error) {
+         return next(error);
+      }
+   }
+
 }
 
 module.exports = new CartController();
