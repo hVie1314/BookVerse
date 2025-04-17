@@ -1,5 +1,8 @@
 <template>
   <div class="home-container">
+    <!-- Thêm thanh Nav vào đây -->
+    <Nav />
+    
     <!-- Main content của trang Home -->
     <div class="main-content">
       <h1>Chào mừng đến với BookVerse</h1>
@@ -89,14 +92,16 @@
 import FooterColumn from './FooterColumn.vue';
 import FooterLogo from './FooterLogo.vue';
 import FooterContact from './FooterContact.vue';
-import AuthenticationService from '@/services/AuthenticationService'
+import AuthenticationService from '@/services/AuthenticationService';
+import Nav from './Nav.vue'; // Thêm import Nav component
 
 export default {
   name: 'HomePage',
   components: {
     FooterColumn,
     FooterLogo,
-    FooterContact
+    FooterContact,
+    Nav // Thêm Nav vào components
   },
   data() {
     return {
@@ -144,6 +149,7 @@ export default {
   flex-direction: column;
   align-items: center;
   background-color: #fffaf5;
+  margin-top: 20px; /* Thêm margin để tạo khoảng cách với Nav */
 }
 
 /* Footer styles from footer.vue */
