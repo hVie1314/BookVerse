@@ -72,7 +72,6 @@ class BookController {
 
    // [GET] /book/category
    getCategory(req, res, next) {
-      console.warn('this func is called');
       Category.find()
          .then(categories => {
             res.status(200).json({
