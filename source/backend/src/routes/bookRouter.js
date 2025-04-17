@@ -2,8 +2,12 @@ const express = require('express');
 const router = express.Router();
 
 const bookController = require('../app/controllers/bookController');
-const authMiddleware = require('../app/middlewares/authMiddleware');
 
-router.get('/category', bookController.getCategory);
+// CRUD routes for books
+router.post('/', bookController.create);         // [POST] /book/
+router.put('/:id', bookController.update);       // [PUT] /book/:id
+router.delete('/:id', bookController.delete); // [DELETE] /books/:id
+router.get('/', bookController.getAll);          // [GET] /book/
+router.get('/:id', bookController.getById);      // [GET] /book/:id
 
 module.exports = router;
