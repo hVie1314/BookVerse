@@ -23,8 +23,8 @@ We follow a structured branching model to ensure smooth development and collabor
 - **develop**: The main development branch where all features are merged before moving to `main`.
 - **feature/frontend**: The branch dedicated to frontend development.
 - **feature/backend**: The branch dedicated to backend development.
-- **feature/frontend/\<feature-name>**: Specific frontend features are developed in separate branches.
-- **feature/backend/\<feature-name>**: Specific backend features are developed in separate branches.
+- **feature/frontend-\<feature-name>**: Specific frontend features are developed in separate branches.
+- **feature/backend-\<feature-name>**: Specific backend features are developed in separate branches.
 - **bugfix/\<issue-name>**: Bug fixes are handled in these branches.
 - **hotfix/\<fix-name>**: Critical production fixes.
 
@@ -37,15 +37,28 @@ Follow these steps to contribute:
 1. **Fork the repository** on GitHub.
 2. **Create a new branch** from `develop`:
    ```bash
-   git checkout -b feature/your-feature-name develop
+   git checkout -b feature/<frontend|backend>-<your-feature-name> develop
    ```
 3. **Make your changes** and commit them (see [Commit Messages](#commit-messages)).
 4. **Push your changes** to your fork:
   
   ```bash
-  git push origin feature/your-feature-name
+  git push origin feature/<frontend|backend>-<your-feature-name>
 ```
-5. Submit a pull request (PR) to develop.
+5. Create a Pull Request (PR) to feature/frontend or feature/backend, depending on the part you worked on.
+6. Once the code is reviewed and approved, merge the PR into feature/frontend or feature/backend.
+7. When a feature is completed, merge feature/frontend or feature/backend into develop:
+```bash
+git checkout develop  
+git merge feature/frontend  
+git merge feature/backend  
+```
+8. Once all features are stable, merge develop into main for official release:
+```bash
+git checkout main  
+git merge develop  
+git push origin main  
+```
 
 ## Commit Messages
 
@@ -78,12 +91,14 @@ fix: Resolve issue with checkout page crash
 
 To submit a pull request:
 
-1. Ensure your branch is up to date with `develop`:
+1. Ensure your branch is up to date with `feature/frontend` or `feature/backend`, depending on the part you worked on.
 
-   ```bash
-   git pull origin develop
+```bash
+   git pull origin feature/<frontend|backend>
+```
+
 2. Check your changes and ensure all tests pass.
-3. Open a PR on GitHub with a descriptive title and summary.
+3. Open a PR on GitHub with a descriptive title and summary and assign a reviewer from the team.
 4. Wait for a code review before merging.
 
 ## Code Reviews
