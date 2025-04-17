@@ -57,12 +57,12 @@ class BookController {
         try {
         const book = await Book.findById(req.params.id);
         if (!book) {
-            return res.status(404).json({ success: false, message: 'Book not found' });
+            return res.status(404).json({ success: false, message: 'NOT_FOUND' });
         }
         res.status(200).json({ success: true, data: book });
         } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+        res.status(500).json({ success: false, message: 'INTERNAL_SERVER_ERROR' });
         }
     }
 }
