@@ -91,6 +91,15 @@ class BookController {
          return res.status(200).json({ books });
       } catch (err) {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+        
+   // [GET] /book/search
+   async search(req, res, next) {
+      try {
+         const result = await bookService.searchBooks(req.query);
+            return res.status(200).json(result);
+      } catch (err) {
+            return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+
       }
    }
 }
