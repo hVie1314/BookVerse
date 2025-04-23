@@ -32,7 +32,7 @@ class ReviewController {
    // [PUT] /review/:id
    async updateReview(req, res, next) {
       try {
-         const review = await Review.findById(req.params.id);
+         const review = await Review.findById(req.params.reviewId);
          if (!review) return next(new AppError(404, 'REVIEW_NOT_FOUND'));
 
          review.set(req.body);
