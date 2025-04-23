@@ -47,7 +47,7 @@ class ReviewController {
    // [DELETE] /review/:id
    async deleteReview(req, res, next) {
       try {
-         const review = await Review.findById(req.params.id);
+         const review = await Review.findById(req.params.reviewId);
          if (!review) return next(new AppError(404, 'REVIEW_NOT_FOUND'));
 
          await Book.updateOne(
