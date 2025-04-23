@@ -8,7 +8,7 @@ class ReviewController {
    async addReview(req, res, next) {
       try {
          const { book_id, rating, comment } = req.body;
-         const user_id = req.user.id; // giả sử middleware auth đã gán user vào req
+         const user_id = req.userInfo.id;
    
          // Kiểm tra book tồn tại
          const book = await Book.findById(book_id);
