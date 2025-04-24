@@ -1,9 +1,8 @@
 <template>
     <footer class="footer">
-      <div class="footer-background">
         <div class="footer-container">
           <div class="footer-content">
-            <section class="footer-main-section">
+            <div class="footer-main-section">
               <div class="footer-wrapper">
                 <div class="footer-columns">
                   <div class="footer-column-wrapper">
@@ -53,13 +52,12 @@
               <p class="policy-text">
                 Điều khoản sử dụng | Chính sách bảo mật
               </p>
-            </section>
+            </div>
             <section class="footer-contact-section">
               <FooterContact />
             </section>
           </div>
         </div>
-      </div>
     </footer>
   </template>
   
@@ -79,24 +77,27 @@
   </script>
   
   <style scoped>
-  .footer-background {
-    background-color: rgba(57, 31, 0, 1);
+
+  .footer{
     display: flex;
     width: 100%;
-    padding: 47px 70px;
     flex-direction: column;
     align-items: center;
+    box-sizing: border-box;
     justify-content: center;
+    background-color: rgba(57, 31, 0, 1);
   }
   
   .footer-container {
     width: 100%;
-    max-width: 1447px;
+    display: flex;  
+    padding: 20px;
   }
   
   .footer-content {
     gap: 20px;
     display: flex;
+    justify-content: center;
   }
   
   .footer-main-section {
@@ -111,34 +112,36 @@
   .footer-wrapper {
     width: 100%;
     font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+
   }
   
   .footer-columns {
-    gap: 20px;
     display: flex;
+    gap: 50px;
+    /* flex-direction: column; */
   }
   
   .footer-column-wrapper {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    line-height: normal;
+    /* flex-direction: column; */
+    justify-content: center;
+    /* line-height: normal; */
     width: 25%;
-    margin-left: 0;
+    /* margin-left: 0; */
   }
   
-  .footer-column-wrapper:not(:first-child) {
+  /* .footer-column-wrapper:not(:first-child) {
     margin-left: 20px;
-  }
+  } */
   
   .policy-text {
     color: rgba(255, 255, 255, 1);
     font-size: 12px;
     font-weight: 400;
     line-height: 2;
-    align-self: flex-end;
-    margin-top: 71px;
-    margin-right: 187px;
+    /* align-self: flex-end; */
+    /* margin-top: 71px; */
+    /* margin-right: 187px; */
   }
   
   .footer-contact-section {
@@ -147,7 +150,7 @@
     align-items: stretch;
     line-height: normal;
     width: 23%;
-    margin-left: 20px;
+    /* margin-left: 20px; */
   }
   
   .text-white {

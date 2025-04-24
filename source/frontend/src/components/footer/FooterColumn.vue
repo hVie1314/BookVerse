@@ -25,20 +25,28 @@
   
   <style scoped>
   .footer-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: start;
     width: 100%;
   }
   
   .column-title {
     font-size: 20px;
     color: rgb(255, 255, 255);
-    margin-bottom: 1rem;
+    /* margin-bottom: 1rem; */
   }
   
   .column-content {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 0;
     font-size: 13px;
     color: #fff;
     font-weight: 400;
-    line-height: 26px;
+    /* line-height: 26px; */
   }
   
   @media (max-width: 991px) {

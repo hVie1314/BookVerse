@@ -23,84 +23,19 @@
     </div>
     
     <!-- Footer section từ file footer.vue -->
-    <footer class="footer">
-      <div class="footer-background">
-        <div class="footer-container">
-          <div class="footer-content">
-            <section class="footer-main-section">
-              <div class="footer-wrapper">
-                <div class="footer-columns">
-                  <div class="footer-column-wrapper">
-                    <FooterLogo />
-                  </div>
-                  <div class="footer-column-wrapper">
-                    <FooterColumn title="Tài khoản">
-                      <p>
-                        <span class="text-white">Đăng nhập/ Tạo mới tài khoản</span>
-                      </p>
-                      <p>
-                        <span class="text-white">Thay đổi địa chỉ khách hàng</span>
-                      </p>
-                      <p>
-                        <span class="text-white">Lịch sử mua hàng</span>
-                      </p>
-                    </FooterColumn>
-                  </div>
-                  <div class="footer-column-wrapper">
-                    <FooterColumn title="Dịch vụ">
-                      <p>
-                        <span class="text-white">Mua bán trực tuyến</span>
-                      </p>
-                      <p>
-                        <span class="text-white">Chính sách bảo mật thanh toán</span>
-                      </p>
-                      <p>
-                        <span class="text-white">Hệ thống trung tâm nhà sách</span>
-                      </p>
-                    </FooterColumn>
-                  </div>
-                  <div class="footer-column-wrapper">
-                    <FooterColumn title="Hỗ trợ">
-                      <p>
-                        <span class="text-white">Chính sách đổi - trả - hoàn tiền</span>
-                      </p>
-                      <p>
-                        <span class="text-white">Chính sách vận chuyển</span>
-                      </p>
-                      <p>
-                        <span class="text-white">Chính sách bảo hành</span>
-                      </p>
-                    </FooterColumn>
-                  </div>
-                </div>
-              </div>
-              <p class="policy-text">
-                Điều khoản sử dụng | Chính sách bảo mật
-              </p>
-            </section>
-            <section class="footer-contact-section">
-              <FooterContact />
-            </section>
-          </div>
-        </div>
-      </div>
-    </footer>
+    <Footer />
   </div>
 </template>
 
 <script>
-import FooterColumn from './FooterColumn.vue';
-import FooterLogo from './FooterLogo.vue';
-import FooterContact from './FooterContact.vue';
 import AuthenticationService from '@/services/AuthenticationService';
 import Nav from './Nav.vue'; // Thêm import Nav component
+import Footer from './footer/footer.vue'; // Thêm import Footer component
 
 export default {
   name: 'HomePage',
   components: {
-    FooterColumn,
-    FooterLogo,
-    FooterContact,
+    Footer,
     Nav // Thêm Nav vào components
   },
   data() {
@@ -153,6 +88,16 @@ export default {
 }
 
 /* Footer styles from footer.vue */
+.footer{
+    display: flex;
+    width: 100%;
+    padding: 0px 0px;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    justify-content: center;
+    background-color: rgba(57, 31, 0, 1);
+  }
 .footer-background {
   background-color: rgba(57, 31, 0, 1);
   display: flex;
