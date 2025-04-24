@@ -34,7 +34,7 @@ class BookController {
       }
    }
 
-   // [DELETE] /books/:id
+   // [DELETE] /book/:id
    async delete(req, res, next) {
       try {
          const deletedBook = await Book.findByIdAndDelete(req.params.id);
@@ -83,6 +83,22 @@ class BookController {
          });
    }
 
+   // [GET] /book/top/:n
+   async getTopSelling(req, res, next) {
+      try {
+         const limit = parseInt(req.params.n);
+         if (isNaN(limit) || limit <= 0) {
+            return next(new AppError(400, 'INVALID_PARAM', 'Parameter n must be a positive number'));
+         }         
+
+         const books = await Book.find().sort({ sold: -1 }).limit(limit);
+
+         return res.status(200).json({ books });
+      } catch (err) {
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+      }
+   }
+        
    // [GET] /book/search
    async search(req, res, next) {
       try {
@@ -90,6 +106,7 @@ class BookController {
             return res.status(200).json(result);
       } catch (err) {
             return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+
       }
    }
 }
