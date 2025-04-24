@@ -10,41 +10,41 @@
                     </div>
                     <div class="footer-column-wrapper">
                       <FooterColumn title="Tài khoản">
-                        <p>
+                        <div>
                           <span class="text-white">Đăng nhập/ Tạo mới tài khoản</span>
-                        </p>
-                        <p>
+                        </div>
+                        <div>
                           <span class="text-white">Thay đổi địa chỉ khách hàng</span>
-                        </p>
-                        <p>
+                        </div>
+                        <div>
                           <span class="text-white">Lịch sử mua hàng</span>
-                        </p>
+                        </div>
                       </FooterColumn>
                     </div>
                     <div class="footer-column-wrapper">
                       <FooterColumn title="Dịch vụ">
-                        <p>
+                        <div>
                           <span class="text-white">Mua bán trực tuyến</span>
-                        </p>
-                        <p>
+                        </div>
+                        <div>
                           <span class="text-white">Chính sách bảo mật thanh toán</span>
-                        </p>
-                        <p>
+                        </div>
+                        <div>
                           <span class="text-white">Hệ thống trung tâm nhà sách</span>
-                        </p>
+                        </div>
                       </FooterColumn>
                     </div>
                     <div class="footer-column-wrapper">
                       <FooterColumn title="Hỗ trợ">
-                        <p>
+                        <div>
                           <span class="text-white">Chính sách đổi - trả - hoàn tiền</span>
-                        </p>
-                        <p>
+                        </div>
+                        <div>
                           <span class="text-white">Chính sách vận chuyển</span>
-                        </p>
-                        <p>
+                        </div>
+                        <div>
                           <span class="text-white">Chính sách bảo hành</span>
-                        </p>
+                        </div>
                       </FooterColumn>
                     </div>
                   </div>

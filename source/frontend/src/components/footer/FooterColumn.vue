@@ -41,8 +41,9 @@
   .column-content {
     display: flex;
     flex-direction: column;
+    justify-content: start;
     align-items: start;
-    gap: 0;
+    gap: 10px;
     font-size: 13px;
     color: #fff;
     font-weight: 400;
