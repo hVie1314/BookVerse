@@ -19,6 +19,7 @@
     display: flex;
     width: 100%;
     align-items: stretch;
+    box-sizing: border-box;
     gap: 40px 50px;
     flex-wrap: wrap;
   }

@@ -28,6 +28,7 @@
     width: 100%;
     flex-direction: column;
     align-items: flex-start;
+    box-sizing: border-box;
     font-family:
       Montserrat,
       -apple-system,
@@ -82,6 +83,8 @@
     flex-shrink: 1;
     width: 265px;
     flex-basis: auto;
+    /* display: flex; */
+    /* flex-wrap: wrap; */
     font-style: normal;
   }
   
