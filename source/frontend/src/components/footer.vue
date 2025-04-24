@@ -69,7 +69,7 @@
   import FooterContact from './FooterContact.vue';
   
   export default {
-    name: 'Footer',
+    name: 'Footer-form',
     components: {
       FooterColumn,
       FooterLogo,
