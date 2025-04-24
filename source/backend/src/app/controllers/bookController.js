@@ -88,8 +88,8 @@ class BookController {
       try {
          const limit = parseInt(req.params.n);
          if (isNaN(limit) || limit <= 0) {
-            return next(new AppError(400, 'INVALID_PARAM', err.message));
-         }
+            return next(new AppError(400, 'INVALID_PARAM', 'Parameter n must be a positive number'));
+         }         
 
          const books = await Book.find().sort({ sold: -1 }).limit(limit);
 
