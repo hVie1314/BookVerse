@@ -4,14 +4,15 @@ const AppError = require('../../utils/appError');
 
 class ReviewController {
 
-   // [POST] /review/
+   // [POST] /review/:bookId
    async addReview(req, res, next) {
       try {
-         const { book_id, rating, comment } = req.body;
+         const { rating, comment } = req.body;
          const user_id = req.userInfo.id;
+         const bookId = req.params.bookId;
    
          // Kiểm tra book tồn tại
-         const book = await Book.findById(book_id);
+         const book = await Book.findById(bookId);
          if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
 
          // TODO: Kiểm tra người dùng đã mua sách này chưa
