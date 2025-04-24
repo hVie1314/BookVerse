@@ -13,6 +13,8 @@ class ReviewController {
          // Kiểm tra book tồn tại
          const book = await Book.findById(book_id);
          if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
+
+         // TODO: Kiểm tra người dùng đã mua sách này chưa
    
          // Tạo review
          const review = new Review({
@@ -21,9 +23,13 @@ class ReviewController {
             rating,
             comment
          });
+         await review.save();
+
+         // Liên kết review với book
+         book.reviews.push(review._id);
          await book.save();
 
-         return res.status(201).json({ reviews: book.reviews });
+         return res.status(201).json({ review });
       } catch (err) {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
       }
