@@ -1,62 +1,65 @@
 <template>
     <footer class="footer">
         <div class="footer-container">
-          <div class="footer-content">
-            <div class="footer-main-section">
-              <div class="footer-wrapper">
-                <div class="footer-columns">
-                  <div class="footer-column-wrapper">
-                    <FooterLogo />
-                  </div>
-                  <div class="footer-column-wrapper">
-                    <FooterColumn title="Tài khoản">
-                      <p>
-                        <span class="text-white">Đăng nhập/ Tạo mới tài khoản</span>
-                      </p>
-                      <p>
-                        <span class="text-white">Thay đổi địa chỉ khách hàng</span>
-                      </p>
-                      <p>
-                        <span class="text-white">Lịch sử mua hàng</span>
-                      </p>
-                    </FooterColumn>
-                  </div>
-                  <div class="footer-column-wrapper">
-                    <FooterColumn title="Dịch vụ">
-                      <p>
-                        <span class="text-white">Mua bán trực tuyến</span>
-                      </p>
-                      <p>
-                        <span class="text-white">Chính sách bảo mật thanh toán</span>
-                      </p>
-                      <p>
-                        <span class="text-white">Hệ thống trung tâm nhà sách</span>
-                      </p>
-                    </FooterColumn>
-                  </div>
-                  <div class="footer-column-wrapper">
-                    <FooterColumn title="Hỗ trợ">
-                      <p>
-                        <span class="text-white">Chính sách đổi - trả - hoàn tiền</span>
-                      </p>
-                      <p>
-                        <span class="text-white">Chính sách vận chuyển</span>
-                      </p>
-                      <p>
-                        <span class="text-white">Chính sách bảo hành</span>
-                      </p>
-                    </FooterColumn>
+            <div class="footer-content-header">
+              <div class="footer-main-section">
+                <div class="footer-wrapper">
+                  <div class="footer-columns">
+                    <div class="footer-column-wrapper">
+                      <FooterLogo />
+                    </div>
+                    <div class="footer-column-wrapper">
+                      <FooterColumn title="Tài khoản">
+                        <p>
+                          <span class="text-white">Đăng nhập/ Tạo mới tài khoản</span>
+                        </p>
+                        <p>
+                          <span class="text-white">Thay đổi địa chỉ khách hàng</span>
+                        </p>
+                        <p>
+                          <span class="text-white">Lịch sử mua hàng</span>
+                        </p>
+                      </FooterColumn>
+                    </div>
+                    <div class="footer-column-wrapper">
+                      <FooterColumn title="Dịch vụ">
+                        <p>
+                          <span class="text-white">Mua bán trực tuyến</span>
+                        </p>
+                        <p>
+                          <span class="text-white">Chính sách bảo mật thanh toán</span>
+                        </p>
+                        <p>
+                          <span class="text-white">Hệ thống trung tâm nhà sách</span>
+                        </p>
+                      </FooterColumn>
+                    </div>
+                    <div class="footer-column-wrapper">
+                      <FooterColumn title="Hỗ trợ">
+                        <p>
+                          <span class="text-white">Chính sách đổi - trả - hoàn tiền</span>
+                        </p>
+                        <p>
+                          <span class="text-white">Chính sách vận chuyển</span>
+                        </p>
+                        <p>
+                          <span class="text-white">Chính sách bảo hành</span>
+                        </p>
+                      </FooterColumn>
+                    </div>
                   </div>
                 </div>
+                
               </div>
-              <p class="policy-text">
-                Điều khoản sử dụng | Chính sách bảo mật
-              </p>
+              <section class="footer-contact-section">
+                <FooterContact />
+              </section>
             </div>
-            <section class="footer-contact-section">
-              <FooterContact />
-            </section>
-          </div>
+            <div class="footer-content-footer">
+              <p class="policy-text">
+                  Điều khoản sử dụng | Chính sách bảo mật
+                </p>
+            </div>
         </div>
     </footer>
   </template>
@@ -81,23 +84,19 @@
   .footer{
     display: flex;
     width: 100%;
-    flex-direction: column;
-    align-items: center;
-    box-sizing: border-box;
     justify-content: center;
     background-color: rgba(57, 31, 0, 1);
   }
   
   .footer-container {
-    width: 100%;
-    display: flex;  
-    padding: 20px;
-  }
-  
-  .footer-content {
-    gap: 20px;
+    width: 1700px;
     display: flex;
-    justify-content: center;
+    flex-direction: column;  
+    padding: 50px;
+  }
+
+  .footer-content-header{
+    display: flex;
   }
   
   .footer-main-section {
@@ -105,7 +104,7 @@
     flex-direction: column;
     align-items: stretch;
     line-height: normal;
-    width: 77%;
+    width: 75%;
     margin-left: 0;
   }
   
@@ -147,9 +146,7 @@
   .footer-contact-section {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    line-height: normal;
-    width: 23%;
+    /* width: 23%; */
     /* margin-left: 20px; */
   }
   
