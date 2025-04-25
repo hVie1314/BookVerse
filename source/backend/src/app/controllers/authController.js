@@ -194,7 +194,7 @@ class AuthController {
       }
    }   
 
-   // [POST] /auth/vetify-otp
+   // [POST] /auth/verify-otp
    async verifyOtp(req, res, next) {
       try {
          const { email, otp } = req.body;
