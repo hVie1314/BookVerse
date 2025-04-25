@@ -194,6 +194,34 @@ class AuthController {
       }
    }   
 
+   // [POST] /auth/vetify-otp
+   async verifyOtp(req, res, next) {
+      try {
+         const { email, otp } = req.body;
+
+         // get hashed OTP from redis
+         const hashedOtp = await redisClient.get(`otp:${email}`);
+         if (!hashedOtp) {
+            return next(new AppError(400, "OTP_EXPIRED"));
+         }
+
+         // hash the provided OTP and compare with the one in redis
+         const hashedProvidedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+         if (hashedProvidedOtp !== hashedOtp) {
+            return next(new AppError(400, "INVALID_OTP"));
+         }
+
+         // delete OTP from redis
+         await redisClient.del(`otp:${email}`);
+
+         // OTP is valid, proceed to reset password
+         res.status(200).json();
+
+      } catch (err) {
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+      }
+   }
+
 }
 
 module.exports = new AuthController();
