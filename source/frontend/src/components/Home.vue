@@ -74,7 +74,9 @@ export default {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
   font-family: 'Montserrat', sans-serif;
+  background-color: #fffaf5;
 }
 
 .main-content {
