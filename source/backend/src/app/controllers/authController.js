@@ -177,15 +177,19 @@ class AuthController {
          // generate OTP
          const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-         // save OTP to redis with expiration time of 10 minutes
-         redisClient.set(`otp:${email}`, otp, 'EX', 10 * 60);
+         // hash OTP and save to redis
+         const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+         redisClient.set(`otp:${email}`, hashedOtp, 'EX', 10 * 60); // 10 minutes expiration
 
          // send OTP to user's email
          await emailSender.sendOtpEmail(email, otp);
 
          res.status(200).json();
-         
+
       } catch (err) {
+         if (err instanceof AppError) {
+            return next(err);
+         }  
          return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
       }
    }   
