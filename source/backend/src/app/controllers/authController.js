@@ -86,7 +86,7 @@ class AuthController {
             // save token to redis
             // automatically expire after 3 days
             // 3 day is refresh token expiration time
-            redisClient.set(user._id.toString(), accessToken, 'EX', 3 * 24 * 60 * 60); 
+            redisClient.set(user._id.toString(), accessToken, { EX: 3 * 24 * 60 * 60 }); 
 
             // return user data and token
             res.status(200).json({
@@ -132,7 +132,7 @@ class AuthController {
          });
 
          // save new token to redis
-         redisClient.set(userId, newAccessToken, 'EX', 3 * 24 * 60 * 60);
+         redisClient.set(userId, newAccessToken, { EX: 3 * 24 * 60 * 60 });
 
          // return new token
          res.status(200).json({
@@ -158,7 +158,7 @@ class AuthController {
 
       // add access token to blacklist
       // automatically expire after 10 minutes
-      redisClient.set(`blacklist:${token}`, "blacklisted", 'EX', 10 * 60);
+      redisClient.set(`blacklist:${token}`, "blacklisted", { EX: 10 * 60 });
 
       // return success message
       res.status(200).json({});
@@ -179,8 +179,8 @@ class AuthController {
 
          // hash OTP and save to redis
          const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
-         redisClient.set(`otp:${email}`, hashedOtp, 'EX', 10 * 60); // 10 minutes expiration
-
+         await redisClient.set(`otp:${email}`, hashedOtp, { EX: 10 * 60 });
+          
          // send OTP to user's email
          await emailSender.sendOtpEmail(email, otp);
 
