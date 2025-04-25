@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const AppError = require('./appError');
 
 class EmailSender {
   constructor() {
@@ -20,12 +21,10 @@ class EmailSender {
         html,
       };
       
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log('Email sent: ', info.messageId);
-      return info;
+      await this.transporter.sendMail(mailOptions);
+
     } catch (error) {
-      console.error('Error sending email: ', error);
-      throw error;
+      throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
     }
   }
 
