@@ -8,6 +8,7 @@ router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.get('/refresh-token', authMiddleware.verifyToken, authController.refreshToken)
 router.get('/logout', authMiddleware.verifyToken, authController.logout);
-router.get('/forgot-password', authController.forgotPassword);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/verify-otp', authController.verifyOtp);
 
 module.exports = router;
