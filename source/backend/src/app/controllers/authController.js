@@ -222,6 +222,36 @@ class AuthController {
       }
    }
 
+   // [POST] /auth/reset-password
+   async resetPassword(req, res, next) {
+      try {
+         const { email, newPassword } = req.body;
+
+         // find user by email
+         const user = await User.findOne({ email: email });
+         if (!user) {
+            return next(new AppError(404, "USER_NOT_FOUND"));
+         }
+
+         // hash new password
+         const salt = bcrypt.genSaltSync(10);
+         const hashPassword = bcrypt.hashSync(newPassword, salt);
+         
+         // update password in db
+         user.password = hashPassword;
+         await user.save();
+
+         // delete access token from redis
+         await redisClient.del(user._id.toString());
+
+         return res.status(200).json();
+      
+      }
+      catch (err) {
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+      }
+   }
+
 }
 
 module.exports = new AuthController();
