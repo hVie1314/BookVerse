@@ -1,8 +1,12 @@
-const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+
+const User = require('../models/User');
 const { redisClient } = require('../../configs/db/redis');
 const AppError = require('../../utils/appError');
+const emailSender = require('../../utils/emailSender');
+
 
 class AuthController {
 
@@ -159,6 +163,32 @@ class AuthController {
       // return success message
       res.status(200).json({});
    }
+
+   // [POST] /auth/forgot-password
+   async forgotPassword(req, res, next) {
+      try {
+         const { email } = req.body;
+
+         const user = await User.findOne({ email: email });
+         if (!user) {
+            return next(new AppError(404, "USER_NOT_FOUND"));
+         }
+
+         // generate OTP
+         const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+         // save OTP to redis with expiration time of 10 minutes
+         redisClient.set(`otp:${email}`, otp, 'EX', 10 * 60);
+
+         // send OTP to user's email
+         await emailSender.sendOtpEmail(email, otp);
+
+         res.status(200).json();
+         
+      } catch (err) {
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+      }
+   }   
 
 }
 

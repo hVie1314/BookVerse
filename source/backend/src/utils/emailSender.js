@@ -11,6 +11,24 @@ class EmailSender {
     });
   }
 
+  async sendEmail(to, subject, html) {
+    try {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to,
+        subject,
+        html,
+      };
+      
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log('Email sent: ', info.messageId);
+      return info;
+    } catch (error) {
+      console.error('Error sending email: ', error);
+      throw error;
+    }
+  }
+
   async sendOtpEmail(to, otp) {
     const subject = 'BookVerse - Mã OTP đặt lại mật khẩu của bạn';
     const html = `
