@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 class UserController {
     async getAllCustomer(req, res, next) {        
         try {
-            const customers = await user.find({ role: 'Customer' });
+            const customers = await user.find({ role: 'user' });
             res.status(200).json(customers);
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR'));
@@ -14,7 +14,7 @@ class UserController {
 
     async getAllStaff(req, res, next) {        
         try {
-            const staffs = await user.find({ role: 'Staff' });
+            const staffs = await user.find({ role: 'staff' });
             res.status(200).json(staffs);
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR'));
@@ -23,7 +23,7 @@ class UserController {
 
     async getAllAdmin(req, res, next) {        
         try {
-            const admins = await user.find({ role: 'Admin' });
+            const admins = await user.find({ role: 'admin' });
             res.status(200).json(admins);
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR'));
