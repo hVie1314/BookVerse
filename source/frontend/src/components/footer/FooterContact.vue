@@ -71,6 +71,12 @@
     margin-right: 5px;
   }
 
+  .address-detail {
+    word-wrap: break-word;
+    overflow-wrap: break-word; /* Tên mới hơn, được khuyên dùng */
+    white-space: normal; /* Đảm bảo rằng văn bản sẽ xuống dòng nếu cần */
+  }
+
   @media (max-width: 991px) {
     .contact-container {
       margin-top: 40px;

@@ -29,7 +29,7 @@
 
 <script>
 import AuthenticationService from '@/services/AuthenticationService';
-import Nav from './Nav.vue'; // Thêm import Nav component
+import Nav from './navbar/Nav.vue'; // Thêm import Nav component
 import Footer from './footer/footer.vue'; // Thêm import Footer component
 
 export default {
@@ -72,6 +72,7 @@ export default {
 .home-container {
   width: 100%;
   min-height: 100vh;
+  /* margin: 0; */
   display: flex;
   flex-direction: column;
   align-items: center;

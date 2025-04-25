@@ -1,6 +1,6 @@
 <template>
   <header class="header-container">
-    <div class="logo-section">
+    <router-link to="/" class="logo-section">
       <div class="logo-icon-wrapper">
         <svg
           width="62"
@@ -21,7 +21,7 @@
         </svg>
       </div>
       <h1 class="brand-name">BOOKVERSE</h1>
-    </div>
+    </router-link>
 
     <div class="search-section">
       <div class="search-bar">
@@ -58,7 +58,7 @@
     </div>
 
     <nav class="menu-section">
-      <div class="menu-icons">
+      <!-- <div class="menu-icons">
         <svg
           width="185"
           height="35"
@@ -77,7 +77,11 @@
           <path d="M66.5 20.7222C59.5964 20.7222 54 25.7715 54 32H79C79 25.7715 73.4036 20.7222 66.5 20.7222Z" stroke="#4D2900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
           <path d="M10.1096 4C5.16639 4 1.15771 7.50867 1.15771 11.8375C1.15771 15.3319 2.7243 23.6254 18.1449 32.0092C18.4211 32.1578 18.7382 32.2364 19.0616 32.2364C19.3849 32.2364 19.702 32.1578 19.9782 32.0092C35.3988 23.6254 36.9654 15.3319 36.9654 11.8375C36.9654 7.50867 32.9567 4 28.0135 4C23.0702 4 19.0616 8.75 19.0616 8.75C19.0616 8.75 15.0529 4 10.1096 4Z" stroke="#4D2900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
         </svg>
-      </div>
+      </div> -->
+      <i class="fa-regular fa-heart fa-2xl"></i>
+      <i class="fa-regular fa-user fa-2xl"></i>
+      <i class="fa-regular fa-cart-shopping fa-2xl"></i>
+      <i class="fa-solid fa-bars fa-2xl"></i>
     </nav>
   </header>
 </template>
@@ -92,11 +96,12 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;900&display=swap');
 
 .header-container {
+  margin-top: 40px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 1700px;
-  /* background-color: #fff; */
+  justify-content: space-between;
+  gap: 0px;
+  min-width: 1700px;
   padding: 0 20px;
   box-sizing: border-box;
 }
@@ -104,6 +109,7 @@ export default {
 .logo-section {
   display: flex;
   align-items: center;
+  text-decoration: none;
 }
 
 .brand-name {
@@ -114,10 +120,11 @@ export default {
   margin-left: 10px;
   margin-top: 0;
   margin-bottom: 0;
+  text-decoration: none;
 }
 
 .search-section {
-  flex-grow: 1;
+  /* flex-grow: 1; */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -131,6 +138,9 @@ export default {
 .menu-section {
   display: flex;
   align-items: center;
+  gap: 20px;
+  font-size: 20px;
+  color: rgba(57, 31, 0, 1);
 }
 
 .menu-icon {
