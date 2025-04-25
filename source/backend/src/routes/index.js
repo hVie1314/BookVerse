@@ -3,6 +3,7 @@ const userRouter = require('./userRouter');
 const bookRouter = require('./bookRouter');
 const cartRouter = require('./cartRouter');
 const reviewRouter = require('./reviewRouter');
+const paymentRouter = require('./paymentRouter');
 
 function route(app) {
    app.use('/auth', authRouter);
@@ -10,6 +11,7 @@ function route(app) {
    app.use('/book', bookRouter);
    app.use('/cart', cartRouter);
    app.use('/review', reviewRouter);
+   app.use('/payment', paymentRouter);
 }
 
 module.exports = route;
