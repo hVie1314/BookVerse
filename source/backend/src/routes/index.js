@@ -11,7 +11,7 @@ function route(app) {
    app.use('/book', bookRouter);
    app.use('/cart', cartRouter);
    app.use('/review', reviewRouter);
-   app.use('/order/cancel', cancelRequestRouter);
+   app.use('/order', cancelRequestRouter);
 }
 
 module.exports = route;
