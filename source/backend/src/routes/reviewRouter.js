@@ -8,7 +8,7 @@ router.post('/:bookId', reviewController.addReview);                            
 router.put('/:id', reviewController.updateReview);                                    // [PUT] /review/:id
 router.delete('/:id', verifyToken, verifyStaff, reviewController.deleteReview);       // [DELETE] /review/:id
 router.get('/:bookId', reviewController.getAllReviews);                               // [GET] /review/:bookId
-router.patch('/:id/hide', verifyToken, verifyStaff, reviewController.hideReview);     // [PATCH] /review/:id/hide
-router.patch('/:id/unhide', verifyToken, verifyStaff, reviewController.unhideReview); // [PATCH] /review/:id/unhide
+router.patch('/hide/:id', verifyToken, verifyStaff, reviewController.hideReview);     // [PATCH] /review/hide/:id
+router.patch('/unhide/:id', verifyToken, verifyStaff, reviewController.unhideReview); // [PATCH] /review/unhide/:id
 
 module.exports = router;
