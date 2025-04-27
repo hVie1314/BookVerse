@@ -25,6 +25,10 @@ const ReviewSchema = new mongoose.Schema({
         type: String,
         enum: ['pending', 'approved', 'rejected'],
         default: 'pending'
+    },
+    hidden: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: { createdAt: 'create_at', updatedAt: false }
