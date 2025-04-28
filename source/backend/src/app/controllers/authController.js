@@ -2,11 +2,12 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { redisClient } = require('../../configs/db/redis');
+const AppError = require('../../utils/appError');
 
 class AuthController {
 
    // [POST] /auth/register
-   register(req, res) {
+   register(req, res, next) {
       // get data from request
       const { username, email, password, role } = req.body;
 
@@ -15,10 +16,7 @@ class AuthController {
       .then(user => {
          // if username or email already exists, then return error
          if (user) {
-            return res.status(400).json({
-               success: false,
-               errorCode: "USER_ALREADY_EXISTS"
-            });
+            return next(new AppError(400, "USER_ALREADY_EXISTS"));
          }
 
          // gen hash password
@@ -30,36 +28,29 @@ class AuthController {
             username: username,
             email: email,
             password: hashPassword,
-            role: role
+            role: role,
          });
 
          // save user to database
          newUser.save()
             .then(user => {
                res.status(201).json({
-                  success: true,
-                  data: {
-                     id: user._id,
-                     username: user.username,
-                     email: user.email,
-                     role: user.role,
-                     avatar: user.avatar
-                  },
+                  id: user._id,
+                  username: user.username,
+                  email: user.email,
+                  role: user.role,
+                  address: user.address,
+                  avatar: user.avatar,
                })
             })
       })
       .catch(err => {
-         console.error(err);
-
-         res.status(500).json({
-            success: false,
-            errorCode: "INTERNAL_SERVER_ERROR",
-         })
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
       });
    }
 
    // [POST] /auth/login
-   login(req, res) {
+   login(req, res, next) {
 
       // get data from request
       const { username, password } = req.body;
@@ -70,19 +61,13 @@ class AuthController {
             
             // if user does not exist then return error
             if (!user) {
-               return res.status(404).json({
-                  success: false,
-                  errorCode: "INVALID_CREDENTIALS"
-               })
+               return next(new AppError(404, "INVALID_CREDENTIALS"));
             }
 
             // check password
             const isPasswordMatch = bcrypt.compareSync(password, user.password);
             if (!isPasswordMatch) {
-               return res.status(400).json({
-                  success: false,
-                  errorCode: "INVALID_CREDENTIALS"
-               })
+               return next(new AppError(400, "INVALID_CREDENTIALS"));
             }
 
             // create token
@@ -94,40 +79,85 @@ class AuthController {
                expiresIn: '10m'
             });
 
-            // create refresh token
-            const refreshToken = jwt.sign({
-               id: user._id,
-               role: user.role,
-            }, 
-               process.env.REFRESH_TOKEN_SECRET, {
-               expiresIn: '3d'
-            });
-
-            // save refresh token to redis
+            // save token to redis
             // automatically expire after 3 days
-            redisClient.set(user._id.toString(), refreshToken, 'EX', 3 * 24 * 60 * 60); 
+            // 3 day is refresh token expiration time
+            redisClient.set(user._id.toString(), accessToken, 'EX', 3 * 24 * 60 * 60); 
 
             // return user data and token
             res.status(200).json({
-               success: true,
-               data: {
-                  id: user._id,
-                  username: user.username,
-                  email: user.email,
-                  role: user.role,
-                  avatar: user.avatar,
-                  accessToken: accessToken,
-               }
-            })
+              id: user._id,
+              username: user.username,
+              email: user.email,
+              role: user.role,
+              address: user.address,
+              avatar: user.avatar,
+              accessToken: accessToken,
+            });
          })
          .catch(err => {
-            console.error(err);
-
-            res.status(500).json({
-               success: false,
-               errorCode: "INTERNAL_SERVER_ERROR",
-            })
+            return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
          });
+   }
+
+   // [POST] /auth/refresh-token
+   async refreshToken(req, res, next) {
+      try {
+         // get info from request
+         const token = req.headers["authorization"].split(" ")[1];
+         const userId = req.userInfo.id.toString();
+         const userRole = req.userInfo.role;
+
+         // get cached token from redis
+         const redisToken = await redisClient.get(userId);
+
+         // if token not found (refreshable duration expired)
+         if (!redisToken || redisToken != token) {
+            return next(new AppError(401, "UNAUTHORIZED"));
+         }
+
+         // after passing all checks
+
+         // create new access token
+         const newAccessToken = jwt.sign({
+            id: userId,
+            role: userRole,
+         }, 
+            process.env.ACCESS_TOKEN_SECRET, {
+            expiresIn: '10m'
+         });
+
+         // save new token to redis
+         redisClient.set(userId, newAccessToken, 'EX', 3 * 24 * 60 * 60);
+
+         // return new token
+         res.status(200).json({
+            accessToken: newAccessToken,
+         });
+      } catch (err) {
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+      }
+   };
+
+   // [POST] /auth/logout
+   logout(req, res) {
+
+      const token = req.headers["authorization"].split(" ")[1];
+      const userId = req.userInfo.id.toString();
+
+      // delete token from redis
+      redisClient.del(userId, (err, reply) => {
+         if (err) {
+            return next(new AppError(500, "INTERNAL_SERVER_ERROR"));
+         }
+      });
+
+      // add access token to blacklist
+      // automatically expire after 10 minutes
+      redisClient.set(`blacklist:${token}`, "blacklisted", 'EX', 10 * 60);
+
+      // return success message
+      res.status(200).json({});
    }
 
 }
