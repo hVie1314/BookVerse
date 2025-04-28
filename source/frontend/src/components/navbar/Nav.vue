@@ -79,7 +79,7 @@
         </svg>
       </div> -->
       <i class="fa-regular fa-heart fa-2xl"></i>
-      <i class="fa-regular fa-user fa-2xl"></i>
+      <router-link to="/login"><i class="fa-regular fa-user fa-2xl"></i></router-link>
       <i class="fa-regular fa-cart-shopping fa-2xl"></i>
       <i class="fa-solid fa-bars fa-2xl"></i>
     </nav>

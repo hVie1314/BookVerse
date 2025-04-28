@@ -114,6 +114,8 @@
   
   .footer-wrapper {
     /* width: 100%; */
+    display: flex;
+    /* align-items: center; */
     font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
 
   }
@@ -121,6 +123,7 @@
   .footer-columns {
     display: flex;
     align-items: center;
+    /* justify-content: center; */
     gap: 50px;
     /* flex-direction: column; */
   }
