@@ -58,28 +58,17 @@
     </div>
 
     <nav class="menu-section">
-      <!-- <div class="menu-icons">
-        <svg
-          width="185"
-          height="35"
-          viewBox="0 0 185 35"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          class="menu-icon"
-        >
-          <rect x="150" y="20.1052" width="35.0002" height="3.78947" fill="#4D2900"></rect>
-          <rect x="150" y="30.2106" width="35.0002" height="3.78947" fill="#4D2900"></rect>
-          <rect x="150" y="10" width="35.0002" height="3.78947" fill="#4D2900"></rect>
-          <path d="M102.712 6.56798V8.75548H126.864V13.0857L124.044 20.7867H101.912L98.7341 1.09656H91.2712V3.28406H96.5203L99.6983 22.9742H125.909L129.407 13.4222V6.56798H102.712Z" fill="#4D2900"></path>
-          <path d="M104.061 25.1798C102.713 25.1811 101.421 25.6425 100.468 26.4627C99.5143 27.2829 98.9781 28.3949 98.9766 29.5548C98.9766 30.7151 99.5123 31.8279 100.466 32.6484C101.419 33.4689 102.713 33.9298 104.061 33.9298C105.41 33.9298 106.703 33.4689 107.657 32.6484C108.61 31.8279 109.146 30.7151 109.146 29.5548C109.145 28.3949 108.608 27.2828 107.655 26.4627C106.702 25.6425 105.409 25.1811 104.061 25.1798ZM104.061 31.7423C103.558 31.7423 103.067 31.614 102.649 31.3737C102.231 31.1333 101.905 30.7916 101.712 30.3919C101.52 29.9922 101.47 29.5524 101.568 29.1281C101.666 28.7037 101.908 28.3139 102.264 28.008C102.619 27.7021 103.072 27.4937 103.565 27.4093C104.058 27.3249 104.57 27.3683 105.034 27.5338C105.499 27.6994 105.896 27.9798 106.175 28.3395C106.455 28.6992 106.604 29.1222 106.604 29.5548C106.603 30.1348 106.335 30.6908 105.858 31.1008C105.382 31.5109 104.735 31.7416 104.061 31.7423Z" fill="#4D2900"></path>
-          <path d="M121.858 25.1798C120.51 25.1811 119.217 25.6425 118.264 26.4627C117.311 27.2829 116.775 28.3949 116.773 29.5548C116.773 30.7151 117.309 31.8279 118.262 32.6484C119.216 33.4689 120.509 33.9298 121.858 33.9298C123.206 33.9298 124.5 33.4689 125.453 32.6484C126.407 31.8279 126.943 30.7151 126.943 29.5548C126.941 28.3949 126.405 27.2828 125.452 26.4627C124.498 25.6425 123.206 25.1811 121.858 25.1798ZM121.858 31.7423C121.355 31.7423 120.864 31.614 120.445 31.3737C120.027 31.1333 119.702 30.7916 119.509 30.3919C119.317 29.9922 119.266 29.5524 119.364 29.1281C119.463 28.7037 119.705 28.3139 120.06 28.008C120.416 27.7021 120.869 27.4937 121.362 27.4093C121.855 27.3249 122.366 27.3683 122.831 27.5338C123.295 27.6994 123.692 27.9798 123.972 28.3395C124.251 28.6992 124.4 29.1222 124.4 29.5548C124.4 30.1348 124.131 30.6908 123.655 31.1008C123.178 31.5109 122.532 31.7416 121.858 31.7423Z" fill="#4D2900"></path>
-          <path d="M73.6429 9.44444C73.6429 13.0036 70.4449 15.8889 66.5 15.8889C62.5551 15.8889 59.3571 13.0036 59.3571 9.44444C59.3571 5.88528 62.5551 3 66.5 3C70.4449 3 73.6429 5.88528 73.6429 9.44444Z" stroke="#4D2900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-          <path d="M66.5 20.7222C59.5964 20.7222 54 25.7715 54 32H79C79 25.7715 73.4036 20.7222 66.5 20.7222Z" stroke="#4D2900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-          <path d="M10.1096 4C5.16639 4 1.15771 7.50867 1.15771 11.8375C1.15771 15.3319 2.7243 23.6254 18.1449 32.0092C18.4211 32.1578 18.7382 32.2364 19.0616 32.2364C19.3849 32.2364 19.702 32.1578 19.9782 32.0092C35.3988 23.6254 36.9654 15.3319 36.9654 11.8375C36.9654 7.50867 32.9567 4 28.0135 4C23.0702 4 19.0616 8.75 19.0616 8.75C19.0616 8.75 15.0529 4 10.1096 4Z" stroke="#4D2900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-      </div> -->
       <i class="fa-regular fa-heart fa-2xl"></i>
-      <router-link to="/login"><i class="fa-regular fa-user fa-2xl"></i></router-link>
+      <div class="user-menu-container" 
+          @mouseover="handleMouseOver" 
+          @mouseleave="handleMouseLeave">
+        <i class="fa-regular fa-user fa-2xl"></i>
+        
+        <!-- Menu AuthButton sẽ hiển thị khi hover -->
+        <div class="auth-popup" v-if="showAuthMenu">
+          <AuthButton @login="goToLogin" @register="goToRegister" />
+        </div>
+      </div>
       <i class="fa-regular fa-cart-shopping fa-2xl"></i>
       <i class="fa-solid fa-bars fa-2xl"></i>
     </nav>
@@ -87,8 +76,43 @@
 </template>
 
 <script>
+import AuthButton from './AuthButton.vue';
+
+
 export default {
-  name: 'NavBar' // Sửa tên component thành NavBar (từ ghép)
+  name: 'NavBar', // Sửa tên component thành NavBar (từ ghép)
+  components: {
+    AuthButton// Lazy load AuthButton component
+  },
+  data() {
+    return {
+      showAuthMenu: false, // Trạng thái hiển thị menu auth
+      menuTimeout: null
+    };
+  },
+  methods: {
+    handleMouseOver() {
+    clearTimeout(this.menuTimeout);
+    this.showAuthMenu = true;
+    },
+    handleMouseLeave() {
+      // Trì hoãn ẩn menu để người dùng có thời gian click
+      this.menuTimeout = setTimeout(() => {
+        this.showAuthMenu = false;
+      }, 300);
+    },
+    goToLogin() {
+      console.log("Nút đăng nhập được nhấn");
+      try {
+        this.$router.push('/login');
+      } catch (error) {
+        console.error("Lỗi khi chuyển hướng:", error);
+      }
+    },
+    goToRegister() {
+      this.$router.push('/register'); // Chuyển hướng đến trang đăng ký
+    },
+  },
 }
 </script>
 
@@ -146,6 +170,20 @@ export default {
 .menu-icon {
   width: 184px;
   height: 35px;
+}
+
+.user-menu-container {
+  position: relative;
+  cursor: pointer;
+}
+
+/* Style cho popup menu */
+.auth-popup {
+  position: absolute;
+  top: 100%;
+  right: -20px;
+  z-index: 100;
+  margin-top: 10px;
 }
 
 @media (max-width: 991px) {

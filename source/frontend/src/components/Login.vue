@@ -10,15 +10,15 @@
     
     <form @submit.prevent="handleSubmit" class="login-container">
       <header class="login-header">
-        <h1 class="login-title">Welcome Back</h1>
-        <p class="login-subtitle">Sign in to continue</p>
+        <h1 class="login-title">Chào mừng trở lại</h1>
+        <p class="login-subtitle">Đăng nhập để tiếp tục</p>
       </header>
 
       <!-- Input Email/Username -->
       <div class="input-container">
         <input
           type="text"
-          placeholder="Enter your email or username"
+          placeholder="Nhập email hoặc tên đăng nhập"
           v-model="email"
           class="form-input"
         />
@@ -29,7 +29,7 @@
       <div class="input-container">
         <input
           type="password"
-          placeholder="Enter your password"
+          placeholder="Nhập mật khẩu"
           v-model="password"
           class="form-input"
         />
@@ -39,16 +39,16 @@
       <div class="form-options">
         <label class="remember-me">
           <input type="checkbox" v-model="rememberMe" class="remember-checkbox" />
-          <span class="remember-text">Remember me</span>
+          <span class="remember-text">Ghi nhớ tài khoản</span>
         </label>
-        <button type="button" class="forgot-password">Forgot Password?</button>
+        <button type="button" class="forgot-password">Quên mật khẩu?</button>
       </div>
 
-      <button type="submit" class="sign-in-button">Sign In</button>
+      <button type="submit" class="sign-in-button">Đăng nhập</button>
 
       <div class="signup-prompt">
-        <span class="signup-text">Don't have an account?</span>
-        <router-link to="/register" class="signup-link">Sign up now</router-link>
+        <span class="signup-text">Chưa có tài khoản?</span>
+        <router-link to="/register" class="signup-link">Đăng ký ngay</router-link>
       </div>
     </form>
   </main>
@@ -99,11 +99,26 @@ export default {
           password: this.password
         });
         
-        if (response.data.success) {
-          // Lưu thông tin người dùng vào localStorage
-          AuthenticationService.setUser(response.data);
+        console.log('dữ liệu gửi đi:', {
+          username: this.email,
+          password: this.password
+        });
+        console.log('Login response:', response.data);
+        
+        // Kiểm tra phản hồi theo cấu trúc thực tế
+        if (response.data && response.data.success) {
+          // Nếu dữ liệu người dùng nằm trong response.data.data
+          const userData = response.data.data;
           
-          // Hiển thị alert thành công thay vì console.log
+          // Tạo đối tượng người dùng với accessToken (nếu không có, tạo giá trị tạm)
+          const userWithToken = {
+            ...userData,
+            accessToken: userData.accessToken || userData.token || 'dummy-token-for-development'
+          };
+          
+          // Lưu thông tin người dùng
+          AuthenticationService.setUser(userWithToken);
+          
           this.alert = {
             show: true,
             type: 'success',
@@ -111,27 +126,27 @@ export default {
             message: 'Chào mừng bạn quay trở lại BookVerse!'
           };
           
-          // Chuyển hướng sau khi hiển thị alert (delay 1.5 giây)
           setTimeout(() => {
             const redirectPath = this.$route.query.redirect || '/';
             this.$router.push(redirectPath);
           }, 1500);
         } else {
-          // Xử lý lỗi đăng nhập
+          // Xử lý trường hợp đăng nhập thất bại nhưng server không trả về lỗi
           this.alert = {
             show: true,
             type: 'error',
             title: 'Đăng nhập thất bại',
-            message: response.data.errorCode || 'Vui lòng kiểm tra lại thông tin đăng nhập'
+            message: 'Không thể xác thực thông tin đăng nhập'
           };
         }
       } catch (error) {
+        // Giữ xử lý lỗi như cũ
         console.error('Login error:', error);
         this.alert = {
           show: true,
           type: 'error',
           title: 'Đăng nhập thất bại',
-          message: error.response?.data?.errorCode || 'Không thể kết nối đến máy chủ'
+          message: error.response?.data?.message || 'Thông tin đăng nhập không chính xác'
         };
       }
     }
