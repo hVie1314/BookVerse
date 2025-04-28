@@ -61,7 +61,7 @@
   
   .address-text {
     display: flex;
-    margin-top: 5px;
+    margin-top: 8px;
     font-size: 13px;
   }
   

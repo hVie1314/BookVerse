@@ -27,6 +27,7 @@
   .footer-column {
     display: flex;
     flex-direction: column;
+    /* justify-content: center; */
     gap: 0;
     align-items: start;
     width: 100%;
@@ -35,6 +36,8 @@
   .column-title {
     font-size: 20px;
     color: rgb(255, 255, 255);
+    font-weight: 700;
+    margin-bottom: 10px;
     /* margin-bottom: 1rem; */
   }
   
