@@ -1,8 +1,12 @@
-const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+
+const User = require('../models/User');
 const { redisClient } = require('../../configs/db/redis');
 const AppError = require('../../utils/appError');
+const emailSender = require('../../utils/emailSender');
+
 
 class AuthController {
 
@@ -82,7 +86,7 @@ class AuthController {
             // save token to redis
             // automatically expire after 3 days
             // 3 day is refresh token expiration time
-            redisClient.set(user._id.toString(), accessToken, 'EX', 3 * 24 * 60 * 60); 
+            redisClient.set(user._id.toString(), accessToken, { EX: 3 * 24 * 60 * 60 }); 
 
             // return user data and token
             res.status(200).json({
@@ -128,7 +132,7 @@ class AuthController {
          });
 
          // save new token to redis
-         redisClient.set(userId, newAccessToken, 'EX', 3 * 24 * 60 * 60);
+         redisClient.set(userId, newAccessToken, { EX: 3 * 24 * 60 * 60 });
 
          // return new token
          res.status(200).json({
@@ -154,10 +158,98 @@ class AuthController {
 
       // add access token to blacklist
       // automatically expire after 10 minutes
-      redisClient.set(`blacklist:${token}`, "blacklisted", 'EX', 10 * 60);
+      redisClient.set(`blacklist:${token}`, "blacklisted", { EX: 10 * 60 });
 
       // return success message
       res.status(200).json({});
+   }
+
+   // [POST] /auth/forgot-password
+   async forgotPassword(req, res, next) {
+      try {
+         const { email } = req.body;
+
+         const user = await User.findOne({ email: email });
+         if (!user) {
+            return next(new AppError(404, "USER_NOT_FOUND"));
+         }
+
+         // generate OTP
+         const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+         // hash OTP and save to redis
+         const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+         await redisClient.set(`otp:${email}`, hashedOtp, { EX: 10 * 60 });
+          
+         // send OTP to user's email
+         await emailSender.sendOtpEmail(email, otp);
+
+         res.status(200).json();
+
+      } catch (err) {
+         if (err instanceof AppError) {
+            return next(err);
+         }  
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+      }
+   }   
+
+   // [POST] /auth/verify-otp
+   async verifyOtp(req, res, next) {
+      try {
+         const { email, otp } = req.body;
+
+         // get hashed OTP from redis
+         const hashedOtp = await redisClient.get(`otp:${email}`);
+         if (!hashedOtp) {
+            return next(new AppError(400, "OTP_EXPIRED"));
+         }
+
+         // hash the provided OTP and compare with the one in redis
+         const hashedProvidedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+         if (hashedProvidedOtp !== hashedOtp) {
+            return next(new AppError(400, "INVALID_OTP"));
+         }
+
+         // delete OTP from redis
+         await redisClient.del(`otp:${email}`);
+
+         // OTP is valid, proceed to reset password
+         res.status(200).json();
+
+      } catch (err) {
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+      }
+   }
+
+   // [POST] /auth/reset-password
+   async resetPassword(req, res, next) {
+      try {
+         const { email, newPassword } = req.body;
+
+         // find user by email
+         const user = await User.findOne({ email: email });
+         if (!user) {
+            return next(new AppError(404, "USER_NOT_FOUND"));
+         }
+
+         // hash new password
+         const salt = bcrypt.genSaltSync(10);
+         const hashPassword = bcrypt.hashSync(newPassword, salt);
+         
+         // update password in db
+         user.password = hashPassword;
+         await user.save();
+
+         // delete access token from redis
+         await redisClient.del(user._id.toString());
+
+         return res.status(200).json();
+      
+      }
+      catch (err) {
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+      }
    }
 
 }
