@@ -10,10 +10,10 @@ router.post('/create', orderController.createOrder);
 router.put('/update/:id', orderController.updateOrderStatus);
 
 // Confirm the order (set isConfirmed to true)
-router.put('/confirm/:id', orderController.confirmOrder);
+router.put('/approve/:id', orderController.confirmOrder);
 
 // Get all orders for a specific user
-router.get('/:userId', orderController.getAllOrders);
+router.get('/history/:userId', orderController.getAllOrders);
 
 // Get order details by order ID
 router.get('/details/:id', orderController.getOrderById);

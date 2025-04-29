@@ -1,4 +1,5 @@
 const Order = require('../models/Order');
+const User = require('../models/User');
 const AppError = require('../../utils/appError');
 
 class OrderController {
@@ -10,10 +11,10 @@ class OrderController {
 
             // Create a new order 
             const newOrder = new Order({
-                userId,
-                items,
-                totalAmount,
-                paymentMethod,
+                userId: userId,
+                items: items,
+                totalAmount: totalAmount,
+                paymentMethod: paymentMethod,
                 paymentStatus: 'pending', // Payment status is 'pending' initially
                 orderStatus: 'pending',   // Order status is 'pending' initially
             });
@@ -21,7 +22,7 @@ class OrderController {
             // Save the order to the database
             const savedOrder = await newOrder.save();
             res.status(201).json({ message: 'Order created successfully', order: savedOrder });
-        } catch (error) {
+        } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error creating order'));
         }
     }
@@ -30,10 +31,14 @@ class OrderController {
     async getAllOrders(req, res, next) {
         try {
             const { userId } = req.params;
+            const user = await User.findById(userId);
+            if (!user)
+                return next(new AppError(404, 'NOT_FOUND', 'User not found'));
+
             // Fetch all orders for the given user ID
-            const orders = await OrderModel.find({ userId });
+            const orders = await Order.find({ userId });
             res.status(200).json(orders);
-        } catch (error) {
+        } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching orders'));
         }
     }
@@ -41,14 +46,11 @@ class OrderController {
     // Get order details by order ID
     async getOrderById(req, res, next) {
         try {
-            const { orderId } = req.params;
-            // Find the order by order ID
-            const order = await OrderModel.findById(orderId);
-            if (!order) {
+            const order = await Order.findById(req.params.id);
+            if (!order)
                 return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found'));
-            }
             res.status(200).json(order);
-        } catch (error) {
+        } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching order'));
         }
     }
@@ -56,14 +58,12 @@ class OrderController {
     // Update the order status and payment status
     async updateOrderStatus(req, res, next) {
         try {
-            const { orderId } = req.params;
             const { orderStatus, paymentStatus } = req.body;  // Status for order and payment
 
             // Find the order by order ID
-            const order = await OrderModel.findById(orderId);
-            if (!order) {
+            const order = await Order.findById(req.params.id);
+            if (!order)
                 return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found.'));
-            }
 
             // Update the order status and payment status if provided
             order.orderStatus = orderStatus || order.orderStatus;
@@ -80,20 +80,16 @@ class OrderController {
     // Confirm the order by setting isConfirmed to true
     async confirmOrder(req, res) {
         try {
-            const { orderId } = req.params;
-
-            // Find the order by order ID
-            const order = await OrderModel.findById(orderId);
-            if (!order) {
-                return res.status(404).json({ message: 'Order not found' });
-            }
+            const order = await Order.findById(req.params.id);
+            if (!order)
+                return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found.'));
 
             // Set the order as confirmed
             order.isConfirmed = true;
+            order.orderStatus = 'picking up';
             const confirmedOrder = await order.save();
-
             res.status(200).json({ message: 'Order confirmed', order: confirmedOrder });
-        } catch (error) {
+        } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error confirming order'));
         }
     }
