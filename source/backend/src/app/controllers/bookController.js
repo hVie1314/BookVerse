@@ -1,5 +1,6 @@
 const Book = require('../models/Book');
 const Category = require('../models/Category');
+const BookService = require('../../services/bookService');
 const AppError = require('../../utils/appError');
 const { mongooseToObject, multipleMongooseToObject } = require('../../utils/mongoose');
 
@@ -102,7 +103,7 @@ class BookController {
    // [GET] /book/search
    async search(req, res, next) {
       try {
-         const result = await bookService.searchBooks(req.query);
+         const result = await BookService.searchBooks(req.query);
             return res.status(200).json(result);
       } catch (err) {
             return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
