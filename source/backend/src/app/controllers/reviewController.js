@@ -83,6 +83,36 @@ class ReviewController {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
       }
    }
+
+   // [PATCH] /review/:id/hide
+   async hideReview(req, res, next) {
+      try {
+         const updated = await Review.findByIdAndUpdate(
+            req.params.id,
+            { hidden: true },
+            { new: true }
+         );
+         if (!updated) return next(new AppError(404, "NOT_FOUND"));
+         res.status(200).json({ review: updated });
+      } catch (err) {
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+      }
+   }
+   
+   // [PATCH] /review/:id/unhide
+   async unhideReview(req, res, next) {
+      try {
+         const updated = await Review.findByIdAndUpdate(
+            req.params.id,
+            { hidden: false },
+            { new: true }
+         );
+         if (!updated) return next(new AppError(404, "NOT_FOUND"));
+         res.status(200).json({ review: updated });
+      } catch (err) {
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+      }
+   }   
 }
 
 module.exports = new ReviewController();

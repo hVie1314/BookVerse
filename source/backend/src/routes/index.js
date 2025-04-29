@@ -4,6 +4,7 @@ const bookRouter = require('./bookRouter');
 const cartRouter = require('./cartRouter');
 const reviewRouter = require('./reviewRouter');
 const orderRouter = require('./orderRouter');
+const cancelRequestRouter = require('./cancelRequestRouter')
 
 function route(app) {
    app.use('/auth', authRouter);
@@ -12,6 +13,7 @@ function route(app) {
    app.use('/cart', cartRouter);
    app.use('/review', reviewRouter);
    app.use('/order', orderRouter);
+   app.use('/order', cancelRequestRouter);
 }
 
 module.exports = route;
