@@ -58,39 +58,19 @@ class OrderController {
     // Update the order status and payment status
     async updateOrderStatus(req, res, next) {
         try {
-            const { orderStatus, paymentStatus } = req.body;  // Status for order and payment
-
-            // Find the order by order ID
+            const { orderStatus } = req.body;  
+    
             const order = await Order.findById(req.params.id);
-            if (!order)
+            if (!order) 
                 return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found.'));
-
-            // Update the order status and payment status if provided
-            order.orderStatus = orderStatus || order.orderStatus;
-            order.paymentStatus = paymentStatus || order.paymentStatus;
+    
+            order.orderStatus = orderStatus;
 
             // Save the updated order
             const updatedOrder = await order.save();
             res.status(200).json({message: 'Order status updated successfully', order: updatedOrder});
         } catch (error) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error updating order'));
-        }
-    }
-
-    // Confirm the order by setting isConfirmed to true
-    async confirmOrder(req, res) {
-        try {
-            const order = await Order.findById(req.params.id);
-            if (!order)
-                return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found.'));
-
-            // Set the order as confirmed
-            order.isConfirmed = true;
-            order.orderStatus = 'picking up';
-            const confirmedOrder = await order.save();
-            res.status(200).json({ message: 'Order confirmed', order: confirmedOrder });
-        } catch (err) {
-            next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error confirming order'));
         }
     }
 }

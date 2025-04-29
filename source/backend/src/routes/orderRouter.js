@@ -9,9 +9,6 @@ router.post('/create', orderController.createOrder);
 // Update the order status and payment status
 router.put('/update/:id', orderController.updateOrderStatus);
 
-// Confirm the order (set isConfirmed to true)
-router.put('/approve/:id', orderController.confirmOrder);
-
 // Get all orders for a specific user
 router.get('/history/:userId', orderController.getAllOrders);
 
