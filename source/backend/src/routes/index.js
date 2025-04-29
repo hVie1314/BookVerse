@@ -11,7 +11,7 @@ function route(app) {
    app.use('/book', bookRouter);
    app.use('/cart', cartRouter);
    app.use('/review', reviewRouter);
-   app.user('/order', orderRouter);
+   app.use('/order', orderRouter);
 }
 
 module.exports = route;
