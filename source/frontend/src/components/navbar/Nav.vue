@@ -67,7 +67,11 @@
           @mouseover="handleMouseOver" 
           @mouseleave="handleMouseLeave"
           >
-        <i class="fa-regular fa-user fa-2xl" @click="handleUserIconClick"></i>
+        <i class="fa-regular fa-user fa-2xl" 
+          :class="{ 'fa-bounce': userIconHovered }"
+          @mouseenter="userIconHovered = true"
+          @mouseleave="userIconHovered = false"
+          @click="handleUserIconClick"></i>
         <span class="icon-label" v-if="isLoggedIn">{{ getUserName() }}</span>
         <span class="icon-label" v-else>Đăng nhập</span>
         <!-- Menu AuthButton sẽ hiển thị khi hover -->
@@ -111,6 +115,7 @@ export default {
       menuTimeout: null,
       isLoggedIn: false, // Trạng thái đăng nhập
       showUserMenu: false, // Trạng thái hiển thị menu người dùng
+      userIconHovered: false, // Trạng thái hover icon người dùng
     };
   },
   created() {
@@ -238,7 +243,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: 0px;
-  min-width: 1700px;
+  width: 85%;
   padding: 0 20px;
   box-sizing: border-box;
 }
@@ -477,5 +482,9 @@ i.fa-user:hover {
   color: #4d2900;
   text-align: center;
   transition: color 0.3s ease, font-weight 0.3s ease;
+}
+
+i.fa-bars{
+  cursor: pointer;
 }
 </style>

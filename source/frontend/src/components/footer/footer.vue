@@ -89,7 +89,7 @@
   }
   
   .footer-container {
-    min-width: 1700px;
+    width: 85%;
     display: flex;
     flex-direction: column;
     align-items: space-between;  
@@ -146,6 +146,7 @@
     font-size: 12px;
     font-weight: 400;
     line-height: 2;
+    text-align: center;
     /* align-self: flex-end; */
     /* margin-top: 71px; */
     /* margin-right: 187px; */
