@@ -301,11 +301,6 @@ export default {
   text-align: center;
 }
 
-.user-menu-container {
-  position: relative;
-  cursor: pointer;
-}
-
 /* Style cho popup menu */
 .auth-popup {
   position: absolute;
@@ -333,5 +328,154 @@ export default {
   .search-section {
     display: none;
   }
+}
+
+/* Hiệu ứng hover cho icon-container (heart và cart) */
+.icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+}
+
+.icon-container:hover {
+  transform: translateY(-4px);
+}
+
+.icon-container:hover i {
+  color: #724e4e;
+  filter: drop-shadow(0 0 2px rgba(114, 78, 78, 0.3));
+}
+
+.icon-container:hover .icon-label {
+  color: #724e4e;
+  font-weight: 700;
+}
+
+/* Hiệu ứng riêng cho user-menu-container */
+.user-menu-container {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.user-menu-container:hover {
+  transform: translateY(-4px);
+}
+
+.user-menu-container:hover i {
+  color: #724e4e;
+  filter: drop-shadow(0 0 2px rgba(114, 78, 78, 0.3));
+}
+
+.user-menu-container:hover .icon-label {
+  color: #724e4e;
+  font-weight: 700;
+}
+
+/* Hiệu ứng indicator */
+.icon-container::after,
+.user-menu-container::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background-color: #724e4e;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+  opacity: 0;
+  border-radius: 3px;
+}
+
+.icon-container:hover::after,
+.user-menu-container:hover::after {
+  width: 60%;
+  opacity: 1;
+}
+
+/* Thêm hiệu ứng cho icons */
+i.fa-heart, 
+i.fa-cart-shopping,
+i.fa-user {
+  transition: transform 0.3s ease, color 0.3s ease, filter 0.3s ease;
+}
+
+i.fa-heart:hover {
+  transform: scale(1.1) translateY(-2px);
+  animation: heartBeat 1.5s infinite;
+}
+
+i.fa-cart-shopping:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+i.fa-user:hover {
+  transform: scale(1.1);
+}
+
+i.fa-heart, i.fa-cart-shopping, i.fa-user, i.fa-bars {
+  position: relative;
+  transition: transform 0.3s ease, color 0.3s ease, filter 0.3s ease;
+  /* Thuộc tính này đảm bảo icon luôn giữ không gian của nó */
+  transform-origin: center center;
+  z-index: 1;
+  display: inline-block; /* Đảm bảo transform không ảnh hưởng đến layout */
+  will-change: transform; /* Tối ưu hiệu suất cho animation */
+}
+
+/* Sửa hiệu ứng hover cho từng icon để không đẩy layout */
+i.fa-heart:hover {
+  transform: scale(1.1) translateY(-2px);
+  animation: heartBeat 1.5s infinite;
+  z-index: 2;
+}
+
+i.fa-cart-shopping:hover {
+  transform: scale(1.1) rotate(5deg);
+  z-index: 2;
+}
+
+i.fa-user:hover {
+  transform: scale(1.1);
+  z-index: 2;
+}
+
+/* Đảm bảo container của icon giữ nguyên kích thước và vị trí */
+.icon-container, .user-menu-container {
+  /* Giữ nguyên các thuộc tính hiện có */
+  transform-style: preserve-3d; /* Tối ưu hiệu ứng 3D */
+}
+
+@keyframes heartBeat {
+  0% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.15) translateY(-2px);
+  }
+  30% {
+    transform: scale(1) translateY(0);
+  }
+  45% {
+    transform: scale(1.1) translateY(-1px);
+  }
+  60% {
+    transform: scale(1);
+  }
+}
+
+/* Hiệu ứng cho icon-label */
+.icon-label {
+  font-size: 12px;
+  margin-top: 25px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
+  color: #4d2900;
+  text-align: center;
+  transition: color 0.3s ease, font-weight 0.3s ease;
 }
 </style>
