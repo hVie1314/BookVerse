@@ -1,5 +1,6 @@
 const Book = require('../models/Book');
 const Category = require('../models/Category');
+const BookService = require('../../services/bookService');
 const AppError = require('../../utils/appError');
 const { mongooseToObject, multipleMongooseToObject } = require('../../utils/mongoose');
 
@@ -102,13 +103,30 @@ class BookController {
    // [GET] /book/search
    async search(req, res, next) {
       try {
-         const result = await bookService.searchBooks(req.query);
+         const result = await BookService.searchBooks(req.query);
             return res.status(200).json(result);
       } catch (err) {
             return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
 
       }
    }
+
+   // [GET] /book/recent-added/:n
+   async getRecentAdded(req, res, next) {
+      try {
+         const limit = parseInt(req.params.n);
+         if (isNaN(limit) || limit <= 0) {
+            return next(new AppError(400, 'INVALID_PARAM', 'Parameter n must be a positive number'));
+         }         
+
+         const books = await Book.find().sort({ createdAt: -1 }).limit(limit);
+
+         return res.status(200).json({ books });
+      } catch (err) {
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+      }
+   }
+
 }
 
 module.exports = new BookController();
