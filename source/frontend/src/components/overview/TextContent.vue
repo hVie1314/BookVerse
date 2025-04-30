@@ -42,7 +42,8 @@ export default {
 }
 
 .heading {
-  font-size: 50px;
+  font-size: 45px;
+  font-weight: 600;
 }
 
 .description {

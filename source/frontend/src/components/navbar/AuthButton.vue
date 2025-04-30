@@ -38,7 +38,7 @@
   height: 47px;
   border-radius: 8px;
   font-family: "Montserrat", sans-serif;
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 900;
   line-height: 39px;
   cursor: pointer;
