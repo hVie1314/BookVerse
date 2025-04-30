@@ -15,7 +15,6 @@ class OrderController {
                 items: items,
                 totalAmount: totalAmount,
                 paymentMethod: paymentMethod,
-                paymentStatus: 'pending', // Payment status is 'pending' initially
                 orderStatus: 'pending',   // Order status is 'pending' initially
             });
 
