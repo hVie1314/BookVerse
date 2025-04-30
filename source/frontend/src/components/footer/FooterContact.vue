@@ -63,12 +63,13 @@
     display: flex;
     margin-top: 8px;
     font-size: 13px;
+    gap: 5px;
   }
   
   .address-title {
     text-decoration: underline;
+    width: 20%;
     font-weight: 600;
-    margin-right: 5px;
   }
 
   .address-detail {

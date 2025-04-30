@@ -89,7 +89,7 @@
   }
   
   .footer-container {
-    width: 85%;
+    width: 85%; 
     display: flex;
     flex-direction: column;
     align-items: space-between;  
