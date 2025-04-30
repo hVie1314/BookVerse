@@ -58,42 +58,81 @@
     </div>
 
     <nav class="menu-section">
-      <i class="fa-regular fa-heart fa-2xl"></i>
+      <div class="icon-container">
+        <i class="fa-regular fa-heart fa-2xl"></i>
+        <span class="icon-label">Yêu thích</span>
+      </div>
+      
       <div class="user-menu-container" 
           @mouseover="handleMouseOver" 
-          @mouseleave="handleMouseLeave">
-        <i class="fa-regular fa-user fa-2xl"></i>
-        
+          @mouseleave="handleMouseLeave"
+          >
+        <i class="fa-regular fa-user fa-2xl" @click="handleUserIconClick"></i>
+        <span class="icon-label" v-if="isLoggedIn">{{ getUserName() }}</span>
+        <span class="icon-label" v-else>Đăng nhập</span>
         <!-- Menu AuthButton sẽ hiển thị khi hover -->
         <div class="auth-popup" v-if="showAuthMenu">
-          <AuthButton @login="goToLogin" @register="goToRegister" />
+          <AuthButton 
+            :isLoggedIn="isLoggedIn" 
+            @login="goToLogin" 
+            @register="goToRegister"
+            @profile="goToProfile"
+            @logout="handleLogout" 
+          />
         </div>
       </div>
-      <i class="fa-regular fa-cart-shopping fa-2xl"></i>
-      <i class="fa-solid fa-bars fa-2xl"></i>
+      <div class="icon-container">
+        <i class="fa-regular fa-cart-shopping fa-2xl"></i>
+        <span class="icon-label">Giỏ hàng</span>
+      </div>
+      <div class="icon-container-menu" @click="handleBarsClick">
+        <i class="fa-solid fa-bars fa-2xl"></i>
+      </div>
     </nav>
+    <UserMenu v-if="showUserMenu" @close="showUserMenu = false" />
   </header>
 </template>
 
 <script>
 import AuthButton from './AuthButton.vue';
-
+import AuthenticationService from '@/services/AuthenticationService';
+import UserMenu from '@/components/menu/UserMenu.vue';
 
 export default {
   name: 'NavBar', // Sửa tên component thành NavBar (từ ghép)
   components: {
-    AuthButton// Lazy load AuthButton component
+    AuthButton,// Lazy load AuthButton component
+    UserMenu, // Lazy load UserMenu component
   },
   data() {
     return {
       showAuthMenu: false, // Trạng thái hiển thị menu auth
-      menuTimeout: null
+      menuTimeout: null,
+      isLoggedIn: false, // Trạng thái đăng nhập
+      showUserMenu: false, // Trạng thái hiển thị menu người dùng
     };
   },
+  created() {
+    // Kiểm tra trạng thái đăng nhập khi component được tạo
+    this.isLoggedIn = AuthenticationService.isLoggedIn();
+  },
+  mounted() {
+    // Kiểm tra trạng thái đăng nhập khi component được gắn vào DOM
+    this.checkLoginStatus();
+  },
+  activated() {
+    // Kiểm tra trạng thái đăng nhập khi component được kích hoạt (nếu sử dụng keep-alive)
+    this.checkLoginStatus();
+  },
   methods: {
+    checkLoginStatus() {
+      // Kiểm tra trạng thái đăng nhập
+      this.isLoggedIn = AuthenticationService.isLoggedIn();
+    },
     handleMouseOver() {
-    clearTimeout(this.menuTimeout);
-    this.showAuthMenu = true;
+      clearTimeout(this.menuTimeout);
+      this.checkLoginStatus(); // Kiểm tra trạng thái đăng nhập khi hover
+      this.showAuthMenu = true;
     },
     handleMouseLeave() {
       // Trì hoãn ẩn menu để người dùng có thời gian click
@@ -112,6 +151,68 @@ export default {
     goToRegister() {
       this.$router.push('/register'); // Chuyển hướng đến trang đăng ký
     },
+    goToProfile() {
+      this.$router.push('/profile'); // Chuyển hướng đến trang thông tin cá nhân
+    },
+    async handleLogout() {
+      try {
+        await AuthenticationService.logout();
+        this.isLoggedIn = false;
+        // Thêm hard reload để đảm bảo làm mới trạng thái
+        window.location.href = '/';
+      } catch (error) {
+        console.error("Lỗi khi đăng xuất:", error);
+        // Đảm bảo đăng xuất dù có lỗi
+        localStorage.removeItem('userToken');
+        localStorage.removeItem('userData');
+        window.location.href = '/';
+      }
+    },
+    getUserName() {
+      // Lấy tên người dùng từ AuthenticationService
+      const userData = AuthenticationService.getCurrentUser();
+      return userData ? userData.username : 'Tài khoản';
+    },
+    handleUserIconClick() {
+    // Kiểm tra trạng thái đăng nhập hiện tại
+      this.checkLoginStatus();
+      
+      // Chuyển hướng dựa trên trạng thái đăng nhập
+      if (this.isLoggedIn) {
+        // Nếu đã đăng nhập, chuyển đến trang profile
+        console.log("Chuyển hướng đến trang profile");
+        this.$router.push('/profile');
+      } else {
+        // Nếu chưa đăng nhập, chuyển đến trang đăng nhập
+        console.log("Chuyển hướng đến trang đăng nhập");
+        this.$router.push('/login');
+      }
+    },
+    handleBarsClick() {
+      // Kiểm tra trạng thái đăng nhập
+      this.checkLoginStatus();
+      
+      // Kiểm tra nếu đã đăng nhập và có quyền user
+      if (this.isLoggedIn) {
+        const userData = AuthenticationService.getCurrentUser();
+        if (userData && userData.role === 'user') {
+          // Hiển thị hoặc ẩn UserMenu
+          this.showUserMenu = !this.showUserMenu;
+        } else {
+          // Nếu không phải user, có thể hiển thị menu khác hoặc thông báo
+          console.log("Bạn không có quyền truy cập menu này");
+        }
+      } else {
+        // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
+        this.$router.push('/login');
+      }
+    }
+  },
+  // Kiểm tra trạng thái đăng nhập khi route thay đổi
+  watch: {
+    '$route'() {
+      this.checkLoginStatus();
+    }
   },
 }
 </script>
@@ -120,7 +221,7 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;900&display=swap');
 
 .header-container {
-  margin-top: 40px;
+  margin-top: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -172,6 +273,22 @@ export default {
   height: 35px;
 }
 
+.icon-container, .user-menu-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.icon-label {
+  font-size: 12px;
+  margin-top: 25px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
+  color: #4d2900;
+  text-align: center;
+}
+
 .user-menu-container {
   position: relative;
   cursor: pointer;
@@ -184,6 +301,10 @@ export default {
   right: -20px;
   z-index: 100;
   margin-top: 10px;
+}
+
+.icon-container, .user-menu-container {
+  margin-top: 40px;
 }
 
 @media (max-width: 991px) {
