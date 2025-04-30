@@ -90,7 +90,11 @@
         <span class="icon-label">Giỏ hàng</span>
       </div>
       <div class="icon-container-menu" @click="handleBarsClick">
-        <i class="fa-solid fa-bars fa-2xl"></i>
+        <i class="fa-solid fa-bars fa-2xl"
+          :class="{ 'fa-beat-fade': menuIconHovered }"
+          @mouseenter="menuIconHovered = true"
+          @mouseleave="menuIconHovered = false"
+        ></i>
       </div>
     </nav>
     <UserMenu v-if="showUserMenu" @close="showUserMenu = false" />
@@ -116,6 +120,7 @@ export default {
       isLoggedIn: false, // Trạng thái đăng nhập
       showUserMenu: false, // Trạng thái hiển thị menu người dùng
       userIconHovered: false, // Trạng thái hover icon người dùng
+      menuIconHovered: false, // Trạng thái hover icon menu
     };
   },
   created() {
@@ -311,7 +316,7 @@ export default {
   position: absolute;
   top: 100%;
   right: -20px;
-  z-index: 100;
+  z-index: 1000;
   margin-top: 10px;
 }
 
@@ -364,6 +369,7 @@ export default {
   position: relative;
   cursor: pointer;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1000;
 }
 
 .user-menu-container:hover {

@@ -8,6 +8,7 @@
 
       <Overview_form /> <!-- Thêm component Overview_form vào đây -->
       
+      <BestSeller /> <!-- Thêm component BestSeller vào đây -->
       <!-- Phần nội dung chính của trang Home có thể được thêm vào đây -->
       <div class="featured-books">
         <!-- Sách nổi bật -->
@@ -33,12 +34,14 @@ import Nav from './navbar/Nav.vue'; // Thêm import Nav component
 import Footer from './footer/footer.vue'; // Thêm import Footer component
 import eventBus from '@/eventBus.js'; // Import event bus
 import Overview_form from './overview/Overview.vue'; // Import Overview_form component
+import BestSeller from './bestsellers/BestSeller.vue';
 export default {
   name: 'HomePage',
   components: {
     Footer,
     Nav, // Thêm Nav vào components
-    Overview_form // Thêm Overview_form vào components
+    Overview_form, // Thêm Overview_form vào components
+    BestSeller // Thêm BestSeller vào components
   },
   data() {
     return {
