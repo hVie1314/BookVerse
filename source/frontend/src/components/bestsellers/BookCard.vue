@@ -30,32 +30,36 @@ export default {
     name: "BookCard",
     props: {
         image: {
-        type: String,
-        required: true,
+            type: String,
+            required: true,
         },
         price: {
-        type: String,
-        required: true,
+            type: String,
+            required: true,
         },
         originalPrice: {
-        type: String,
-        default: "",
+            type: String,
+            default: "",
         },
         title: {
-        type: String,
-        required: true,
+            type: String,
+            required: true,
         },
         author: {
-        type: String,
-        required: true,
+            type: String,
+            required: true,
         },
         cartText: {
-        type: String,
-        required: true,
+            type: String,
+            required: true,
         },
         sold: {
-        type: String,
-        default: "Đã bán 0",
+            type: [String, Number], // Chấp nhận cả String và Number
+            default: "0",
+            validator: function(value) {
+                // Chuyển đổi thành String nếu là Number
+                return (typeof value === 'number' || typeof value === 'string');
+            }
         },
     },
 };

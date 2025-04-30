@@ -10,17 +10,12 @@
       
       <BestSeller /> <!-- Thêm component BestSeller vào đây -->
       <!-- Phần nội dung chính của trang Home có thể được thêm vào đây -->
-      <div class="featured-books">
-        <!-- Sách nổi bật -->
-      </div>
+      <NewBooks /> <!-- Thêm component NewBooks vào đây -->
       
-      <div class="new-arrivals">
-        <!-- Sách mới -->
-      </div>
-      
-      <div class="categories">
-        <!-- Danh mục sách -->
-      </div>
+      <TopCategories /> <!-- Thêm component TopCategories vào đây -->
+      <AboutUsStats/>
+      <ShippingInfo/> <!-- Thêm component ShippingInfo vào đây -->
+      <ContactSection/> <!-- Thêm component ContactSection vào đây -->
     </div>
     
     <!-- Footer section từ file footer.vue -->
@@ -35,13 +30,23 @@ import Footer from './footer/footer.vue'; // Thêm import Footer component
 import eventBus from '@/eventBus.js'; // Import event bus
 import Overview_form from './overview/Overview.vue'; // Import Overview_form component
 import BestSeller from './bestsellers/BestSeller.vue';
+import NewBooks from './NewBooks.vue';
+import TopCategories from './topcategory/TopCategories.vue'; // Import TopCategories component
+import AboutUsStats from './aboutus/AboutUs.vue'; // Import AboutUsStats component
+import ShippingInfo from './ShippingInfo.vue';
+import ContactSection from './ContactSection.vue'; // Import ContactSection component
 export default {
   name: 'HomePage',
   components: {
     Footer,
     Nav, // Thêm Nav vào components
     Overview_form, // Thêm Overview_form vào components
-    BestSeller // Thêm BestSeller vào components
+    BestSeller, // Thêm BestSeller vào components
+    NewBooks, // Thêm NewBooks vào components
+    TopCategories,
+    AboutUsStats, // Thêm AboutUsStats vào components
+    ShippingInfo, // Thêm ShippingInfo vào components
+    ContactSection
   },
   data() {
     return {
