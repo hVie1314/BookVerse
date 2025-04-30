@@ -66,7 +66,8 @@ class OrderController {
 
             // Save the updated order
             const updatedOrder = await order.save();
-            res.status(200).json({message: 'Order status updated successfully', order: updatedOrder});
+            
+            return updatedOrder;
         } catch (error) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error updating order'));
         }
