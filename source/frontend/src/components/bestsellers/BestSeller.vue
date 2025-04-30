@@ -91,22 +91,41 @@ export default {
       this.loading = true;
       try {
         const response = await BookService.getTopSellingBooks(this.totalBooks);
-        console.log("API response:", response); // Log dữ liệu trả về từ API
-        this.books = response.data.data.books.map(book => ({
-          id: book.id,
-          image: book.image || '/images/default-book-cover.jpg',
-          price: book.price,
-          originalPrice: book.originalPrice > book.price ? book.originalPrice : null,
-          title: book.title,
-          author: book.author,
-          sold: String(book.sold) || "Đã bán 0"
-        }));
+        console.log("API response:", response);
+        
+        // Xử lý linh hoạt với nhiều cấu trúc có thể có từ response
+        if (response.data && response.data.success && response.data.data && response.data.data.books) {
+          // Cấu trúc từ responseFormatterMiddleware
+          this.books = response.data.data.books.map(book => this.formatBookData(book));
+        } else if (response.data && response.data.books) {
+          // Cấu trúc trả về trực tiếp từ controller
+          this.books = response.data.books.map(book => this.formatBookData(book));
+        } else if (Array.isArray(response.data)) {
+          // Mảng sách trực tiếp
+          this.books = response.data.map(book => this.formatBookData(book));
+        } else {
+          throw new Error("Định dạng dữ liệu không hợp lệ từ API");
+        }
+        
         this.loading = false;
       } catch (error) {
         console.error("Error fetching top selling books:", error);
         this.error = "Không thể tải danh sách sách bán chạy. Vui lòng thử lại sau.";
         this.loading = false;
       }
+    },
+
+    // Hàm tiện ích để định dạng dữ liệu sách
+    formatBookData(book) {
+      return {
+        id: book.id || book._id,
+        image: book.image || book.coverImage || '/images/default-book-cover.jpg',
+        price: book.price,
+        originalPrice: book.originalPrice > book.price ? book.originalPrice : null,
+        title: book.title,
+        author: book.author,
+        sold: String(book.sold || 0)
+      };
     },
     
     // Phương thức phân trang

@@ -26,6 +26,10 @@ export default {
         return Api().get(`book/top/${limit}`);
     },
     
+    // Lấy sách mới thêm gần đây
+    getRecentlyAddedBooks(limit) {
+        return Api().get(`book/recently-added/${limit}`);
+    },
     // Thêm sách mới (chỉ admin/staff)
     createBook(bookData) {
         return Api().post('book/', bookData);
