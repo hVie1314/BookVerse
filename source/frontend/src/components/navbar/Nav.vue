@@ -97,6 +97,7 @@
 import AuthButton from './AuthButton.vue';
 import AuthenticationService from '@/services/AuthenticationService';
 import UserMenu from '@/components/menu/UserMenu.vue';
+import eventBus from '@/eventBus.js';
 
 export default {
   name: 'NavBar', // Sửa tên component thành NavBar (từ ghép)
@@ -115,6 +116,11 @@ export default {
   created() {
     // Kiểm tra trạng thái đăng nhập khi component được tạo
     this.isLoggedIn = AuthenticationService.isLoggedIn();
+    eventBus.on('logout', this.handleLogoutEvent);
+  },
+  beforeUnmount() {
+    // Loại bỏ listener khi component được hủy để tránh memory leak
+    eventBus.off('logout', this.handleLogoutEvent);
   },
   mounted() {
     // Kiểm tra trạng thái đăng nhập khi component được gắn vào DOM
@@ -154,18 +160,24 @@ export default {
     goToProfile() {
       this.$router.push('/profile'); // Chuyển hướng đến trang thông tin cá nhân
     },
+    handleLogoutEvent() {
+      console.log("Nhận sự kiện logout từ EventBus");
+      this.isLoggedIn = false;
+      this.showAuthMenu = false;
+      this.showUserMenu = false;
+    },
     async handleLogout() {
       try {
         await AuthenticationService.logout();
         this.isLoggedIn = false;
-        // Thêm hard reload để đảm bảo làm mới trạng thái
-        window.location.href = '/';
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
       } catch (error) {
         console.error("Lỗi khi đăng xuất:", error);
-        // Đảm bảo đăng xuất dù có lỗi
         localStorage.removeItem('userToken');
         localStorage.removeItem('userData');
-        window.location.href = '/';
+        window.location.reload();
       }
     },
     getUserName() {

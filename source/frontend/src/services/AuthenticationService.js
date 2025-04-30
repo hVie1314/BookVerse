@@ -1,4 +1,6 @@
 import Api from '@/services/Api';
+import eventBus from '@/eventBus';
+
 export default {
     // Đăng ký tài khoản mới
     register(credentials) {
@@ -27,26 +29,23 @@ export default {
     // Đăng xuất - gọi API logout của backend
     async logout() {
         try {
-            // Thử làm mới token trước khi đăng xuất
             const token = localStorage.getItem('userToken');
             if (!token) {
-                console.log("Không có token, đã đăng xuất trên client");
+                console.log("Không có token, chỉ đăng xuất client");
                 return;
             }
-    
-            // Sử dụng Api() từ Api.js để tận dụng cơ chế refresh token tự động
-            await Api().get('auth/logout');
-        } catch (error) {
-            console.error('Logout error:', error);
-            // Nếu không thể refresh token hoặc đăng xuất từ server,
-            // vẫn tiếp tục đăng xuất ở phía client
+            
+            try {
+                await Api().get('auth/logout');
+                console.log("Đăng xuất server thành công");
+            } catch (error) {
+                console.log("Đăng xuất server thất bại, tiếp tục đăng xuất client");
+            }
         } finally {
-            // Luôn xóa dữ liệu local bất kể kết quả từ server
             localStorage.removeItem('userToken');
             localStorage.removeItem('userData');
-            console.log("Đã xóa token:", localStorage.getItem('userToken'));
-            console.log("Đã xóa userData:", localStorage.getItem('userData'));
         }
+        eventBus.emit('logout'); // Phát sự kiện đăng xuất
     },
     
     // Làm mới token khi hết hạn

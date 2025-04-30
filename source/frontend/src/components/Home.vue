@@ -31,7 +31,7 @@
 import AuthenticationService from '@/services/AuthenticationService';
 import Nav from './navbar/Nav.vue'; // Thêm import Nav component
 import Footer from './footer/footer.vue'; // Thêm import Footer component
-
+import eventBus from '@/eventBus.js'; // Import event bus
 export default {
   name: 'HomePage',
   components: {
@@ -46,6 +46,9 @@ export default {
   },
   created() {
     this.isLoggedIn = AuthenticationService.isLoggedIn()
+  },
+  mounted() {
+    eventBus.on('user-logged-out', this.updateLoginStatus);
   },
   methods: {
     toggleAccountMenu() {
