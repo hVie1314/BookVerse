@@ -13,8 +13,8 @@
     <main class="registration-container">
       <section class="registration-card">
         <header>
-          <h1 class="registration-title">Create Account</h1>
-          <p class="registration-subtitle">Sign up to get started</p>
+          <h1 class="registration-title">Tạo tài khoản</h1>
+          <p class="registration-subtitle">Đăng ký để bắt đầu</p>
         </header>
 
         <form class="registration-form" @submit.prevent="handleRegister">
@@ -22,7 +22,7 @@
           <div class="input-field">
             <input
               type="text"
-              placeholder="Enter your account name"
+              placeholder="Nhập tên đăng nhập của bạn"
               class="form-input"
               v-model="formData.username"
             />
@@ -32,7 +32,7 @@
           <div class="input-field">
             <input
               type="email"
-              placeholder="Enter your email address"
+              placeholder="Nhập email của bạn"
               class="form-input"
               v-model="formData.email"
             />
@@ -42,7 +42,7 @@
           <div class="password-field">
             <input
               :type="isPasswordVisible ? 'text' : 'password'"
-              placeholder="Enter your password"
+              placeholder="Nhập mật khẩu của bạn"
               class="form-input"
               v-model="formData.password"
               ref="passwordInput"
@@ -56,7 +56,7 @@
           <div class="password-field">
             <input
               :type="isConfirmPasswordVisible ? 'text' : 'password'"
-              placeholder="Confirm your password"
+              placeholder="Xác nhận mật khẩu của bạn"
               class="form-input"
               v-model="formData.confirmPassword"
               ref="confirmPasswordInput"
@@ -66,11 +66,11 @@
             </div>
           </div>
           
-          <button class="registration-button" type="submit">Create Account</button>
+          <button class="registration-button" type="submit">Tạo tài khoản</button>
           
           <p class="sign-in-prompt">
-            Already have an account?
-            <router-link to="/login" class="sign-in-link">Sign in now</router-link>
+            Bạn đã có tài khoản?
+            <router-link to="/login" class="sign-in-link">Đăng nhập ngay</router-link>
           </p>
         </form>
       </section>
@@ -145,7 +145,8 @@ export default {
         const response = await AuthenticationService.register({
           username: this.formData.username,
           email: this.formData.email,
-          password: this.formData.password
+          password: this.formData.password,
+          role: 'user' // Thêm role mặc định khi đăng ký
         });
         
         if (response.data.success) {
@@ -175,7 +176,10 @@ export default {
           show: true,
           type: 'error',
           title: 'Đăng ký thất bại',
-          message: error.response?.data?.errorCode || 'Không thể kết nối đến máy chủ'
+          message: error.response?.data?.message || 
+            (error.response?.data?.errorCode === 'USER_ALREADY_EXISTS' ? 
+              'Tên đăng nhập hoặc email đã tồn tại' : 
+              'Không thể kết nối đến máy chủ')
         };
       }
     }
@@ -292,6 +296,7 @@ export default {
   color: #724e4e;
   font-weight: 700;
   cursor: pointer;
+  text-decoration: none;
 }
 
 @media (max-width: 991px) {

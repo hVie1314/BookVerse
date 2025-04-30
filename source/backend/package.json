@@ -1,5 +1,5 @@
 {
-  "name": "BookVerse",
+  "name": "BookVers",
   "version": "1.0.0",
   "description": "BookVerse Project - Introduction to Software Engineering",
   "homepage": "https://github.com/hVie1314/BookVerse#readme",
@@ -21,15 +21,18 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "BookVers": "file:",
     "BookVerse": "file:",
-    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "method-override": "^3.0.0",
     "mongoose": "^8.13.0",
     "mongoose-sequence": "^6.0.1",
-    "mongoose-slug-updater": "^3.3.0"
+    "mongoose-slug-updater": "^3.3.0",
+    "nodemailer": "^6.10.1",
+    "redis": "^4.7.0"
   },
   "devDependencies": {
     "husky": "^9.1.7",
