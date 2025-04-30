@@ -18,7 +18,8 @@
   .logo-container {
     display: flex;
     width: 100%;
-    align-items: stretch;
+    align-items: center;
+    box-sizing: border-box;
     gap: 40px 50px;
     flex-wrap: wrap;
   }
