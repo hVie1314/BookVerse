@@ -24,6 +24,7 @@ class Momo {
       const orderGroupId = '';
 
       const rawSignature = `accessKey=${this.accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${this.ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${this.partnerCode}&redirectUrl=${this.redirectUrl}&requestId=${requestId}&requestType=${this.requestType}`;
+      console.log(rawSignature);
       const signature = crypto.createHmac('sha256', this.secretKey)
          .update(rawSignature)
          .digest('hex');

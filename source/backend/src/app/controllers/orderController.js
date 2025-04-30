@@ -59,6 +59,7 @@ class OrderController {
     async updateOrderStatus(orderId, orderStatusUpdate) {
         try {
             const order = await Order.findById(orderId);
+            
             if (!order) 
                 return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found.'));
     
