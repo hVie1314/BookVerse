@@ -44,6 +44,8 @@ export default {
             // Luôn xóa dữ liệu local bất kể kết quả từ server
             localStorage.removeItem('userToken');
             localStorage.removeItem('userData');
+            console.log("Đã xóa token:", localStorage.getItem('userToken'));
+            console.log("Đã xóa userData:", localStorage.getItem('userData'));
         }
     },
     

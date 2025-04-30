@@ -1,9 +1,18 @@
 <template>
     <div class="auth-container">
-      <button @click="$emit('login')" class="auth-button login-button">Đăng nhập</button>
-      <button @click="$emit('register')" class="auth-button register-button">Đăng ký</button>
+      <!-- Hiển thị khi chưa đăng nhập -->
+      <div v-if="!isLoggedIn" class="auth-button">
+        <button @click="$emit('login')" class="auth-button login-button">Đăng nhập</button>
+        <button @click="$emit('register')" class="auth-button register-button">Đăng ký</button>
+      </div>
+      
+      <!-- Hiển thị khi đã đăng nhập -->
+      <div v-else class="auth-button">
+        <button @click="$emit('profile')" class="auth-button login-button">Thông tin cá nhân</button>
+        <button @click="$emit('logout')" class="auth-button register-button">Đăng xuất</button>
+      </div>
     </div>
-  </template>
+</template>
   
   <style scoped>
   .auth-container {
@@ -32,6 +41,9 @@
     line-height: 39px;
     cursor: pointer;
     border: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
   
   .login-button {
@@ -40,6 +52,7 @@
   }
   
   .register-button {
+    margin-top: 5px;
     border: 2px solid #4d2900;
     background-color: #fffaf5;
     color: #4d2900;
@@ -72,7 +85,13 @@
   <script>
   export default {
     name: "AuthButtons",
-    emits: ["login", "register"],
+    props: {
+      isLoggedIn: {
+        type: Boolean,
+        required: true,
+      },
+    },
+    emits: ["login", "register", "profile", "logout"],
   };
   </script>
   
