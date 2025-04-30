@@ -159,7 +159,18 @@ class AuthController {
       // return success message
       res.status(200).json({});
    }
-
+   // logout(req, res) {
+   //    const authHeader = req.headers["authorization"];
+   //    const token = authHeader && authHeader.split(" ")[1];
+      
+   //    if (token) {
+   //      // Thêm token vào blacklist ngay cả khi không hợp lệ
+   //      redisClient.set(`blacklist:${token}`, "blacklisted", 'EX', 10 * 60);
+   //    }
+      
+   //    // Trả về thành công bất kể token
+   //    res.status(200).json({});
+   // }
 }
 
 module.exports = new AuthController();

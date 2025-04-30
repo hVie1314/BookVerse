@@ -17,16 +17,24 @@
 </template>
 
 <script>
+import AuthenticationService from '@/services/AuthenticationService';
+import eventBus from './eventBus';
 export default {
   name: 'App',
   data() {
     return {
       loading: false,
       loadingStartTime: 0,
-      minLoadingTime: 800 // Thời gian tối thiểu hiển thị loading (ms)
+      minLoadingTime: 800 ,// Thời gian tối thiểu hiển thị loading (ms)
+      isLoggedIn: false
     }
   },
   created() {
+    this.isLoggedIn = AuthenticationService.isLoggedIn();
+    
+    // Lắng nghe sự kiện đăng xuất
+    eventBus.on('logout', this.handleLogoutEvent);
+
     this.$router.beforeEach((to, from, next) => {
       // Bắt đầu hiệu ứng loading và lưu thời điểm bắt đầu
       this.loading = true;
@@ -45,6 +53,16 @@ export default {
       }, remainingTime);
     });
   },
+  beforeUnmount() {
+    // Clean up listener
+    eventBus.off('logout', this.handleLogoutEvent);
+  },
+  methods: {
+    handleLogoutEvent() {
+      console.log("App nhận sự kiện logout");
+      this.isLoggedIn = false;
+    }
+  }
 }
 </script>
 
