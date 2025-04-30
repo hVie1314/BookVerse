@@ -55,16 +55,14 @@ class OrderController {
         }
     }
 
-    // Update the order status and payment status
-    async updateOrderStatus(req, res, next) {
+    // Update the order status 
+    async updateOrderStatus(orderId, orderStatusUpdate) {
         try {
-            const { orderStatus } = req.body;  
-    
-            const order = await Order.findById(req.params.id);
+            const order = await Order.findById(orderId);
             if (!order) 
                 return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found.'));
     
-            order.orderStatus = orderStatus;
+            order.orderStatus = orderStatusUpdate;
 
             // Save the updated order
             const updatedOrder = await order.save();
