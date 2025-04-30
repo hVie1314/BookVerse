@@ -59,7 +59,7 @@
 
     <nav class="menu-section">
       <div class="icon-container">
-        <i class="fa-regular fa-heart fa-2xl"></i>
+        <i class="fa-regular fa-heart fa-xl"></i>
         <span class="icon-label">Yêu thích</span>
       </div>
       
@@ -67,7 +67,7 @@
           @mouseover="handleMouseOver" 
           @mouseleave="handleMouseLeave"
           >
-        <i class="fa-regular fa-user fa-2xl" 
+        <i class="fa-regular fa-user fa-xl" 
           :class="{ 'fa-bounce': userIconHovered }"
           @mouseenter="userIconHovered = true"
           @mouseleave="userIconHovered = false"
@@ -86,11 +86,11 @@
         </div>
       </div>
       <div class="icon-container">
-        <i class="fa-regular fa-cart-shopping fa-2xl"></i>
+        <i class="fa-regular fa-cart-shopping fa-xl"></i>
         <span class="icon-label">Giỏ hàng</span>
       </div>
       <div class="icon-container-menu" @click="handleBarsClick">
-        <i class="fa-solid fa-bars fa-2xl"
+        <i class="fa-solid fa-bars fa-xl"
           :class="{ 'fa-beat-fade': menuIconHovered }"
           @mouseenter="menuIconHovered = true"
           @mouseleave="menuIconHovered = false"
@@ -262,7 +262,7 @@ export default {
 .brand-name {
   font-family: "Montserrat", sans-serif;
   font-weight: 900;
-  font-size: 44px;
+  font-size: 30px;
   color: #4d2900;
   margin-left: 10px;
   margin-top: 0;

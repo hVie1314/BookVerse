@@ -48,7 +48,7 @@
     margin-top: auto;
     margin-bottom: auto;
     flex-basis: auto;
-    font-size: 28px;
+    font-size: 20px;
   }
   
   .logo-content {

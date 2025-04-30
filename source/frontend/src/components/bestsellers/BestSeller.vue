@@ -1,5 +1,14 @@
 <template>
   <section class="carousel-container">
+    <!-- Navigation Arrow Left -->
+    <NavigationArrow 
+      v-if="!loading && !error"
+      direction="left" 
+      @click="previousPage" 
+      :disabled="currentPage === 1"
+      class="nav-arrow-left"
+    />
+    
     <div class="best-seller-container">
       <h2 class="carousel-title">TOP SÁCH BÁN CHẠY</h2>
       
@@ -23,33 +32,22 @@
           :originalPrice="book.originalPrice ? `${book.originalPrice.toLocaleString('vi-VN')} đ` : ''"
           :title="book.title"
           :author="book.author"
-          :cartText="'Thêm vào giỏ'"
-          :sold="book.sold"
+          :cartText="'Thêm vào giỏ hàng'"
+          :sold="String(book.sold)"
           @add-to-cart="addToCart(book.id)"
         />
       </div>
       
-      <!-- Pagination -->
-      <div class="pagination-container" v-if="totalPages > 1">
-        <button 
-          class="pagination-button" 
-          @click="previousPage" 
-          :disabled="currentPage === 1"
-        >
-          <i class="fa-solid fa-chevron-left"></i>
-        </button>
-        
-        <span class="pagination-info">{{ currentPage }} / {{ totalPages }}</span>
-        
-        <button 
-          class="pagination-button" 
-          @click="nextPage" 
-          :disabled="currentPage === totalPages"
-        >
-          <i class="fa-solid fa-chevron-right"></i>
-        </button>
-      </div>
     </div>
+    
+    <!-- Navigation Arrow Right -->
+    <NavigationArrow 
+      v-if="!loading && !error"
+      direction="right" 
+      @click="nextPage" 
+      :disabled="currentPage === totalPages"
+      class="nav-arrow-right"
+    />
   </section>
 </template>
 
@@ -57,11 +55,13 @@
 import BookCard from "./BookCard.vue";
 import BookService from '@/services/BookService';
 import CartService from '@/services/CartService';
+import NavigationArrow from "./NavigationArrow.vue";// Import NavigationArrow component
 
 export default {
   name: "BestSeller",
   components: {
-    BookCard
+    BookCard,
+    NavigationArrow // Đăng ký NavigationArrow component
   },
   data() {
     return {
@@ -99,7 +99,7 @@ export default {
           originalPrice: book.originalPrice > book.price ? book.originalPrice : null,
           title: book.title,
           author: book.author,
-          sold: book.sold || "Đã bán 0"
+          sold: String(book.sold) || "Đã bán 0"
         }));
         this.loading = false;
       } catch (error) {
@@ -148,10 +148,12 @@ export default {
   margin-bottom: 40px;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .best-seller-container {
-  width: 85%;
+  width: 88%;
+  /* position: relative; */
 }
 
 .carousel-title {
@@ -181,42 +183,31 @@ export default {
   color: #ff3333;
 }
 
-/* Pagination styles */
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 30px;
-  gap: 15px;
+.nav-arrow-left {
+  position: absolute;
+  left: 3%;
+  z-index: 5;
 }
 
-.pagination-button {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #f5f5f5;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
+.nav-arrow-right {
+  position: absolute;
+  right: 3%;
+  z-index: 5;
 }
 
-.pagination-button:hover:not(:disabled) {
-  background-color: #4d2900;
-  color: white;
-}
-
-.pagination-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination-info {
+/* Style cho page indicator nếu cần */
+.page-indicator {
+  text-align: center;
+  margin-top: 20px;
   font-family: "Montserrat", sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   color: #4d2900;
+}
+
+/* Điều chỉnh để book-grid có position relative để arrow đúng vị trí */
+.best-seller-container {
+  width: 87%;
+  position: relative;
 }
 
 @media (max-width: 991px) {
@@ -238,4 +229,16 @@ export default {
     font-size: 20px;
   }
 }
+
+.loading-container, .error-message {
+  width: 100%;
+  padding: 30px;
+  text-align: center;
+  font-family: "Montserrat", sans-serif;
+}
+
+.error-message {
+  color: #ff3333;
+}
+
 </style>

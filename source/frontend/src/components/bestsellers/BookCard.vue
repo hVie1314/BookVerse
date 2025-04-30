@@ -12,7 +12,14 @@
                 <button class="cart-button">{{ cartText }}</button>
                 <i class="fa-regular fa-heart fa-2xl"></i>
             </div>
-            <p class="book-sold">Đã bán {{ sold }}</p>
+            <div class="book-sold">
+                <div class="sold-title">
+                    Đã bán 
+                </div>
+                <div class="sold-text">
+                    {{ sold }}
+                </div>
+            </div>
         </div>
     </article>
 </template>
@@ -67,12 +74,22 @@ export default {
     flex-direction: column;
 }
 
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+}
+
 .book-image {
     padding-top: 10px;
     width: 100%;
     height: 200px;
     object-fit: contain;
     border-radius: 8px 8px 0 0;
+    transition: transform 0.4s ease;
+}
+
+.book-card:hover .book-image {
+    transform: scale(1.05);
 }
 
 .book-info {
@@ -92,7 +109,7 @@ export default {
     font-family: "Montserrat", sans-serif;
     font-weight: 700;
     font-size: 18px;
-    color: #4d2900;
+    color: #755e47;
     text-align: right;
 }
 
@@ -109,12 +126,12 @@ export default {
     font-family: "Montserrat", sans-serif;
     font-weight: 700;
     font-size: 12px;
-    color: #4d2900;
+    color: #755e47;
     margin-top: 10px;
 
     /* Thiết lập chiều cao cố định 3 dòng */
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    /* -webkit-line-clamp: 3; */
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -131,12 +148,12 @@ export default {
     font-family: "Montserrat", sans-serif;
     font-weight: 400;
     font-size: 12px;
-    color: #4d2900;
+    color: #8b7b6a;
     margin-top: 5px;
 
     /* Thiết lập chiều cao cố định 2 dòng */
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    /* -webkit-line-clamp: 2; */
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -152,10 +169,10 @@ export default {
 .cart-button {
     color: #fff;
     font-family: "Montserrat", sans-serif;
-    font-weight: 900;
-    font-size: 12px;
+    font-weight: 600;
+    font-size: 10px;
     text-transform: uppercase;
-    padding: 5px 10px;
+    padding: 8px 10px;
     border-radius: 5px;
     box-shadow: 0px 5px 8px rgba(225, 106, 0, 0.19);
     
@@ -163,6 +180,13 @@ export default {
     border: none;
     cursor: pointer;
     width: 80%;
+    transition: all 0.3s ease;
+}
+
+.cart-button:hover {
+    background-color: #755e47;
+    box-shadow: 0px 5px 12px rgba(225, 106, 0, 0.3);
+    transform: translateY(-2px);
 }
 
 .heart-icon {
@@ -190,5 +214,61 @@ export default {
     align-items: center;
     margin-top: 10px;   
 }
+
+.book-sold {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 100;
+    font-size: 12px;
+    color: #8b7b6a;
+    margin-top: 10px;
+    margin-bottom: 0;
+    display: flex;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.book-card:hover .book-sold {
+    color: #4d2900;
+}
+
+.sold-text {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: #8b7b6a;
+}
+
+/* Hiệu ứng cho icon heart */
+.fa-heart {
+    color: #4d2900;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.fa-heart:hover {
+    color: #e74c3c;
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+/* Hiệu ứng nền gradient cho card khi hover */
+/* .book-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(to right, #4d2900, #a67c52);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+} */
+
+.book-card:hover::before {
+    opacity: 1;
+}
+
+
 </style>
   

@@ -24,7 +24,7 @@
   .phone-container {
     display: flex;
     flex-direction: column;
-    align-items: start;
+    align-items: flex-start;
   }
   
   .phone-label {
@@ -68,7 +68,7 @@
   
   .address-title {
     text-decoration: underline;
-    width: 20%;
+    width: 50%;
     font-weight: 600;
   }
 
@@ -76,6 +76,7 @@
     word-wrap: break-word;
     overflow-wrap: break-word; /* Tên mới hơn, được khuyên dùng */
     white-space: normal; /* Đảm bảo rằng văn bản sẽ xuống dòng nếu cần */
+    margin-left: -25px;
   }
 
   @media (max-width: 991px) {
