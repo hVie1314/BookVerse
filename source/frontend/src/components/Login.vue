@@ -4,6 +4,7 @@
   :type="alert.type" 
   :title="alert.title" 
   :message="alert.message" 
+  :auto-close-only="true"
   />
   <main class="login-page">
     <div class="login-overlay"></div>
