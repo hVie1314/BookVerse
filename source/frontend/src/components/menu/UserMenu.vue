@@ -11,7 +11,7 @@
                 </transition>
                 <div class="menu-items">
                     <transition-group name="item-appear">
-                        <button key="catalog" class="menu-item">Danh mục sản phẩm</button>
+                        <button key="catalog" class="menu-item" @click="goToCategory">Danh mục sản phẩm</button>
                         <button key="orders" class="menu-item menu-item-orders">Đơn hàng của tôi</button>
                     </transition-group>
                 </div>
@@ -30,7 +30,12 @@ export default {
         menuItems.forEach((item, index) => {
             item.style.setProperty('--index', index);
         });
-    }
+    },
+    methods: {
+        goToCategory() {
+            this.$router.push({ name: 'category' });
+        },
+    },
 }
 </script>
 <style scoped>
