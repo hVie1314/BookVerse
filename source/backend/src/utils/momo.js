@@ -58,7 +58,7 @@ class Momo {
             return response.data.payUrl;
          }
          else {
-            console.log(response.data.message);
+            //console.log(response.data.message);
             throw new AppError(400, "TRANSACTION_FAILED", response.data.message);
          }
          

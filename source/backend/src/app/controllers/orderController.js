@@ -15,7 +15,6 @@ class OrderController {
                 items: items,
                 totalAmount: totalAmount,
                 paymentMethod: paymentMethod,
-                paymentStatus: 'pending', // Payment status is 'pending' initially
                 orderStatus: 'pending',   // Order status is 'pending' initially
             });
 
@@ -55,20 +54,20 @@ class OrderController {
         }
     }
 
-    // Update the order status and payment status
-    async updateOrderStatus(req, res, next) {
+    // Update the order status 
+    async updateOrderStatus(orderId, orderStatusUpdate) {
         try {
-            const { orderStatus } = req.body;  
-    
-            const order = await Order.findById(req.params.id);
+            const order = await Order.findById(orderId);
+            
             if (!order) 
                 return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found.'));
     
-            order.orderStatus = orderStatus;
+            order.orderStatus = orderStatusUpdate;
 
             // Save the updated order
             const updatedOrder = await order.save();
-            res.status(200).json({message: 'Order status updated successfully', order: updatedOrder});
+            
+            return updatedOrder;
         } catch (error) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error updating order'));
         }
