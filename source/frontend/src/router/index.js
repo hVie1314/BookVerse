@@ -5,6 +5,7 @@ const Home = () => import('../components/Home.vue')
 const Login = () => import('../components/Login.vue')  
 const Register = () => import('../components/Register.vue')
 const Profile = () => import('../components/profile/ProfileUser.vue')
+const CategoryPage = () => import('../components/categorypage/CategoryPage.vue') 
 
 const routes = [
   {
@@ -29,6 +30,11 @@ const routes = [
     name: 'profile',
     component: Profile,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/category',
+    name: 'category',
+    component: CategoryPage
   }
 ]
 

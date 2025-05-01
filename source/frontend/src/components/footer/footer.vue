@@ -88,7 +88,7 @@
     background-color: rgba(57, 31, 0, 1);
   }
   
-  .footer-container {
+  .footer-container { 
     width: 90%; 
     display: flex;
     flex-direction: column;

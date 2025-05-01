@@ -5,13 +5,18 @@
       Trong cửa hàng của chúng tôi, bạn có thể tìm thấy cuốn sách phù hợp với
       mọi sở thích với giá tốt và thủ tục gọn gàng.
     </p>
-    <button class="cta-button">DANH MỤC SẢN PHẨM</button>
+    <button class="cta-button" @click="goToCategory">DANH MỤC SẢN PHẨM</button>
   </article>
 </template>
   
 <script>
 export default {
   name: "TextContent",
+  methods: {
+    goToCategory() {
+      this.$router.push({ name: "category" });
+    },
+  },
 };
 </script>
   
