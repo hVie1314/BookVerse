@@ -13,7 +13,10 @@ router.put('/:id', bookController.update);              // [PUT] /book/:id
 router.delete('/:id', bookController.delete);           // [DELETE] /book/:id
 router.get('/', bookController.getAll);                 // [GET] /book/
 router.get('/:id', bookController.getById);             // [GET] /book/:id
-router.get('/top/:n', bookController.getTopSelling);    // [GET] /book/top/:n
-router.get('/recently-added/:n', bookController.getRecentAdded); // [GET] /book/recent-added/
+
+router.get('/top/:n', bookController.getTopSelling);    
+router.get('/recently-added/:n', bookController.getRecentAdded); 
+router.get('/related/:id/:limit', bookController.getRelated); 
+router.get('/rating/:bookId', bookController.getRating);
 
 module.exports = router;
