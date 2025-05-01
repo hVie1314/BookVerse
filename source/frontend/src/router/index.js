@@ -4,6 +4,7 @@ import AuthenticationService from '../services/AuthenticationService'
 const Home = () => import('../components/Home.vue')
 const Login = () => import('../components/Login.vue')  
 const Register = () => import('../components/Register.vue')
+const Profile = () => import('../components/profile/ProfileUser.vue')
 
 const routes = [
   {
@@ -22,6 +23,12 @@ const routes = [
     name: 'register',
     component: Register,
     meta: { guestOnly: true }
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: Profile,
+    meta: { requiresAuth: true }
   }
 ]
 
