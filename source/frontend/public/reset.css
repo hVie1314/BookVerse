@@ -46,3 +46,25 @@ table {
 	border-collapse: collapse;
 	border-spacing: 0;
 }
+/* Ngăn chặn cursor và outline cho icons */
+i.fa-heart, 
+i.fa-cart-shopping,
+i.fa-user,
+i.fa-bars,
+i.fa-xmark,
+.icon-container,
+.user-menu-container {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Loại bỏ outline khi focus */
+i:focus,
+.icon-container:focus,
+.user-menu-container:focus,
+button:focus {
+  outline: none !important;
+}
