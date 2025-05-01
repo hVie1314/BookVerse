@@ -1,4 +1,5 @@
 const Book = require('../models/Book');
+const Review = require('../models/Review');
 const Category = require('../models/Category');
 const BookService = require('../../services/bookService');
 const AppError = require('../../utils/appError');
@@ -143,6 +144,33 @@ class BookController {
 
          const relatedBooks = await Book.find({ category: book.category }).limit(limit).exec();
          return res.status(200).json({ books: relatedBooks });
+
+      } catch (err) {
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+      }
+   }
+
+   // [GET] /book/rating/:bookId
+   async getRating(req, res, next) {
+      try {
+         const bookId = req.params.bookId;
+         const book = await Book.findById(bookId);
+         if (!book) {
+            return next(new AppError(404, 'BOOK_NOT_FOUND'));
+         }
+
+         // Calculate the average rating
+         const reviews = await Review.find({ 
+            book_id: bookId, 
+            status: 'approved', 
+            hidden: false,
+         });
+
+         const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
+         const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0;
+         const rating = averageRating.toFixed(1); // Round to 1 decimal place
+
+         res.status(200).json({ rating });
 
       } catch (err) {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
