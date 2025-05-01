@@ -127,6 +127,28 @@ class BookController {
       }
    }
 
+   // [GET] /book/related/:id/:limit
+   async getRelated(req, res, next) {
+      try {
+         const bookId = req.params.id;
+         const limit = parseInt(req.params.limit);
+         if (isNaN(limit) || limit <= 0) {
+            return next(new AppError(400, 'INVALID_PARAM', 'Parameter limit must be a positive number'));
+         }
+         
+         const book = await Book.findById(bookId);
+         if (!book) {
+            return next(new AppError(404, 'BOOK_NOT_FOUND'));
+         }
+
+         const relatedBooks = await Book.find({ category: book.category }).limit(limit).exec();
+         return res.status(200).json({ books: relatedBooks });
+
+      } catch (err) {
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+      }
+   }
+
 }
 
 module.exports = new BookController();
