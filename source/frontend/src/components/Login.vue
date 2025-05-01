@@ -24,13 +24,13 @@
           @focus="emailFocused = true"
           @blur="emailFocused = false"
         />
-        <div class="icon-container" v-html="emailIcon"></div>
+        <div class="icon-container" ><i class="fa-regular fa-envelopes eyes"></i></div>
       </div>
 
       <!-- Input Password -->
       <div class="input-container">
         <input
-          type="password"
+          :type="isPasswordVisible ? 'text' : 'password'"
           placeholder="Nhập mật khẩu"
           v-model="password"
           class="form-input"
@@ -39,8 +39,8 @@
         />
         <div class="icon-container password-toggle" @click="togglePasswordVisibility">
           <transition name="fade" mode="out-in">
-            <div v-if="isPasswordVisible" key="visible" v-html="eyeOpenIcon"></div>
-            <div v-else key="hidden" v-html="eyeClosedIcon"></div>
+            <div v-if="isPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
+            <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
           </transition>
         </div>
       </div>
@@ -86,33 +86,6 @@ export default {
         title: '',
         message: ''
       },
-      emailIcon: `<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M2.10358 6.5693L10.1006 10.5673L18.0976 6.5693C18.068 6.05975 17.8447 5.58079 17.4734 5.23053C17.1021 4.88027 16.611 4.68521 16.1006 4.6853H4.10058C3.59016 4.68521 3.09902 4.88027 2.72775 5.23053C2.35648 5.58079 2.13318 6.05975 2.10358 6.5693Z" fill="#724E4E"/>
-        <path d="M18.1006 8.80334L10.1006 12.8033L2.10059 8.80334V14.6853C2.10059 15.2158 2.3113 15.7245 2.68637 16.0996C3.06144 16.4746 3.57015 16.6853 4.10059 16.6853H16.1006C16.631 16.6853 17.1397 16.4746 17.5148 16.0996C17.8899 15.7245 18.1006 15.2158 18.1006 14.6853V8.80334Z" fill="#724E4E"/>
-      </svg>`,
-      eyeOpenIcon: `<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g clip-path="url(#clip0_eye_open)">
-          <path d="M10.1006 12.6853C10.631 12.6853 11.1397 12.4746 11.5148 12.0995C11.8899 11.7244 12.1006 11.2157 12.1006 10.6853C12.1006 10.1549 11.8899 9.64616 11.5148 9.27109C11.1397 8.89602 10.631 8.6853 10.1006 8.6853C9.57015 8.6853 9.06145 8.89602 8.68637 9.27109C8.3113 9.64616 8.10059 10.1549 8.10059 10.6853C8.10059 11.2157 8.3113 11.7244 8.68637 12.0995C9.06145 12.4746 9.57015 12.6853 10.1006 12.6853Z" fill="#724E4E"/>
-          <path d="M2.1006 10.6853C3.0406 8.3453 6.1706 6.6853 10.1006 6.6853C14.0306 6.6853 17.1606 8.3453 18.1006 10.6853C17.1606 13.0253 14.0306 14.6853 10.1006 14.6853C6.1706 14.6853 3.0406 13.0253 2.1006 10.6853ZM11.1006 0.685303C6.5806 0.685303 3.0406 2.7053 1.1006 5.6453C0.160599 7.1153 0.100599 9.2553 1.1006 10.7253C3.0406 13.6653 6.5806 15.6853 11.1006 15.6853C15.6206 15.6853 19.1606 13.6653 21.1006 10.7253C22.0406 9.2553 22.1006 7.1153 21.1006 5.6453C19.1606 2.7053 15.6206 0.685303 11.1006 0.685303Z" fill="#724E4E"/>
-        </g>
-        <defs>
-          <clipPath id="clip0_eye_open">
-            <rect width="20" height="20" fill="white" transform="translate(0.100586 0.685303)"/>
-          </clipPath>
-        </defs>
-      </svg>`,
-      eyeClosedIcon: `<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g clip-path="url(#clip0_eye_closed)">
-          <path d="M10.1006 12.6853C10.631 12.6853 11.1397 12.4746 11.5148 12.0995C11.8899 11.7244 12.1006 11.2157 12.1006 10.6853C12.1006 10.1549 11.8899 9.64616 11.5148 9.27109C11.1397 8.89602 10.631 8.6853 10.1006 8.6853C9.57015 8.6853 9.06145 8.89602 8.68637 9.27109C8.3113 9.64616 8.10059 10.1549 8.10059 10.6853C8.10059 11.2157 8.3113 11.7244 8.68637 12.0995C9.06145 12.4746 9.57015 12.6853 10.1006 12.6853Z" fill="#724E4E"/>
-          <path d="M2.1006 10.6853C3.0406 8.3453 6.1706 6.6853 10.1006 6.6853C14.0306 6.6853 17.1606 8.3453 18.1006 10.6853C17.1606 13.0253 14.0306 14.6853 10.1006 14.6853C6.1706 14.6853 3.0406 13.0253 2.1006 10.6853Z" fill="#724E4E"/>
-          <path d="M19.1006 2.6853L2.1006 19.6853" stroke="#724E4E" stroke-width="2" stroke-linecap="round"/>
-        </g>
-        <defs>
-          <clipPath id="clip0_eye_closed">
-            <rect width="20" height="20" fill="white" transform="translate(0.100586 0.685303)"/>
-          </clipPath>
-        </defs>
-      </svg>`
     }
   },
   methods: {
@@ -560,5 +533,9 @@ export default {
   .sign-in-button {
     max-width: 280px;
   }
+}
+
+.eyes{
+  color:#724e4e;
 }
 </style>

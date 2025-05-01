@@ -34,7 +34,7 @@
   }
   
   .column-title {
-    font-size: 20px;
+    font-size: 18px;
     color: rgb(255, 255, 255);
     font-weight: 700;
     margin-bottom: 10px;
@@ -47,7 +47,7 @@
     justify-content: start;
     align-items: start;
     gap: 10px;
-    font-size: 13px;
+    font-size: 11px;
     color: #fff;
     font-weight: 400;
     /* line-height: 26px; */

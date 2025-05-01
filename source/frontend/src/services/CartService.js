@@ -1,6 +1,26 @@
 import Api from '@/services/Api';
+import AuthenticationService from './AuthenticationService';
 
 export default {
+
+    // Phương thức chung để thêm vào giỏ hàng
+    addToCart({ bookId, quantity = 1 }) {
+        // Kiểm tra người dùng đã đăng nhập chưa
+        if (AuthenticationService.isLoggedIn()) {
+            const user = AuthenticationService.getCurrentUser();
+            return this.addToUserCart(user.id, bookId, quantity);
+        } else {
+            // Lấy cartId từ localStorage nếu đã có
+            let cartId = localStorage.getItem('guestCartId');
+            if (!cartId) {
+                // Tạo cartId mới nếu chưa có
+                cartId = 'guest_' + Date.now();
+                localStorage.setItem('guestCartId', cartId);
+            }
+            return this.addToGuestCart(cartId, bookId, quantity);
+        }
+    },
+    
     // Thêm sản phẩm vào giỏ hàng người dùng
     addToUserCart(userId, productId, quantity) {
         return Api().post('cart/', { userId, productId, quantity });

@@ -25,44 +25,58 @@
               placeholder="Nhập tên đăng nhập của bạn"
               class="form-input"
               v-model="formData.username"
+              @focus="usernameFocused = true"
+              @blur="usernameFocused = false"
             />
           </div>
           
           <!-- Email Input -->
-          <div class="input-field">
+          <div class="input-field" :class="{ 'input-focus': emailFocused }">
             <input
               type="email"
               placeholder="Nhập email của bạn"
               class="form-input"
               v-model="formData.email"
+              @focus="emailFocused = true"
+              @blur="emailFocused = false"
             />
+            <div class="icon-container"><i class="fa-regular fa-envelope eyes"></i></div>
           </div>
           
           <!-- Password Input -->
-          <div class="password-field">
+          <div class="input-field" :class="{ 'input-focus': passwordFocused }">
             <input
               :type="isPasswordVisible ? 'text' : 'password'"
               placeholder="Nhập mật khẩu của bạn"
               class="form-input"
               v-model="formData.password"
-              ref="passwordInput"
+              @focus="passwordFocused = true"
+              @blur="passwordFocused = false"
             />
-            <div class="eye-icon-wrapper" @click="togglePasswordVisibility">
-              <div v-html="eyeIconSvg"></div>
+            <div class="icon-container password-toggle" @click="togglePasswordVisibility">
+              <transition name="fade" mode="out-in">
+                <div v-if="isPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
+                <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
+              </transition>
             </div>
           </div>
           
           <!-- Confirm Password Input -->
-          <div class="password-field">
+          <div class="input-field" :class="{ 'input-focus': confirmPasswordFocused }">
             <input
               :type="isConfirmPasswordVisible ? 'text' : 'password'"
               placeholder="Xác nhận mật khẩu của bạn"
               class="form-input"
               v-model="formData.confirmPassword"
               ref="confirmPasswordInput"
+              @focus="confirmPasswordFocused = true"
+              @blur="confirmPasswordFocused = false"
             />
-            <div class="eye-icon-wrapper" @click="toggleConfirmPasswordVisibility">
-              <div v-html="eyeIconSvg"></div>
+            <div class="icon-container password-toggle" @click="toggleConfirmPasswordVisibility">
+              <transition name="fade" mode="out-in">
+                <div v-if="isConfirmPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
+                <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
+              </transition>
             </div>
           </div>
           
@@ -103,10 +117,10 @@ export default {
       },
       isPasswordVisible: false,
       isConfirmPasswordVisible: false,
-      eyeIconSvg: `<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" class="eye-icon">
-        <path d="M9.72023 12.7666C10.2254 12.7666 10.7098 12.5659 11.0671 12.2087C11.4242 11.8514 11.625 11.3669 11.625 10.8618C11.625 10.3567 11.4242 9.87214 11.0671 9.51493C10.7098 9.15772 10.2254 8.95703 9.72023 8.95703C9.21502 8.95703 8.73053 9.15772 8.37332 9.51493C8.01612 9.87214 7.81543 10.3567 7.81543 10.8618C7.81543 11.3669 8.01612 11.8514 8.37332 12.2087C8.73053 12.5659 9.21502 12.7666 9.72023 12.7666Z" fill="black"></path>
-        <path d="M2.10107 10.8618C2.99631 8.6332 5.97726 7.05225 9.72014 7.05225C13.463 7.05225 16.4439 8.6332 17.3392 10.8618C16.4439 13.0903 13.463 14.6713 9.72014 14.6713C5.97726 14.6713 2.99631 13.0903 2.10107 10.8618Z" fill="black"></path>
-      </svg>`
+      usernameFocused: false,
+      emailFocused: false,
+      passwordFocused: false,
+      confirmPasswordFocused: false
     }
   },
   methods: {
@@ -120,27 +134,40 @@ export default {
       try {
         // Kiểm tra mật khẩu xác nhận
         if (this.formData.password !== this.formData.confirmPassword) {
-          alert("Password does not match!");
+          this.alert = {
+            show: true,
+            type: 'error',
+            title: 'Lỗi xác nhận',
+            message: 'Mật khẩu xác nhận không khớp!'
+          };
           return;
         }
         
         // Kiểm tra độ dài mật khẩu
         if (this.formData.password.length < 4) {
-          alert("Password must have at least 4 characters!");
+          this.alert = {
+            show: true,
+            type: 'error',
+            title: 'Lỗi mật khẩu',
+            message: 'Mật khẩu phải có ít nhất 4 ký tự!'
+          };
           return;
         }
         
         // Kiểm tra email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(this.formData.email)) {
-          alert("Invalid Email!");
+          this.alert = {
+            show: true,
+            type: 'error',
+            title: 'Lỗi email',
+            message: 'Email không hợp lệ!'
+          };
           return;
         }
         
         // Tiến hành đăng ký
         console.log("Processing registration: ", this.formData);
-        // TODO: Gửi yêu cầu API đăng ký
-        // this.$axios.post('/api/register', this.formData);
 
         const response = await AuthenticationService.register({
           username: this.formData.username,
@@ -189,22 +216,24 @@ export default {
 
 <style scoped>
 .registration-container {
-  max-width: none;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  padding: 20px;
-  background-color: rgba(183, 124, 64, 0.1);
+  background-color: #fffaf5;
 }
 
+
 .registration-card {
+  position: relative;
   width: 420px;
+  padding: 40px;
   border-radius: 16px;
-  padding: 40px 32px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 8px 32px 0px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   background-color: rgba(255, 255, 255, 0.97);
 }
 
@@ -213,59 +242,91 @@ export default {
   font-family: "Poppins", sans-serif;
   font-size: 38px;
   font-weight: 700;
-  text-align: center;
+  line-height: 48px;
   margin-bottom: 12px;
+  text-align: center;
 }
 
 .registration-subtitle {
   color: #666;
   font-family: "Poppins", sans-serif;
   font-size: 18px;
+  font-weight: 400;
+  line-height: 21px;
+  margin-bottom: 33px;
   text-align: center;
-  margin-bottom: 44px;
 }
 
 .registration-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  align-items: center;
+  width: 100%;
 }
 
-.input-field,
-.password-field {
+.input-field {
   position: relative;
-  width: 380px;
+  width: 100%;
+  max-width: 340px;
+  margin-bottom: 16px;
+  transition: transform 0.3s ease;
+}
+
+.input-field:hover {
+  transform: translateY(-2px);
+}
+
+.input-focus {
+  transform: translateY(-2px);
 }
 
 .form-input {
   width: 100%;
-  height: 60px;
+  height: 59px;
   border: 2px solid #724e4e;
   border-radius: 8px;
-  padding: 0 16px;
+  padding: 0 40px 0 16px;
   font-family: "Poppins", sans-serif;
   font-size: 14px;
-  outline: none;
+  color: #000;
+  background-color: #fff;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.eye-icon-wrapper {
+.form-input:focus {
+  outline: none;
+  border-color: #8a6363;
+  box-shadow: 0 0 0 3px rgba(114, 78, 78, 0.2);
+}
+
+.icon-container {
   position: absolute;
-  right: 0;
-  top: 0;
-  height: 100%;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
-  padding-right: 16px;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.password-toggle {
   cursor: pointer;
 }
 
-.eye-icon {
-  position: relative;
-  width: 20px;
-  height: 20px;
+.password-toggle:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+.password-toggle:active {
+  transform: translateY(-50%) scale(0.95);
 }
 
 .registration-button {
+  width: 340px;
   height: 56px;
   border-radius: 8px;
   border: none;
@@ -273,50 +334,123 @@ export default {
   font-family: "Poppins", sans-serif;
   font-size: 22px;
   font-weight: 700;
+  line-height: 24px;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(229, 62, 62, 0.25);
-  margin-top: 16px;
+  box-shadow: 0px 4px 6px 0px rgba(229, 62, 62, 0.25);
+  margin-bottom: 23px;
   background-color: #724e4e;
-  transition: background-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  margin-top: 24px;
 }
 
 .registration-button:hover {
-  background-color: #5d3e3e;
+  transform: translateY(-3px);
+  background-color: #8a6363;
+}
+
+.registration-button:active {
+  transform: translateY(1px);
+}
+
+.registration-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.2) 50%, 
+    rgba(255, 255, 255, 0) 100%
+  );
+  transition: left 0.6s;
+}
+
+.registration-button:hover::before {
+  left: 100%;
 }
 
 .sign-in-prompt {
-  text-align: center;
-  margin-top: 24px;
-  font-family: "Poppins", sans-serif;
-  font-size: 14px;
+  display: flex;
+  gap: 19px;
+  align-items: center;
+}
+
+.signin-text {
   color: #666;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 21px;
 }
 
 .sign-in-link {
-  color: #724e4e;
+  color: rgba(114, 78, 78, 0.89);
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
   font-weight: 700;
+  line-height: 21px;
   cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
   text-decoration: none;
+  position: relative;
+  transition: color 0.3s ease;
 }
 
+.sign-in-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #724e4e;
+  transition: width 0.3s ease;
+}
+
+.sign-in-link:hover::after {
+  width: 100%;
+}
+
+/* Transitions */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.fade-enter-to, .fade-leave-from {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Responsive styles */
 @media (max-width: 991px) {
-  .registration-container {
-    max-width: 991px;
+  .registration-card {
+    width: 380px;
+    padding: 30px;
   }
 
-  .registration-card {
-    width: 100%;
-    max-width: 420px;
+  .input-field,
+  .registration-button {
+    width: 316px;
+    max-width: 316px;
   }
 }
 
 @media (max-width: 640px) {
-  .registration-container {
-    max-width: 640px;
-  }
-
   .registration-card {
-    padding: 32px 16px;
+    width: 320px;
+    padding: 20px;
   }
 
   .registration-title {
@@ -327,8 +461,19 @@ export default {
     font-size: 16px;
   }
 
+  .input-field {
+    width: 280px;
+    max-width: 280px;
+  }
+
   .registration-button {
+    width: 280px;
+    max-width: 280px;
     font-size: 20px;
   }
+}
+
+.eyes {
+  color: #724e4e;
 }
 </style>

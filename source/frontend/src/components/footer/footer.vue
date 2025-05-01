@@ -89,7 +89,7 @@
   }
   
   .footer-container {
-    min-width: 1700px;
+    width: 90%; 
     display: flex;
     flex-direction: column;
     align-items: space-between;  
@@ -108,7 +108,7 @@
     flex-direction: column;
     align-items: stretch;
     line-height: normal;
-    /* width: 75%; */
+    width: 70%;
     margin-left: 0;
   }
   
@@ -143,9 +143,10 @@
   
   .policy-text {
     color: rgba(255, 255, 255, 1);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 400;
     line-height: 2;
+    text-align: center;
     /* align-self: flex-end; */
     /* margin-top: 71px; */
     /* margin-right: 187px; */
@@ -154,7 +155,7 @@
   .footer-contact-section {
     display: flex;
     flex-direction: column;
-    /* width: 23%; */
+    width: 23%;
     /* margin-left: 20px; */
   }
   
