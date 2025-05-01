@@ -6,6 +6,7 @@ const reviewRouter = require('./reviewRouter');
 const orderRouter = require('./orderRouter');
 const paymentRouter = require('./paymentRouter');
 const cancelRequestRouter = require('./cancelRequestRouter')
+const statsRouter = require('./statsRouter')
 
 function route(app) {
    app.use('/auth', authRouter);
@@ -16,6 +17,7 @@ function route(app) {
    app.use('/order', orderRouter);
    app.use('/payment', paymentRouter);
    app.use('/order', cancelRequestRouter);
+   app.use('/stats', statsRouter);
 }
 
 module.exports = route;
