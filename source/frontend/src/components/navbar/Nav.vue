@@ -59,7 +59,7 @@
 
     <nav class="menu-section">
       <div class="icon-container">
-        <i class="fa-regular fa-heart fa-2xl"></i>
+        <i class="fa-regular fa-heart fa-xl"></i>
         <span class="icon-label">Yêu thích</span>
       </div>
       
@@ -67,7 +67,11 @@
           @mouseover="handleMouseOver" 
           @mouseleave="handleMouseLeave"
           >
-        <i class="fa-regular fa-user fa-2xl" @click="handleUserIconClick"></i>
+        <i class="fa-regular fa-user fa-xl" 
+          :class="{ 'fa-bounce': userIconHovered }"
+          @mouseenter="userIconHovered = true"
+          @mouseleave="userIconHovered = false"
+          @click="handleUserIconClick"></i>
         <span class="icon-label" v-if="isLoggedIn">{{ getUserName() }}</span>
         <span class="icon-label" v-else>Đăng nhập</span>
         <!-- Menu AuthButton sẽ hiển thị khi hover -->
@@ -82,11 +86,15 @@
         </div>
       </div>
       <div class="icon-container">
-        <i class="fa-regular fa-cart-shopping fa-2xl"></i>
+        <i class="fa-regular fa-cart-shopping fa-xl"></i>
         <span class="icon-label">Giỏ hàng</span>
       </div>
       <div class="icon-container-menu" @click="handleBarsClick">
-        <i class="fa-solid fa-bars fa-2xl"></i>
+        <i class="fa-solid fa-bars fa-xl"
+          :class="{ 'fa-beat-fade': menuIconHovered }"
+          @mouseenter="menuIconHovered = true"
+          @mouseleave="menuIconHovered = false"
+        ></i>
       </div>
     </nav>
     <UserMenu v-if="showUserMenu" @close="showUserMenu = false" />
@@ -111,6 +119,8 @@ export default {
       menuTimeout: null,
       isLoggedIn: false, // Trạng thái đăng nhập
       showUserMenu: false, // Trạng thái hiển thị menu người dùng
+      userIconHovered: false, // Trạng thái hover icon người dùng
+      menuIconHovered: false, // Trạng thái hover icon menu
     };
   },
   created() {
@@ -238,7 +248,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: 0px;
-  min-width: 1700px;
+  width: 85%;
   padding: 0 20px;
   box-sizing: border-box;
 }
@@ -252,7 +262,7 @@ export default {
 .brand-name {
   font-family: "Montserrat", sans-serif;
   font-weight: 900;
-  font-size: 44px;
+  font-size: 30px;
   color: #4d2900;
   margin-left: 10px;
   margin-top: 0;
@@ -306,7 +316,7 @@ export default {
   position: absolute;
   top: 100%;
   right: -20px;
-  z-index: 100;
+  z-index: 1000;
   margin-top: 10px;
 }
 
@@ -359,6 +369,7 @@ export default {
   position: relative;
   cursor: pointer;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1000;
 }
 
 .user-menu-container:hover {
@@ -477,5 +488,9 @@ i.fa-user:hover {
   color: #4d2900;
   text-align: center;
   transition: color 0.3s ease, font-weight 0.3s ease;
+}
+
+i.fa-bars{
+  cursor: pointer;
 }
 </style>
