@@ -4,8 +4,12 @@
       <main class="category-content">
         <div class="container">
           <div class="page-header">
-            <h1 class="page-title">Danh mục sản phẩm</h1>
-            
+              <h1 class="page-title">
+              {{ $route.query.search ? 'Kết quả tìm kiếm' : 'Danh mục sản phẩm' }}
+              </h1>
+            <div v-if="$route.query.search" class="search-info">
+              Kết quả tìm kiếm cho: <span class="search-term">"{{ $route.query.search }}"</span>
+            </div>
           </div>
           
           <div class="category-layout">
@@ -137,5 +141,17 @@
         .filter-sidebar {
             width: 100%;
         }
+    }
+
+    .search-info {
+      font-family: "Montserrat", sans-serif;
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+    }
+    
+    .search-term {
+      font-weight: 700;
+      color: #4d2900;
     }
 </style>
