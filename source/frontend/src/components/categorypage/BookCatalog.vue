@@ -53,8 +53,8 @@
                 let result = [...this.books];
                 
                 // Áp dụng bộ lọc nếu có
-                if (this.filters.category) {
-                    result = result.filter(book => book.category === this.filters.category);
+                if (this.filters.categories && this.filters.categories.length > 0) {
+                    result = result.filter(book => this.filters.categories.includes(book.category));
                 }
                 
                 if (this.filters.minPrice) {
