@@ -183,7 +183,7 @@ export default {
     background-color: #4d2900;
     border: none;
     cursor: pointer;
-    width: 80%;
+    width: 75%;
     transition: all 0.3s ease;
 }
 
