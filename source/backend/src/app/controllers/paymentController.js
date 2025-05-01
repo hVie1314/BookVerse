@@ -1,5 +1,6 @@
 const momo = require('../../utils/momo');
 const AppError = require('../../utils/appError');
+const OrderController = require('./orderController'); 
 
 
 class PaymentController {
@@ -26,15 +27,24 @@ class PaymentController {
             //console.log(req.body);
 
             const { orderId, resultCode } = req.body;
+            let updatedOrder = null;
 
             if (resultCode === 0) {
-                
-                // TODO: update order status in db
-                
+                // update order status to success
+                updatedOrder = await OrderController.updateOrderStatus(orderId, 'success');        
+            }
+            else { // timeout or something else
+                // update order status to failed
+                updatedOrder = await OrderController.updateOrderStatus(orderId, 'cancelled');        
             }
             
+            return res.status(200).json({ updatedOrder });
+
         } catch (error) {
-            throw new AppError(500, "INTERNAL_SERVER_ERROR", error.message);
+            if (error instanceof AppError) {
+                throw error;
+            }
+            throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
         }
     }
 
