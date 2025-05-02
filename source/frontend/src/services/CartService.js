@@ -1,6 +1,7 @@
 import Api from '@/services/Api';
 import AuthenticationService from './AuthenticationService';
 import eventBus from '@/eventBus.js';
+import BookService from './BookService';
 export default {
 
     // Phương thức chung để thêm vào giỏ hàng
@@ -81,5 +82,74 @@ export default {
             console.error('Error merging cart:', error.response?.data || error.message);
             throw error;
           });
-    }
+    },
+    //////////////////////////
+    // Lấy chi tiết đầy đủ của tất cả sản phẩm trong giỏ hàng
+    async getCartItemsWithDetails(userId) {
+        try {
+            // 1. Lấy thông tin giỏ hàng cơ bản
+            const cartResponse = await this.getUserCart(userId);
+            
+            if (!cartResponse.data || !cartResponse.data.success || !cartResponse.data.data || !cartResponse.data.data.products) {
+                console.log('Cấu trúc dữ liệu giỏ hàng không hợp lệ:', cartResponse.data);
+                return [];
+            }
+            
+            const cartItems = cartResponse.data.data.products;
+            const totalPrice = cartResponse.data.data.totalPrice;
+            
+            // 2. Lấy thông tin chi tiết cho từng sản phẩm
+            const itemsWithDetails = await Promise.all(
+                cartItems.map(async (item) => {
+                    try {
+                        const productResponse = await BookService.getBookById(item.productId);
+                        
+                        if (productResponse.data && productResponse.data.data) {
+                            const productDetails = productResponse.data.data;
+                            // Kết hợp thông tin chi tiết sản phẩm với số lượng từ giỏ hàng
+                            return {
+                                ...productDetails,
+                                quantity: item.quantity,
+                                cartItemId: item.productId
+                            };
+                        } else {
+                            // Dữ liệu fallback nếu không thể lấy chi tiết sản phẩm
+                            return {
+                                id: item.productId,
+                                title: `Sách #${item.productId.substring(item.productId.length - 6)}`,
+                                price: 0,
+                                image: '/images/default-book-cover.jpg',
+                                author: 'Không có thông tin',
+                                quantity: item.quantity,
+                                cartItemId: item.productId
+                            };
+                        }
+                    } catch (error) {
+                        console.error(`Lỗi khi lấy chi tiết sản phẩm ${item.productId}:`, error);
+                        // Trả về đối tượng mặc định nếu có lỗi
+                        return {
+                            id: item.productId,
+                            title: 'Không thể tải thông tin sách',
+                            price: 0,
+                            image: '/images/default-book-cover.jpg',
+                            author: 'Không có thông tin',
+                            quantity: item.quantity,
+                            cartItemId: item.productId
+                        };
+                    }
+                })
+            );
+            
+            return {
+                items: itemsWithDetails,
+                totalPrice: totalPrice
+            };
+        } catch (error) {
+            console.error('Lỗi khi lấy chi tiết giỏ hàng:', error);
+            return {
+                items: [],
+                totalPrice: 0
+            };
+        }
+    },
 }

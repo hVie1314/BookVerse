@@ -43,5 +43,15 @@ export default {
     // Xóa sách (chỉ admin/staff)
     deleteBook(id) {
         return Api().delete(`book/${id}`);
+    },
+
+    // Lấy sách liên quan
+    getRelatedBooks(bookId, limit) {
+        return Api().get(`book/related/${bookId}/${limit}`);
+    },
+    
+    // Lấy đánh giá trung bình của sách
+    getBookRating(bookId) {
+        return Api().get(`book/rating/${bookId}`);
     }
 }
