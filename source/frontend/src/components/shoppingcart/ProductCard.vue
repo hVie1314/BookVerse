@@ -18,7 +18,7 @@
       <button class="quantity-btn" @click="increaseQuantity">+</button>
     </div>
     <div class="price-info">
-      <span class="price-value">{{ formatPrice(product.price) }}</span>
+      <span class="price-value">{{ formatPrice(getPrice()) }}</span>
       <button class="remove-button" @click="removeItem">
         <i class="fa-solid fa-trash"></i>
       </button>
@@ -71,10 +71,13 @@ export default {
       }
     },
     formatPrice(price) {
+      // Đảm bảo price là một số
+      const validPrice = isNaN(price) ? 0 : Number(price);
+      
       return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
         currency: 'VND'
-      }).format(price);
+      }).format(validPrice);
     }
   }
 };

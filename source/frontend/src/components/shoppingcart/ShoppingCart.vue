@@ -11,7 +11,10 @@
               @update-quantity="updateQuantity"
               @remove-item="removeItem"
             />
-            <CheckoutSummary />
+            <CheckoutSummary
+              :totalPrice="totalPrice" 
+              @checkout="proceedToCheckout" 
+            />
           </section>
           <div v-else class="loading-container">
             <p>Đang tải giỏ hàng...</p>
@@ -74,8 +77,9 @@
               console.log("First book sample:", cartData.items[0]);
             }
             
-            this.cartItems = cartData.items;
-            this.totalPrice = cartData.totalPrice;
+            this.cartItems = cartData.items || [];
+            this.totalPrice = Number(cartData.totalPrice) || 0;
+            console.log("Total price after conversion:", this.totalPrice);
           }  else {
             // Lấy giỏ hàng khách
             const guestCartId = localStorage.getItem('guestCartId');
