@@ -1,7 +1,9 @@
 <template>
-    <article class="category-item" role="listitem" @click="$emit('click')">
-      {{ text }}
-    </article>
+    <div class="category-item" @click="handleClick">
+      <div class="category-content">
+        <h2 class="category-text">{{ text }}</h2>
+      </div>
+    </div>
 </template>
   
 <script>
@@ -12,7 +14,16 @@ export default {
             type: String,
             required: true,
         },
+        categoryId: {
+            type: String,
+            required: true
+        }
     },
+    methods: {
+        handleClick() {
+        this.$emit('category-selected', this.categoryId);
+        }
+    }
 };
 </script>
 
@@ -37,9 +48,27 @@ export default {
     transition: all 0.3s ease;
 }
 
+/* .category-item {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+} */
+
 .category-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.3);
-    background-color: #f9f3ea;
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  background-color: antiquewhite;
+}
+
+.category-text {
+  color: #4d2900;
+  font-family: "Montserrat", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
 }
 </style>

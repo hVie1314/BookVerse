@@ -1,4 +1,4 @@
 // Tạo file eventBus.js
 import mitt from 'mitt';
-const emitter = mitt();
-export default emitter;
+const eventBus = mitt();
+export default eventBus;

@@ -1,22 +1,28 @@
 import Api from '@/services/Api';
 import AuthenticationService from './AuthenticationService';
-
+import eventBus from '@/eventBus.js';
 export default {
 
     // Phương thức chung để thêm vào giỏ hàng
+    // Trong CartService.js - Phương thức addToCart
     addToCart({ bookId, quantity = 1 }) {
         // Kiểm tra người dùng đã đăng nhập chưa
         if (AuthenticationService.isLoggedIn()) {
             const user = AuthenticationService.getCurrentUser();
             return this.addToUserCart(user.id, bookId, quantity);
         } else {
-            // Lấy cartId từ localStorage nếu đã có
+        // Lấy cartId từ localStorage nếu đã có
             let cartId = localStorage.getItem('guestCartId');
             if (!cartId) {
                 // Tạo cartId mới nếu chưa có
                 cartId = 'guest_' + Date.now();
                 localStorage.setItem('guestCartId', cartId);
             }
+            
+            // Thêm debug log
+            // console.log("Using guest cart ID for adding item:", cartId);
+            // console.log("Adding book ID:", bookId, "with quantity:", quantity);
+            
             return this.addToGuestCart(cartId, bookId, quantity);
         }
     },
@@ -63,6 +69,17 @@ export default {
     
     // Gộp giỏ hàng khách vào giỏ hàng người dùng sau khi đăng nhập
     mergeGuestCartToUserCart(userId, cartId) {
-        return Api().post('cart/merge', { userId, cartId });
+        console.log(`Merging guest cart ${cartId} to user ${userId}`);
+        return Api().post('cart/merge', { userId, cartId })
+          .then(response => {
+            console.log('Merge cart response:', response.data);
+            // Phát sự kiện để cập nhật UI giỏ hàng
+            eventBus.emit('cart-updated');
+            return response;
+          })
+          .catch(error => {
+            console.error('Error merging cart:', error.response?.data || error.message);
+            throw error;
+          });
     }
 }
