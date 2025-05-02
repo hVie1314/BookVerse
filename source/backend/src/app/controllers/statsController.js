@@ -112,7 +112,49 @@ class StatsController {
     }
 
     // Get revenue statistics for a given date range (startMonth-year to endMonth-year)
-    // async getRevenueByDateRange(req, res, next) 
+    // GET /stats/revenue
+    async getRevenueByDateRange(req, res, next) {
+        try {
+            let { startMonth, startYear, endMonth, endYear } = req.query;
+
+            startMonth = parseInt(startMonth);
+            startYear = parseInt(startYear);
+            endMonth = parseInt(endMonth);
+            endYear = parseInt(endYear);
+
+            if (
+                isNaN(startMonth) || isNaN(startYear) ||
+                isNaN(endMonth) || isNaN(endYear)
+            ) {
+                return next(new AppError(400, 'BAD_REQUEST', 'Invalid query parameters'));
+            }
+
+            const results = [];
+
+            let currentMonth = startMonth;
+            let currentYear = startYear;
+
+            while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
+                const stat = await StatsController.getMonthlyStats(currentMonth, currentYear, next);
+                results.push({
+                    month: currentMonth,
+                    year: currentYear,
+                    revenue: stat.revenue
+                });
+
+                // Tăng tháng
+                currentMonth++;
+                if (currentMonth > 12) {
+                    currentMonth = 1;
+                    currentYear++;
+                }
+            }
+
+            return res.status(200).json(results);
+        } catch (error) {
+            return next(new AppError(500, 'INTERNAL_SERVER_ERROR', error.message));
+        }
+    }
 }
 
 module.exports = new StatsController();
