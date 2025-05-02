@@ -22,7 +22,8 @@
         v-for="category in categories" 
         :key="category.id" 
         :text="category.categoryName" 
-        @click="navigateToCategory(category.id)"
+        :categoryId="category.categoryName"
+        @category-selected="navigateToCategory" 
       />
     </div>
   </section>
@@ -75,14 +76,14 @@ methods: {
   // Phương thức điều hướng đến trang danh sách sách theo danh mục
   navigateToCategory(categoryId) {
     this.$router.push({ 
-      path: '/search',
-      query: { category: categoryId }
+      name: 'category', // Đảm bảo đây là name đúng của route
+      query: { categories: categoryId }
     });
   }
 },
-mounted() {
-  this.fetchCategories();
-}
+  mounted() {
+    this.fetchCategories();
+  }
 };
 </script>
 
