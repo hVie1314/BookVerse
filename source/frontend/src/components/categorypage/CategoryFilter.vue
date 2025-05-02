@@ -73,7 +73,7 @@
                 this.error = null;
                 try {
                     const response = await BookService.getCategories();
-                    console.log("Categories API response:", response); // Debug
+                    // console.log("Categories API response:", response); // Debug
                     
                     if (response.data && response.data.success) {
                         // Kiểm tra cấu trúc của response theo API thực tế
@@ -92,7 +92,7 @@
                         this.categories = [];
                     }
                     
-                    console.log("Categories after processing:", this.categories); // Debug
+                    // console.log("Categories after processing:", this.categories); // Debug
                     
                 } catch (error) {
                     console.error('Error fetching categories:', error);

@@ -67,6 +67,8 @@
 <script>
 import AuthenticationService from '@/services/AuthenticationService';
 import Alert from '@/components/Alert.vue';
+import CartService from '@/services/CartService';
+import eventBus from '@/eventBus.js';
 
 export default {
   name: 'LoginForm',
@@ -90,6 +92,7 @@ export default {
     }
   },
   methods: {
+    
     togglePasswordVisibility() {
       this.isPasswordVisible = !this.isPasswordVisible;
     },
@@ -119,6 +122,25 @@ export default {
           
           // Lưu thông tin người dùng
           AuthenticationService.setUser(userWithToken);
+          
+          // Kiểm tra và merge giỏ hàng khách (THÊM MỚI)
+          const guestCartId = localStorage.getItem('guestCartId');
+          if (guestCartId) {
+            try {
+              // Gọi API để merge giỏ hàng
+              await CartService.mergeGuestCartToUserCart(userData.id || userData._id, guestCartId);
+              console.log('Đã merge giỏ hàng khách vào tài khoản');
+              
+              // Xóa guestCartId từ localStorage
+              localStorage.removeItem('guestCartId');
+              
+              // Thông báo cập nhật giỏ hàng để cập nhật UI
+              eventBus.emit('cart-updated');
+            } catch (mergeError) {
+              console.error('Lỗi khi merge giỏ hàng:', mergeError);
+              // Không hiển thị lỗi cho người dùng, vẫn cho phép đăng nhập thành công
+            }
+          }
           
           this.alert = {
             show: true,

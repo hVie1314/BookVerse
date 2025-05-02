@@ -109,7 +109,7 @@
                 
                 try {
                     const response = await BookService.getAllBooks();
-                    console.log("API response:", response); // Log để kiểm tra response
+                    // console.log("API response:", response); // Log để kiểm tra response
                     
                     if (response.data && response.data.success) {
                         // Kiểm tra và đảm bảo dữ liệu là mảng
