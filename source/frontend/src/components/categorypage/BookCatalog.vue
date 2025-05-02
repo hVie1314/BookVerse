@@ -36,13 +36,14 @@
         },
         data() {
             return {
-            books: [],
-            currentPage: 1,
-            booksPerPage: 16, // 5 sách mỗi hàng x 4 hàng
-            loading: false,
-            error: null,
-            sortOption: 'default',
-            filters: {}
+                books: [],
+                currentPage: 1,
+                booksPerPage: 16, // 5 sách mỗi hàng x 4 hàng
+                loading: false,
+                error: null,
+                sortOption: 'default',
+                filters: {},
+                searchQuery: ''
             };
         },
         computed: {
@@ -52,6 +53,15 @@
                 }
                 let result = [...this.books];
                 
+                // Áp dụng tìm kiếm nếu có
+                if (this.searchQuery) {
+                    const query = this.searchQuery.toLowerCase();
+                    result = result.filter(book => 
+                    (book.title && book.title.toLowerCase().includes(query)) || 
+                    (book.author && book.author.toLowerCase().includes(query))
+                    );
+                }
+
                 // Áp dụng bộ lọc nếu có
                 if (this.filters.categories && this.filters.categories.length > 0) {
                     result = result.filter(book => this.filters.categories.includes(book.category));
@@ -133,15 +143,30 @@
             },
             applyFilters(filters) {
                 this.filters = { ...filters };
+                
+                // Lấy searchQuery từ URL query params nếu có
+                if (this.$route.query.search) {
+                    this.searchQuery = this.$route.query.search;
+                }
+                
                 this.currentPage = 1; // Reset về trang đầu tiên khi áp dụng bộ lọc
             }
         },
         created() {
             this.fetchBooks();
+
+            if (this.$route.query.search) {
+                this.searchQuery = this.$route.query.search;
+            }
         },
         watch: {
             sortOption() {
                 this.currentPage = 1; // Reset về trang đầu tiên khi thay đổi sắp xếp
+            },
+
+            '$route.query.search'(newValue) {
+                this.searchQuery = newValue || '';
+                this.currentPage = 1; // Reset về trang đầu khi tìm kiếm thay đổi
             }
         }
     };
