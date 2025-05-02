@@ -2,7 +2,8 @@
     <div class="book-grid">
       <BookCard 
         v-for="book in books" 
-        :key="book._id"
+        :key="book._id || book.id"
+        :bookId="book._id || book.id"
         :image="book.image"
         :price="formatPrice(book.price)"
         :title="book.title"

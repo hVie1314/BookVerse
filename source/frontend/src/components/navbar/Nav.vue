@@ -87,9 +87,12 @@
           />
         </div>
       </div>
-      <div class="icon-container">
+      <div class="icon-container" @click="navigateToCart">
+        <!-- <div class="cart-icon-container"> -->
         <i class="fa-regular fa-cart-shopping fa-xl"></i>
-        <span class="icon-label">Giỏ hàng</span>
+        <div v-if="cartItemCount > 0" class="cart-badge">{{ cartItemCount }}</div>
+        <!-- </div> -->
+        <span class="icon-label label-cart">Giỏ hàng</span>
       </div>
       <div class="icon-container-menu" @click="handleBarsClick">
         <i class="fa-solid fa-bars fa-xl"
@@ -107,6 +110,7 @@
 import AuthButton from './AuthButton.vue';
 import AuthenticationService from '@/services/AuthenticationService';
 import UserMenu from '@/components/menu/UserMenu.vue';
+import CartService from '@/services/CartService';
 import eventBus from '@/eventBus.js';
 
 export default {
@@ -126,6 +130,7 @@ export default {
       searchQuery: '', // Trạng thái tìm kiếm
       searchFocused: false, // Trạng thái focus vào ô tìm kiếm
       searchIconHovered: false, // Trạng thái hover icon tìm kiếm
+      cartItemCount: 0, // Số lượng sản phẩm trong giỏ hàng
     };
   },
   created() {
@@ -135,11 +140,15 @@ export default {
   },
   beforeUnmount() {
     // Loại bỏ listener khi component được hủy để tránh memory leak
-    eventBus.off('logout', this.handleLogoutEvent);
+    eventBus.off('cart-updated', this.getCartItemCount);
   },
   mounted() {
     // Kiểm tra trạng thái đăng nhập khi component được gắn vào DOM
     this.checkLoginStatus();
+    this.getCartItemCount();
+    
+    // Đăng ký sự kiện cập nhật giỏ hàng
+    eventBus.on('cart-updated', this.getCartItemCount);
   },
   activated() {
     // Kiểm tra trạng thái đăng nhập khi component được kích hoạt (nếu sử dụng keep-alive)
@@ -268,12 +277,53 @@ export default {
         const searchInput = document.querySelector('.search-input');
         if (searchInput) searchInput.focus();
       });
+    },
+    async getCartItemCount() {
+      try {
+        let cartData;
+        if (this.isLoggedIn) {
+          const userData = AuthenticationService.getCurrentUser();
+          
+          if (userData) {
+            const response = await CartService.getUserCart(userData.id);
+            cartData = response.data;
+          }
+        } else {
+          const guestCartId = localStorage.getItem('guestCartId');
+          if (guestCartId) {
+            const response = await CartService.getGuestCart(guestCartId);
+            cartData = response.data;
+          }
+        }
+        
+         // Kiểm tra nhiều cấu trúc dữ liệu có thể có
+        if (cartData && cartData.items && Array.isArray(cartData.items)) {
+          this.cartItemCount = cartData.items.reduce((total, item) => total + item.quantity, 0);
+        } else if (cartData && cartData.products && Array.isArray(cartData.products)) {
+          this.cartItemCount = cartData.products.reduce((total, item) => total + item.quantity, 0);
+        } else if (cartData && cartData.cart && cartData.cart.items) {
+          this.cartItemCount = cartData.cart.items.reduce((total, item) => total + item.quantity, 0);
+        } else if (cartData && cartData.data && cartData.data.products && Array.isArray(cartData.data.products)) {
+        // Thêm điều kiện này để kiểm tra cấu trúc thực tế
+          this.cartItemCount = cartData.data.products.reduce((total, item) => total + item.quantity, 0);
+       }   else {
+          this.cartItemCount = 0;
+          console.log("No items in cart or invalid cart data structure:", cartData);
+        }
+      } catch (error) {
+        this.cartItemCount = 0;
+      }
+    },
+    // Method để chuyển đến trang giỏ hàng
+    navigateToCart() {
+      this.$router.push('/cart');
     }
   },
   // Kiểm tra trạng thái đăng nhập khi route thay đổi
   watch: {
     '$route'() {
       this.checkLoginStatus();
+      this.getCartItemCount(); // Cập nhật lại số lượng khi chuyển trang
     }
   },
 }
@@ -360,6 +410,7 @@ export default {
   flex-direction: column;
   align-items: center;
   cursor: pointer;
+  position: relative;
 }
 
 .icon-label {
@@ -698,4 +749,61 @@ i.fa-bars{
   padding: 0 10px;
   margin-bottom: 20px; /* Thêm margin để có không gian cho chữ "Xóa" */
 }
+
+.cart-icon-container {
+  position: relative;
+  width: 24px; /* Kích thước cố định cho container */
+  height: 24px; /* Kích thước cố định cho container */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -20px;
+  right: -2px;
+  background-color: #f84c4c;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  animation: badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  z-index: 2; /* Đảm bảo badge hiển thị trên các phần tử khác */
+}
+
+/* Đảm bảo icon cart có vị trí nhất quán */
+.fa-cart-shopping {
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes badge-pop {
+  0% {
+    transform: scale(0);
+  }
+  80% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Hiệu ứng khi hover vào icon giỏ hàng */
+.icon-container:hover .cart-badge {
+  transform: scale(1.2);
+  background-color: #ff3333;
+}
+
+
 </style>

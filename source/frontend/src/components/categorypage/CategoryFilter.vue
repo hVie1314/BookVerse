@@ -44,13 +44,36 @@
                 error: null
             };
         },
+        mounted() {
+            this.fetchCategories();
+            
+            // Kiểm tra nếu có category trong query
+            if (this.$route.query.categories) {
+            const categoryFromQuery = this.$route.query.categories;
+            if (!this.selectedCategories.includes(categoryFromQuery)) {
+                this.selectedCategories.push(categoryFromQuery);
+                // Emit sự kiện để cập nhật filter
+                this.$emit('filter-change', { categories: this.selectedCategories });
+            }
+            }
+        },
+        
+        watch: {
+            // Theo dõi thay đổi của route.query
+            '$route.query.categories': function(newCategory) {
+            if (newCategory && !this.selectedCategories.includes(newCategory)) {
+                this.selectedCategories = [newCategory];
+                this.$emit('filter-change', { categories: this.selectedCategories });
+            }
+            }
+        },
         methods: {
             async fetchCategories() {
                 this.loading = true;
                 this.error = null;
                 try {
                     const response = await BookService.getCategories();
-                    console.log("Categories API response:", response); // Debug
+                    // console.log("Categories API response:", response); // Debug
                     
                     if (response.data && response.data.success) {
                         // Kiểm tra cấu trúc của response theo API thực tế
@@ -69,7 +92,7 @@
                         this.categories = [];
                     }
                     
-                    console.log("Categories after processing:", this.categories); // Debug
+                    // console.log("Categories after processing:", this.categories); // Debug
                     
                 } catch (error) {
                     console.error('Error fetching categories:', error);
