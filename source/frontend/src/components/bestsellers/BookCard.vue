@@ -10,7 +10,7 @@
             <p class="book-author">{{ author }}</p>
             <div class="footer-card-container">
                 <button class="cart-button" @click="addToCart">{{ cartText }}</button>
-                <i class="fa-regular fa-heart fa-2xl"></i>
+                <i class="fa-regular fa-heart fa-2xl" @click="addToFavorites"></i>
             </div>
             <div class="book-sold">
                 <div class="sold-title">
@@ -26,6 +26,7 @@
 
 <script>
 import CartService from '@/services/CartService';
+import AuthenticationService from '@/services/AuthenticationService';
 import eventBus from '@/eventBus.js';
 export default {
     name: "BookCard",
@@ -85,6 +86,24 @@ export default {
                 if (this.$toast) {
                     this.$toast.error("Không thể thêm sách vào giỏ hàng");
                 }
+            }
+        },
+        addToFavorites() {
+    // Kiểm tra trạng thái đăng nhập
+            if (!AuthenticationService.isLoggedIn()) {
+                // Phát sự kiện hiển thị alert toàn cục
+                eventBus.emit('show-alert', {
+                    type: 'error',
+                    title: 'Yêu cầu đăng nhập',
+                    message: 'Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích'
+                });
+                return;
+            }
+            
+            // Xử lý thêm vào danh sách yêu thích nếu đã đăng nhập
+            console.log("Đã thêm sách vào danh sách yêu thích:", this.bookId);
+            if (this.$toast) {
+                this.$toast.success("Đã thêm vào danh sách yêu thích");
             }
         }
     },
