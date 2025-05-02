@@ -9,7 +9,7 @@
             <h3 class="book-title">{{ title }}</h3>
             <p class="book-author">{{ author }}</p>
             <div class="footer-card-container">
-                <button class="cart-button">{{ cartText }}</button>
+                <button class="cart-button" @click="addToCart">{{ cartText }}</button>
                 <i class="fa-regular fa-heart fa-2xl"></i>
             </div>
             <div class="book-sold">
@@ -25,10 +25,15 @@
 </template>
 
 <script>
-
+import CartService from '@/services/CartService';
+import eventBus from '@/eventBus.js';
 export default {
     name: "BookCard",
     props: {
+        bookId: {
+            type: [String, Number],
+            required: true
+        },
         image: {
             type: String,
             required: true,
@@ -61,6 +66,27 @@ export default {
                 return (typeof value === 'number' || typeof value === 'string');
             }
         },
+    },
+    methods: {
+        async addToCart() {
+            try {
+                await CartService.addToCart({ bookId: this.bookId, quantity: 1 });
+                // Thông báo thành công (nếu bạn đang sử dụng toast notification)
+                if (this.$toast) {
+                    this.$toast.success("Đã thêm sách vào giỏ hàng");
+                }
+                
+                // Emit sự kiện để cập nhật số lượng giỏ hàng
+                eventBus.emit('cart-updated');
+                
+                console.log("Đã thêm sách ID:", this.bookId, "vào giỏ hàng");
+            } catch (error) {
+                console.error("Lỗi khi thêm sách vào giỏ hàng:", error);
+                if (this.$toast) {
+                    this.$toast.error("Không thể thêm sách vào giỏ hàng");
+                }
+            }
+        }
     },
 };
 </script>

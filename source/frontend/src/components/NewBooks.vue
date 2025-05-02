@@ -27,6 +27,7 @@
           <BookCard
             v-for="book in currentPageBooks"
             :key="book.id"
+            :bookId="book.id"
             :image="book.image"
             :price="`${book.price.toLocaleString('vi-VN')} đ`"
             :originalPrice="book.originalPrice ? `${book.originalPrice.toLocaleString('vi-VN')} đ` : ''"
@@ -34,7 +35,6 @@
             :author="book.author"
             :cartText="'Thêm vào giỏ'"
             :sold="String(book.sold)"
-            @add-to-cart="addToCart(book.id)"
           />
         </div>
       </div>

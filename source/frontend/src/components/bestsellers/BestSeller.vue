@@ -27,6 +27,7 @@
         <BookCard
           v-for="book in currentPageBooks"
           :key="book.id"
+          :bookId="book.id"
           :image="book.image"
           :price="`${book.price.toLocaleString('vi-VN')} đ`"
           :originalPrice="book.originalPrice ? `${book.originalPrice.toLocaleString('vi-VN')} đ` : ''"
@@ -34,7 +35,6 @@
           :author="book.author"
           :cartText="'Thêm vào giỏ hàng'"
           :sold="String(book.sold)"
-          @add-to-cart="addToCart(book.id)"
         />
       </div>
       
@@ -56,6 +56,7 @@ import BookCard from "./BookCard.vue";
 import BookService from '@/services/BookService';
 import CartService from '@/services/CartService';
 import NavigationArrow from "./NavigationArrow.vue";// Import NavigationArrow component
+import eventBus from '@/eventBus.js';
 
 export default {
   name: "BestSeller",
@@ -91,7 +92,6 @@ export default {
       this.loading = true;
       try {
         const response = await BookService.getTopSellingBooks(this.totalBooks);
-        console.log("API response:", response);
         
         // Xử lý linh hoạt với nhiều cấu trúc có thể có từ response
         if (response.data && response.data.success && response.data.data && response.data.data.books) {
@@ -145,6 +145,8 @@ export default {
       try {
         await CartService.addToCart({ bookId, quantity: 1 });
         this.$toast.success("Đã thêm sách vào giỏ hàng");
+
+        eventBus.emit("cart-updated"); // Phát sự kiện để cập nhật giỏ hàng
       } catch (error) {
         console.error("Error adding book to cart:", error);
         this.$toast.error("Không thể thêm sách vào giỏ hàng.");

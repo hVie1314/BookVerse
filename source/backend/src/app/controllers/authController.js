@@ -128,7 +128,7 @@ class AuthController {
             role: userRole,
          }, 
             process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: '10000m'
+            expiresIn: '10m'
          });
 
          // save new token to redis
