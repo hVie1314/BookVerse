@@ -49,7 +49,6 @@ methods: {
     this.loading = true;
     try {
       const response = await BookService.getCategories();
-      console.log("Categories response:", response);
       
       // Xử lý response linh hoạt dựa trên cấu trúc có thể có
       if (response.data && response.data.success && response.data.data && response.data.data.categories) {

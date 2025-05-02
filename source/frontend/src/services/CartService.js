@@ -4,19 +4,25 @@ import AuthenticationService from './AuthenticationService';
 export default {
 
     // Phương thức chung để thêm vào giỏ hàng
+    // Trong CartService.js - Phương thức addToCart
     addToCart({ bookId, quantity = 1 }) {
         // Kiểm tra người dùng đã đăng nhập chưa
         if (AuthenticationService.isLoggedIn()) {
             const user = AuthenticationService.getCurrentUser();
             return this.addToUserCart(user.id, bookId, quantity);
         } else {
-            // Lấy cartId từ localStorage nếu đã có
+        // Lấy cartId từ localStorage nếu đã có
             let cartId = localStorage.getItem('guestCartId');
             if (!cartId) {
                 // Tạo cartId mới nếu chưa có
                 cartId = 'guest_' + Date.now();
                 localStorage.setItem('guestCartId', cartId);
             }
+            
+            // Thêm debug log
+            console.log("Using guest cart ID for adding item:", cartId);
+            console.log("Adding book ID:", bookId, "with quantity:", quantity);
+            
             return this.addToGuestCart(cartId, bookId, quantity);
         }
     },
