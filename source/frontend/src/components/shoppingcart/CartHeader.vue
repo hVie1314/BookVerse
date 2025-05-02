@@ -1,74 +1,67 @@
 <template>
     <header class="cart-header">
       <div class="header-content">
-        <div class="title-section">
-          <h1 class="main-title">Giỏ hàng của tôi</h1>
+        <h1 class="main-title">Giỏ hàng của tôi</h1>
+        <div class="information-container">
           <h2 class="product-label">Sản phẩm</h2>
-        </div>
-        <div class="quantity-section">
           <h2 class="quantity-label">Số lượng</h2>
-        </div>
-      </div>
-      <div class="price-section">
-        <h2 class="price-label">Đơn giá</h2>
+          <h2 class="price-label">Đơn giá</h2>
+        </div>  
       </div>
     </header>
   </template>
     
-  <script>
+<script>
   export default {
     name: "CartHeader",
   };
-  </script>
+</script>
     
-  <style scoped>
+<style scoped>
   .cart-header {
     z-index: 10;
     width: 100%;
     display: flex;
-    justify-content: space-between;
-    padding-bottom: 20px;
   }
     
   .header-content {
-    display: flex;
-    width: 78%;
+    width: 62%;
+    display: flex;  
+    flex-direction: column;
+    gap: 80px;
   }
-    
-  .title-section {
-    width: 76%;
-    font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+
+  .main-title{
     color: rgba(77, 41, 0, 1);
-  }
-    
-  .main-title {
-    font-size: 42px;
-    font-weight: 600;
-    margin-bottom: 40px;
-  }
-    
-  .product-label {
-    font-size: 24px;
+    font-size: 36px;
     font-weight: 800;
-    margin-top: 60px;
+    font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
   }
     
-  .quantity-section {
-    width: 24%;
+  .information-container {
+    display: flex;
+    margin-top: 20px;
   }
+
+  .product-label {
+    color: rgba(77, 41, 0, 1);
+    font-size: 24px;
+    font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+    font-weight: 800;
+    text-align: left;
+    width: 47%;
+  }
+    
     
   .quantity-label {
     color: rgba(77, 41, 0, 1);
     font-size: 24px;
     font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
     font-weight: 800;
-    text-align: center;
-    margin-top: 127px;
+    text-align: left;
+    width: 30%;
   }
-    
-  .price-section {
-    width: 22%;
-  }
+
     
   .price-label {
     color: rgba(77, 41, 0, 1);
@@ -76,36 +69,6 @@
     font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
     font-weight: 800;
     text-align: center;
-    margin-top: 127px;
   }
-    
-  @media (max-width: 991px) {
-    .cart-header {
-      flex-direction: column;
-    }
-  
-    .header-content {
-      flex-direction: column;
-      width: 100%;
-    }
-    
-    .title-section,
-    .quantity-section,
-    .price-section {
-      width: 100%;
-    }
-    
-    .main-title {
-      font-size: 32px;
-      margin-bottom: 20px;
-    }
-    
-    .product-label,
-    .quantity-label,
-    .price-label {
-      margin-top: 20px;
-      font-size: 20px;
-      text-align: left;
-    }
-  }
-  </style>
+
+</style>

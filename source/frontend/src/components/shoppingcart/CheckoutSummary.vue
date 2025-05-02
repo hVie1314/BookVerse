@@ -8,17 +8,17 @@
             <p class="summary-label">Phí vận chuyển</p>
           </div>
           <div class="values">
-            <p class="summary-value">$1,362.00</p>
-            <p class="summary-value">$0.00</p>
+            <p class="summary-value">{{ formatPrice(totalPrice) }}</p>
+            <p class="summary-value">{{ formatPrice(shippingFee) }}</p>
           </div>
         </div>
         <div class="summary-divider"></div>
         <div class="total-row">
           <h3 class="total-label">Tổng thanh toán</h3>
-          <p class="total-value">$1,362.00</p>
+          <p class="total-value">{{ formatPrice(totalPrice + shippingFee) }}</p>
         </div>
       </div>
-      <button class="checkout-button">ĐẶT HÀNG</button>
+      <button class="checkout-button" @click="checkout">ĐẶT HÀNG</button>
     </div>
   </aside>
 </template>
@@ -26,6 +26,28 @@
 <script>
 export default {
   name: "CheckoutSummary",
+  props: {
+    totalPrice: {
+      type: Number,
+      default: 0
+    }
+  },
+  data() {
+    return {
+      shippingFee: 0 // Phí vận chuyển mặc định
+    };
+  },
+  methods: {
+    formatPrice(price) {
+      return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+      }).format(price);
+    },
+    checkout() {
+      this.$emit('checkout');
+    }
+  }
 };
 </script>
 

@@ -2,13 +2,19 @@
   <section class="product-list">
     <div class="cart-divider"></div>
     <div class="cart-summary">
-      <p class="cart-count">Bạn có 3 sản phẩm trong giỏ hàng</p>
+      <p class="cart-count">Bạn có {{ itemCount }} sản phẩm trong giỏ hàng</p>
       <button class="select-all">Chọn tất cả</button>
     </div>
+    <div v-if="products.length === 0" class="empty-cart">
+      <p>Giỏ hàng của bạn đang trống</p>
+      <button class="continue-shopping" @click="$router.push('/')">Tiếp tục mua sắm</button>
+    </div>
     <ProductCard
-      v-for="(product, index) in products"
-      :key="index"
+      v-for="product in products"
+      :key="product.id || product._id"
       :product="product"
+      @update-quantity="updateProductQuantity"
+      @remove="removeProduct"
     />
   </section>
 </template>
@@ -21,29 +27,23 @@ export default {
   components: {
     ProductCard,
   },
-  data() {
-    return {
-      products: [
-        {
-          image: "https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/01f1f192bb3216bf87a38bd6491a9aeb28e497cd?placeholderIfAbsent=true",
-          name: "Italy Pizza",
-          description: "Extra cheese and toping",
-          price: 681,
-        },
-        {
-          image: "https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/6eeb6ce64aec6b53776f9eff5524d99b5b16b98d?placeholderIfAbsent=true",
-          name: "Combo Plate",
-          description: "Extra cheese and toping",
-          price: 681,
-        },
-        {
-          image: "https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/31589fe5a4c387eb0d8f67ab6742b5773b76ba8e?placeholderIfAbsent=true",
-          name: "Spanish Rice",
-          description: "Extra garllic",
-          price: 681,
-        },
-      ],
-    };
+  props: {
+    products: {
+      type: Array,
+      default: () => []
+    },
+    itemCount: {
+      type: Number,
+      default: 0
+    }
+  },
+  methods: {
+    updateProductQuantity(productId, quantity) {
+      this.$emit('update-quantity', productId, quantity);
+    },
+    removeProduct(productId) {
+      this.$emit('remove-item', productId);
+    }
   },
 };
 </script>
