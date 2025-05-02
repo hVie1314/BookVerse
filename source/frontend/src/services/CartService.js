@@ -159,4 +159,14 @@ export default {
             };
         }
     },
+
+    // Thêm phương thức mới để xóa sản phẩm khỏi giỏ hàng người dùng
+    removeFromUserCart(userId, productId) {
+        return Api().put('cart/', { userId, productId, quantity: 0, isRemove: true });
+    },
+
+    // Thêm phương thức mới để xóa sản phẩm khỏi giỏ hàng khách
+    removeFromGuestCart(cartId, productId) {
+        return Api().put('cart/guest', { cartId, productId, quantity: 0, isRemove: true });
+    },
 }

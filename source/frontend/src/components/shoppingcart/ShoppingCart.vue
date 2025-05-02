@@ -12,7 +12,7 @@
               @remove-item="removeItem"
             />
             <CheckoutSummary
-              :totalPrice="totalPrice" 
+              :totalPrice="calculatedTotalPrice " 
               @checkout="proceedToCheckout" 
             />
           </section>
@@ -52,6 +52,14 @@
         error: null
       };
     },
+    computed: {
+      calculatedTotalPrice() {
+        return this.cartItems.reduce((total, item) => {
+          const price = item.book?.price || item.price || 0;
+          return total + (price * item.quantity);
+        }, 0);
+      }
+    },
     created() {
       this.fetchCartData();
       // Lắng nghe sự kiện cập nhật giỏ hàng
@@ -78,7 +86,10 @@
             }
             
             this.cartItems = cartData.items || [];
-            this.totalPrice = Number(cartData.totalPrice) || 0;
+            this.totalPrice = this.cartItems.reduce((total, item) => {
+              const price = item.book?.price || item.price || 0;
+              return total + (price * item.quantity);
+            }, 0);
             console.log("Total price after conversion:", this.totalPrice);
           }  else {
             // Lấy giỏ hàng khách
@@ -127,19 +138,30 @@
       },
       async removeItem(productId) {
         try {
+          this.loading = true;
           const user = AuthenticationService.getCurrentUser();
+          
           if (user && user.id) {
-            await CartService.updateUserCart(user.id, productId, 0); // Số lượng 0 = xóa
+            // Sử dụng phương thức mới thay vì updateUserCart với quantity=0
+            await CartService.removeFromUserCart(user.id, productId);
+            
+            // Cập nhật lại giỏ hàng và tổng tiền
+            await this.fetchCartData();
+            
+            // Sử dụng giá trị calculatedTotalPrice thay vì totalPrice từ API
+            this.totalPrice = this.calculatedTotalPrice;
           } else {
             const guestCartId = localStorage.getItem('guestCartId');
             if (guestCartId) {
-              await CartService.updateGuestCart(guestCartId, productId, 0);
+              await CartService.removeFromGuestCart(guestCartId, productId);
+              await this.fetchCartData();
+              this.totalPrice = this.calculatedTotalPrice;
             }
           }
-          // Cập nhật lại giỏ hàng sau khi xóa
-          this.fetchCartData();
         } catch (error) {
           console.error('Lỗi khi xóa sản phẩm:', error);
+        } finally {
+          this.loading = false;
         }
       },
       proceedToCheckout() {
