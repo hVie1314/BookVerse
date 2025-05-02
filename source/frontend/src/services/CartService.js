@@ -50,7 +50,12 @@ export default {
     
     // Thêm sản phẩm vào giỏ hàng khách
     addToGuestCart(cartId, productId, quantity) {
-        return Api().post('cart/guest', { cartId, productId, quantity });
+        return Api().post('cart/guest', { cartId, productId, quantity })
+            .then(response => {
+                // Phát sự kiện để cập nhật UI
+                eventBus.emit('cart-updated');
+                return response;
+            });
     },
     
     // Cập nhật sản phẩm trong giỏ hàng khách
@@ -169,4 +174,92 @@ export default {
     removeFromGuestCart(cartId, productId) {
         return Api().put('cart/guest', { cartId, productId, quantity: 0, isRemove: true });
     },
+
+    // Thêm phương thức này vào CartService.js
+    async getGuestCartItemsWithDetails(guestCartId) {
+        try {
+            // 1. Lấy thông tin giỏ hàng cơ bản của khách
+            console.log(`Fetching cart for guest ID: ${guestCartId}`);
+            const cartResponse = await this.getGuestCart(guestCartId);
+            console.log('Guest cart response:', cartResponse.data);
+
+            if (!cartResponse.data || !cartResponse.data.success || !cartResponse.data.data || !cartResponse.data.data.products) {
+                console.log('Cấu trúc dữ liệu giỏ hàng không hợp lệ:', cartResponse.data);
+                return {
+                    items: [],
+                    totalPrice: 0
+                };
+            }
+            
+            const cartItems = cartResponse.data.data.products;
+            const totalPrice = cartResponse.data.data.totalPrice;
+            console.log(`Found ${cartItems.length} items in guest cart. Total price: ${totalPrice}`);
+            
+            // 2. Lấy thông tin chi tiết cho từng sản phẩm giống như với user cart
+            const itemsWithDetails = await Promise.all(
+                cartItems.map(async (item, index) => {
+                    try {
+                        console.log(`Fetching details for guest cart product ${index + 1}/${cartItems.length}: ID ${item.productId}`);
+                        const productResponse = await BookService.getBookById(item.productId);
+                        console.log(`Product ${item.productId} response:`, productResponse.data);
+                        
+                        if (productResponse.data && productResponse.data.data) {
+                            const bookData = productResponse.data.data.book || productResponse.data.data;
+                            console.log(`Successfully fetched details for product ${item.productId}`);
+                            
+                            return {
+                                ...productResponse.data.data,
+                                book: bookData,
+                                quantity: item.quantity,
+                                cartItemId: item.productId
+                            };
+                        } else {
+                            console.warn(`No data found for product ${item.productId}`);
+                            return {
+                                id: item.productId,
+                                title: `Sách #${item.productId.substring(item.productId.length - 6)}`,
+                                price: 0,
+                                image: 'https://via.placeholder.com/150?text=No+Image',
+                                author: 'Không có thông tin',
+                                quantity: item.quantity,
+                                cartItemId: item.productId
+                            };
+                        }
+                    } catch (error) {
+                        console.error(`Lỗi khi lấy chi tiết sản phẩm ${item.productId}:`, error);
+                        return {
+                            id: item.productId,
+                            title: 'Không thể tải thông tin sách',
+                            price: 0,
+                            image: 'https://via.placeholder.com/150?text=No+Image',
+                            author: 'Không có thông tin',
+                            quantity: item.quantity,
+                            cartItemId: item.productId
+                        };
+                    }
+                })
+            );
+            
+            console.log('Final guest cart items with details:', itemsWithDetails);
+            return {
+                items: itemsWithDetails,
+                totalPrice: totalPrice
+            };
+        } catch (error) {
+            console.error('Lỗi khi lấy chi tiết giỏ hàng khách:', error);
+            return {
+                items: [],
+                totalPrice: 0
+            };
+        }
+    },
+
+    ensureGuestCartId() {
+        let cartId = localStorage.getItem('guestCartId');
+        if (!cartId) {
+            cartId = 'guest_' + Date.now();
+            localStorage.setItem('guestCartId', cartId);
+        }
+        return cartId;
+    }
 }

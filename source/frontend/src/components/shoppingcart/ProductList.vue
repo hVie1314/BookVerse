@@ -3,11 +3,9 @@
     <div class="cart-divider"></div>
     <div class="cart-summary">
       <p class="cart-count">Bạn có {{ itemCount }} sản phẩm trong giỏ hàng</p>
-      <button class="select-all">Chọn tất cả</button>
     </div>
     <div v-if="products.length === 0" class="empty-cart">
-      <p>Giỏ hàng của bạn đang trống</p>
-      <button class="continue-shopping" @click="$router.push('/')">Tiếp tục mua sắm</button>
+      <p>Giỏ hàng của bạn đang trống hãy <span class="shop-link" @click="$router.push('/')">mua sắm</span> đi nào.</p>
     </div>
     <ProductCard
       v-for="product in products"
@@ -101,5 +99,45 @@ export default {
     flex-wrap: wrap;
     gap: 10px;
   }
+}
+
+.empty-cart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 50px auto;
+  font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 18px;
+  color: #4d2900;
+  text-align: center;
+}
+
+.shop-link {
+  color: #4d2900;
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  transition: color 0.3s ease;
+  padding: 0 2px;
+}
+
+.shop-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #4d2900;
+  transition: width 0.3s ease;
+}
+
+.shop-link:hover {
+  color: #755e47;
+}
+
+.shop-link:hover::after {
+  width: 100%;
 }
 </style>
