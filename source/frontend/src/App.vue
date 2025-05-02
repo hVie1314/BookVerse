@@ -26,6 +26,7 @@
 import AuthenticationService from '@/services/AuthenticationService';
 import eventBus from './eventBus';
 import Alert from '@/components/Alert.vue';
+import CartService from '@/services/CartService';
 export default {
   name: 'App',
   components: {
@@ -83,6 +84,10 @@ export default {
         this.loading = false;
       }, remainingTime);
     });
+
+    if (!AuthenticationService.isLoggedIn()) {
+        CartService.ensureGuestCartId();
+    }
   },
   beforeUnmount() {
     // Clean up listener

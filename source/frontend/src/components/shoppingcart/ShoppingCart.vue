@@ -95,16 +95,11 @@
             // Lấy giỏ hàng khách
             const guestCartId = localStorage.getItem('guestCartId');
             if (guestCartId) {
-              // Lấy thông tin giỏ hàng khách từ localStorage
-              const response = await CartService.getGuestCart(guestCartId);
-              if (response.data && response.data.success) {
-                // Xử lý tương tự như giỏ hàng người dùng
-                const guestCartData = response.data.data;
-                // Tạo cấu trúc dữ liệu giống với kết quả getCartItemsWithDetails
-                // (Logic lấy thông tin chi tiết từng sản phẩm sẽ được thực hiện ở backend)
-                this.cartItems = guestCartData.items || [];
-                this.totalPrice = guestCartData.totalPrice || 0;
-              }
+              // Sử dụng phương thức mới để lấy chi tiết giỏ hàng khách
+              const guestCartData = await CartService.getGuestCartItemsWithDetails(guestCartId);
+              this.cartItems = guestCartData.items || [];
+              this.totalPrice = this.calculatedTotalPrice;
+              console.log("Guest cart loaded with items:", this.cartItems.length);
             } else {
               this.cartItems = [];
               this.totalPrice = 0;
