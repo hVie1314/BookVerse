@@ -20,7 +20,8 @@
           <div class="alert-body">
             <div class="alert-content">
               <div class="alert-title">{{ title }}</div>
-              <div class="alert-message" v-if="message.includes('đăng nhập')">
+              <div class="alert-message" v-if="message.includes('category')">
+                {{ message }}
                 <span>Vui lòng </span>
                 <span class="login-link" @click="redirectToLogin">đăng nhập</span>
                 <span> để thêm sản phẩm vào danh sách yêu thích</span>
