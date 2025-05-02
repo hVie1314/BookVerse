@@ -24,37 +24,39 @@
     </router-link>
 
     <div class="search-section">
-      <div class="search-bar">
-        <svg
-          width="445"
-          height="39"
-          viewBox="0 0 445 39"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          class="search-icon"
-        >
-          <text
-            fill="black"
-            fill-opacity="0.35"
-            xml:space="preserve"
-            style="white-space: pre"
-            font-family="Montserrat"
-            font-size="20"
-            letter-spacing="0em"
-          >
-            <tspan x="56.8867" y="26.67">Tìm kiếm</tspan>
-          </text>
-          <g clip-path="url(#clip0_8_290)">
-            <path d="M30.6791 31.7109L23.5022 24.375C24.9329 22.6406 25.6483 20.6406 25.6483 18.375C25.6483 16.6719 25.2368 15.1016 24.4137 13.6641C23.5906 12.2266 22.4675 11.0898 21.0445 10.2539C19.6214 9.41797 18.0752 9 16.406 9C14.7368 9 13.1945 9.41797 11.7791 10.2539C10.3637 11.0898 9.24446 12.2266 8.42138 13.6641C7.59831 15.1016 7.18677 16.6719 7.18677 18.375C7.18677 20.0781 7.59831 21.6484 8.42138 23.0859C9.24446 24.5234 10.3637 25.6602 11.7791 26.4961C13.1945 27.332 14.7406 27.75 16.4175 27.75C18.7098 27.75 20.7252 26.9844 22.4637 25.4531L29.6175 32.7656C29.7714 32.9219 29.9483 33 30.1483 33C30.3483 33 30.5214 32.9258 30.6675 32.7773C30.8137 32.6289 30.8868 32.4492 30.8868 32.2383C30.8868 32.0273 30.8175 31.8516 30.6791 31.7109ZM16.4175 26.2734C15.0022 26.2734 13.6983 25.918 12.506 25.207C11.3137 24.4961 10.3714 23.5352 9.67908 22.3242C8.98677 21.1133 8.64061 19.7969 8.64061 18.375C8.64061 16.9531 8.98677 15.6367 9.67908 14.4258C10.3714 13.2148 11.3137 12.2539 12.506 11.543C13.6983 10.832 14.9983 10.4766 16.406 10.4766C17.8137 10.4766 19.1137 10.832 20.306 11.543C21.4983 12.2539 22.4406 13.2148 23.1329 14.4258C23.8252 15.6367 24.1714 16.9531 24.1714 18.375C24.1714 18.9844 24.1022 19.5859 23.9637 20.1797C23.8252 20.7734 23.6291 21.3281 23.3752 21.8438C23.1214 22.3594 22.8175 22.8477 22.4637 23.3086C22.1098 23.7695 21.7098 24.1797 21.2637 24.5391C20.8175 24.8984 20.3406 25.207 19.8329 25.4648C19.3252 25.7227 18.7791 25.9219 18.1945 26.0625C17.6098 26.2031 17.0175 26.2734 16.4175 26.2734Z" fill="#4D2900"></path>
-          </g>
-          <path d="M0 37.5H222.443H444.887" stroke="#696764" stroke-opacity="0.59"></path>
-          <defs>
-            <clipPath id="clip0_8_290">
-              <rect width="24" height="24" fill="white" transform="translate(6.88672 9)"></rect>
-            </clipPath>
-          </defs>
-        </svg>
-      </div>
+      <form @submit.prevent="handleSearch" class="search-form">
+        <div class="search-bar">
+          <!-- Biểu tượng tìm kiếm ở bên trái -->
+          <i class="fa-solid fa-magnifying-glass search-icon-left"
+            @click="handleSearch"
+            :class="{ 'search-hover': searchIconHovered }"
+            @mouseenter="searchIconHovered = true"
+            @mouseleave="searchIconHovered = false"
+          ></i>
+          
+          <input 
+            type="text" 
+            v-model="searchQuery" 
+            placeholder="Tìm kiếm sách hoặc tác giả..." 
+            class="search-input"
+            @focus="searchFocused = true"
+            @blur="searchFocused = false"
+          />
+          
+          <!-- Nút xóa (chỉ hiển thị khi có nội dung) -->
+          <div v-if="searchQuery" class="clear-button-container" @click="clearSearch">
+            <div class="clear-button">
+              <i class="fa-solid fa-xmark"></i>
+            </div>
+            <span class="clear-label">Xóa</span>
+          </div>
+          
+          <!-- Nút submit tìm kiếm (ẩn đi vì đã có icon bên trái) -->
+          <button type="submit" class="search-button" style="display: none;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </div>
+      </form>
     </div>
 
     <nav class="menu-section">
@@ -121,6 +123,9 @@ export default {
       showUserMenu: false, // Trạng thái hiển thị menu người dùng
       userIconHovered: false, // Trạng thái hover icon người dùng
       menuIconHovered: false, // Trạng thái hover icon menu
+      searchQuery: '', // Trạng thái tìm kiếm
+      searchFocused: false, // Trạng thái focus vào ô tìm kiếm
+      searchIconHovered: false, // Trạng thái hover icon tìm kiếm
     };
   },
   created() {
@@ -228,6 +233,41 @@ export default {
         // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
         this.$router.push('/login');
       }
+    },
+    handleSearch() {
+      if (this.searchQuery.trim()) {
+        // Chuyển hướng đến trang category với query tìm kiếm
+        const searchIcon = document.querySelector('.search-icon-left');
+        if (searchIcon) {
+          searchIcon.classList.add('searching');
+          
+          // Xóa class sau khi animation hoàn thành
+          setTimeout(() => {
+            searchIcon.classList.remove('searching');
+          }, 500);
+        }
+        this.$router.push({
+          name: 'category',
+          query: { search: this.searchQuery.trim() }
+        });
+        
+        // Reset searchQuery sau khi tìm kiếm
+        this.searchQuery = '';
+      }else {
+        // Focus vào input nếu không có query
+        this.$nextTick(() => {
+          const searchInput = document.querySelector('.search-input');
+          if (searchInput) searchInput.focus();
+        });
+      }
+    },
+    clearSearch() {
+      this.searchQuery = ''; // Xóa nội dung tìm kiếm
+      // Focus lại vào ô input sau khi xóa
+      this.$nextTick(() => {
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput) searchInput.focus();
+      });
     }
   },
   // Kiểm tra trạng thái đăng nhập khi route thay đổi
@@ -245,7 +285,7 @@ export default {
 .header-container {
   margin-top: 20px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0px;
   width: 85%;
@@ -257,6 +297,26 @@ export default {
   display: flex;
   align-items: center;
   text-decoration: none;
+  margin-top: 25px;
+  transition: all 0.3s ease;
+}
+
+.logo-section:hover {
+  transform: scale(1.05);
+}
+
+.logo-section:hover .brand-name {
+  color: #724e4e;
+  text-shadow: 0px 2px 4px rgba(114, 78, 78, 0.2);
+}
+
+.logo-icon-wrapper {
+  transition: transform 0.4s ease;
+}
+
+.logo-section:hover .logo-icon-wrapper {
+  transform: rotate(5deg);
+  filter: drop-shadow(0px 3px 5px rgba(77, 41, 0, 0.3));
 }
 
 .brand-name {
@@ -271,10 +331,10 @@ export default {
 }
 
 .search-section {
-  /* flex-grow: 1; */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  flex: 1; /* Cho phép phần tìm kiếm mở rộng */
+  max-width: 600px; /* Giới hạn chiều rộng tối đa */
+  margin: 0 20px; /* Căn chỉnh khoảng cách */
+  margin-top: 30px;
 }
 
 .search-icon {
@@ -492,5 +552,150 @@ i.fa-user:hover {
 
 i.fa-bars{
   cursor: pointer;
+}
+
+.search-form {
+  width: 100%;
+}
+
+.search-bar {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(105, 103, 100, 0.59);
+  padding: 0 10px;
+}
+
+.search-icon-left {
+  color: #4d2900;
+  font-size: 18px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.search-input {
+  width: 100%;
+  height: 39px;
+  border: none;
+  background: transparent;
+  font-family: "Montserrat", sans-serif;
+  font-size: 18px;
+  color: #4d2900;
+  padding: 0 40px 0 5px;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+.search-icon-left.search-hover,
+.search-icon-left:hover {
+  color: #724e4e;
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 2px rgba(114, 78, 78, 0.3));
+}
+
+/* Hiệu ứng khi click */
+.search-icon-left:active {
+  transform: scale(0.9);
+  transition: transform 0.1s ease;
+}
+
+/* Thêm animation khi thực hiện tìm kiếm */
+@keyframes searchPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.search-icon-left.searching {
+  animation: searchPulse 0.5s ease-in-out;
+}
+
+.search-button {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #4d2900;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 8px;
+  transition: transform 0.3s ease;
+}
+
+.search-button:hover {
+  transform: scale(1.1);
+  color: #724e4e;
+}
+
+.clear-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  background-color: #e0e0e0;
+}
+
+.clear-button:hover {
+  background-color: #dc5d72; /* Màu đỏ khi hover */
+}
+
+.clear-button i {
+  font-size: 14px;
+  color: #333; /* Màu mặc định */
+}
+
+.clear-button:hover i {
+  color: #ffffff; /* Màu trắng khi hover */
+}
+
+.clear-button-container {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* Style cho label "Xóa" */
+.clear-label {
+  font-size: 12px;
+  margin-top: 12px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
+  color: transparent; /* Ban đầu trong suốt */
+  text-align: center;
+  transition: color 0.3s ease, transform 0.3s ease;
+  position: absolute;
+  top: 100%;
+  transform: translateY(-5px);
+  opacity: 0;
+  pointer-events: none; /* Không can thiệp vào các sự kiện hover */
+}
+
+.clear-button-container:hover .clear-label {
+  color: #dc5d72; /* Màu chữ "Xóa" khi hiện lên */
+  transform: translateY(0); 
+  opacity: 1;
+}
+
+/* Điều chỉnh vị trí thanh tìm kiếm để có không gian cho label */
+.search-bar {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(105, 103, 100, 0.59);
+  padding: 0 10px;
+  margin-bottom: 20px; /* Thêm margin để có không gian cho chữ "Xóa" */
 }
 </style>
