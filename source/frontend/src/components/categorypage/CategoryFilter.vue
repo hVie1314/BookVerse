@@ -44,6 +44,29 @@
                 error: null
             };
         },
+        mounted() {
+            this.fetchCategories();
+            
+            // Kiểm tra nếu có category trong query
+            if (this.$route.query.categories) {
+            const categoryFromQuery = this.$route.query.categories;
+            if (!this.selectedCategories.includes(categoryFromQuery)) {
+                this.selectedCategories.push(categoryFromQuery);
+                // Emit sự kiện để cập nhật filter
+                this.$emit('filter-change', { categories: this.selectedCategories });
+            }
+            }
+        },
+        
+        watch: {
+            // Theo dõi thay đổi của route.query
+            '$route.query.categories': function(newCategory) {
+            if (newCategory && !this.selectedCategories.includes(newCategory)) {
+                this.selectedCategories = [newCategory];
+                this.$emit('filter-change', { categories: this.selectedCategories });
+            }
+            }
+        },
         methods: {
             async fetchCategories() {
                 this.loading = true;
