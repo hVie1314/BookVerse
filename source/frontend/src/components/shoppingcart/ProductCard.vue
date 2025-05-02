@@ -1,20 +1,25 @@
 <template>
   <article class="product-card">
     <div class="product-info">
-      <img :src="product.image" :alt="product.name" class="product-image" />
+      <img 
+        :src="getImageSrc()" 
+        :alt="product.title || product.name" 
+        class="product-image"
+        @error="handleImageError"
+      />
       <div class="product-details">
-        <h3 class="product-name">{{ product.name }}</h3>
-        <p class="product-description">{{ product.description }}</p>
+        <h3 class="product-name">{{ getTitle() }}</h3>
+        <p class="product-description">{{ getAuthor() }}</p>
       </div>
     </div>
     <div class="quantity-controls">
       <button class="quantity-btn" @click="decreaseQuantity">-</button>
-      <span class="quantity-value">{{ quantity }}</span>
+      <span class="quantity-value">{{ product.quantity }}</span>
       <button class="quantity-btn" @click="increaseQuantity">+</button>
     </div>
     <div class="price-info">
-      <span class="price-value">${{ product.price }}</span>
-      <button class="remove-button">
+      <span class="price-value">{{ formatPrice(product.price) }}</span>
+      <button class="remove-button" @click="removeItem">
         <i class="fa-solid fa-trash"></i>
       </button>
     </div>
@@ -30,21 +35,48 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      quantity: 1,
-    };
-  },
   methods: {
+    getImageSrc() {
+      // Kiểm tra các khả năng đường dẫn hình ảnh
+      const imageUrl = this.product.book?.image || 
+                       this.product.image || 
+                       this.product.coverImage;
+                       
+      return imageUrl || 'https://via.placeholder.com/150?text=No+Image';
+    },
+    getTitle() {
+      return this.product.book?.title || this.product.title || 'Không có tên sách';
+    },
+    getAuthor() {
+      return this.product.book?.author || this.product.author || 'Không có tên tác giả';
+    },
+    getPrice() {
+      return this.product.book?.price || this.product.price || 0;
+    },
+    handleImageError(e) {
+      this.imgError = true;
+      e.target.src = 'https://via.placeholder.com/150?text=No+Image';
+    },
     increaseQuantity() {
-      this.quantity++;
+      this.$emit('update-quantity', this.product.cartItemId || this.product._id, this.product.quantity + 1);
     },
     decreaseQuantity() {
-      if (this.quantity > 1) {
-        this.quantity--;
+      if (this.product.quantity > 1) {
+        this.$emit('update-quantity', this.product.cartItemId || this.product._id, this.product.quantity - 1);
       }
     },
-  },
+    removeItem() {
+      if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
+        this.$emit('remove', this.product.cartItemId || this.product._id);
+      }
+    },
+    formatPrice(price) {
+      return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+      }).format(price);
+    }
+  }
 };
 </script>
 
@@ -67,7 +99,7 @@ export default {
 }
 
 .product-info {
-  width: 56%;
+  width: 40%;
   display: flex;
   gap: 20px;
   align-items: center;
@@ -101,7 +133,7 @@ export default {
 }
 
 .quantity-controls {
-  width: 22%;
+  width: 35%;
   display: flex;
   gap: 20px;
   align-items: center;
@@ -137,10 +169,11 @@ export default {
 }
 
 .price-info {
-  width: 22%;
+  width: 30%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 20%;
 }
 
 .price-value {

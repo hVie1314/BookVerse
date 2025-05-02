@@ -8,7 +8,16 @@ export default {
     
     // Lấy sách theo ID
     getBookById(id) {
-        return Api().get(`book/${id}`);
+        console.log(`Gọi API lấy thông tin sách với ID: ${id}`);
+        return Api().get(`book/${id}`)
+            .then(response => {
+                console.log('Kết quả API sách:', response.data);
+                return response;
+            })
+            .catch(error => {
+                console.error(`Lỗi khi lấy thông tin sách ID ${id}:`, error);
+                throw error;
+            });
     },
     
     // Tìm kiếm sách theo từ khóa, danh mục, tác giả, giá...
