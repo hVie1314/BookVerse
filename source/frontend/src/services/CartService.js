@@ -1,6 +1,6 @@
 import Api from '@/services/Api';
 import AuthenticationService from './AuthenticationService';
-
+import eventBus from '@/eventBus.js';
 export default {
 
     // Phương thức chung để thêm vào giỏ hàng
@@ -20,8 +20,8 @@ export default {
             }
             
             // Thêm debug log
-            console.log("Using guest cart ID for adding item:", cartId);
-            console.log("Adding book ID:", bookId, "with quantity:", quantity);
+            // console.log("Using guest cart ID for adding item:", cartId);
+            // console.log("Adding book ID:", bookId, "with quantity:", quantity);
             
             return this.addToGuestCart(cartId, bookId, quantity);
         }
@@ -69,6 +69,17 @@ export default {
     
     // Gộp giỏ hàng khách vào giỏ hàng người dùng sau khi đăng nhập
     mergeGuestCartToUserCart(userId, cartId) {
-        return Api().post('cart/merge', { userId, cartId });
+        console.log(`Merging guest cart ${cartId} to user ${userId}`);
+        return Api().post('cart/merge', { userId, cartId })
+          .then(response => {
+            console.log('Merge cart response:', response.data);
+            // Phát sự kiện để cập nhật UI giỏ hàng
+            eventBus.emit('cart-updated');
+            return response;
+          })
+          .catch(error => {
+            console.error('Error merging cart:', error.response?.data || error.message);
+            throw error;
+          });
     }
 }
