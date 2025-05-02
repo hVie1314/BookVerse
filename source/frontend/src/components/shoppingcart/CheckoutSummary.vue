@@ -39,10 +39,13 @@ export default {
   },
   methods: {
     formatPrice(price) {
+      // Đảm bảo price là một số hợp lệ
+      const validPrice = isNaN(price) ? 0 : Number(price);
+      
       return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
         currency: 'VND'
-      }).format(price);
+      }).format(validPrice);
     },
     checkout() {
       this.$emit('checkout');
