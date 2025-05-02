@@ -1,5 +1,11 @@
 <template>
   <div id="app">
+    <Alert 
+      v-model:show="globalAlert.show" 
+      :type="globalAlert.type" 
+      :title="globalAlert.title" 
+      :message="globalAlert.message" 
+    />
     <!-- Loading overlay -->
     <transition name="fade-out">
       <div v-if="loading" class="loading-overlay">
@@ -19,14 +25,24 @@
 <script>
 import AuthenticationService from '@/services/AuthenticationService';
 import eventBus from './eventBus';
+import Alert from '@/components/Alert.vue';
 export default {
   name: 'App',
+  components: {
+    Alert
+  },
   data() {
     return {
       loading: false,
       loadingStartTime: 0,
       minLoadingTime: 800 ,// Thời gian tối thiểu hiển thị loading (ms)
-      isLoggedIn: false
+      isLoggedIn: false,
+      globalAlert: {
+        show: false,
+        type: 'success',
+        title: '',
+        message: ''
+      }
     }
   },
   created() {
@@ -34,6 +50,21 @@ export default {
     
     // Lắng nghe sự kiện đăng xuất
     eventBus.on('logout', this.handleLogoutEvent);
+
+    // Trong phần lắng nghe sự kiện của App.vue
+    eventBus.on('show-alert', (alertData) => {
+      this.globalAlert = { ...alertData, show: true };
+      
+      // Chỉ tự động đóng các thông báo thành công về đăng nhập
+      if (alertData.type === 'success' && 
+          alertData.message && 
+          (alertData.message.includes('đăng nhập thành công') || 
+          alertData.message.includes('đăng xuất thành công'))) {
+        setTimeout(() => {
+          this.globalAlert.show = false;
+        }, 5000);
+      }
+    });
 
     this.$router.beforeEach((to, from, next) => {
       // Bắt đầu hiệu ứng loading và lưu thời điểm bắt đầu
@@ -56,6 +87,7 @@ export default {
   beforeUnmount() {
     // Clean up listener
     eventBus.off('logout', this.handleLogoutEvent);
+    eventBus.off('show-alert');
   },
   methods: {
     handleLogoutEvent() {
