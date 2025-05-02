@@ -7,6 +7,6 @@ const statsController = require('../app/controllers/statsController');
 router.get('/report', statsController.getMonthlyStats);
 
 // Get revenue statistics
-
+router.get('/revenue', statsController.getRevenueByDateRange.bind(statsController));
 
 module.exports = router;
