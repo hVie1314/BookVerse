@@ -46,6 +46,12 @@ export default {
       }
     }
   },
+  // mounted() {
+  //   this.$root.$on('show-alert', (alertOptions) => {
+  //     this.alertOptions = { ...alertOptions };
+  //     this.showAlert = alertOptions.show;
+  //   });
+  // },
   created() {
     this.isLoggedIn = AuthenticationService.isLoggedIn();
     
@@ -54,6 +60,7 @@ export default {
 
     // Trong phần lắng nghe sự kiện của App.vue
     eventBus.on('show-alert', (alertData) => {
+      console.log('Received show-alert event:', alertData);
       this.globalAlert = { ...alertData, show: true };
       
       // Chỉ tự động đóng các thông báo thành công về đăng nhập
@@ -63,7 +70,7 @@ export default {
           alertData.message.includes('đăng xuất thành công'))) {
         setTimeout(() => {
           this.globalAlert.show = false;
-        }, 5000);
+        }, alertData.duration || 5000);
       }
     });
 
