@@ -2,15 +2,31 @@
     <section class="order-history-search">
       <div class="search-group">
         <img src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/4aa1ba0c641c654f3bebdb67ddd39e9ee7950d8f?placeholderIfAbsent=true" alt="Search icon" class="search-icon" />
-        <p class="search-placeholder">Bạn có thể tìm kiếm theo mã đơn hàng</p>
+        <input 
+          type="text"
+          class="search-input"
+          placeholder="Bạn có thể tìm kiếm theo mã đơn hàng"
+          v-model="searchQuery"
+          @input="onSearch"
+        />
       </div>
     </section>
 </template>
   
 <script>
-  export default {
-    name: 'OrderSearchBar'
-  }
+    export default {
+        name: 'OrderSearchBar',
+        data() {
+            return {
+            searchQuery: ''
+            }
+        },
+        methods: {
+            onSearch() {
+            this.$emit('search', this.searchQuery);
+            }
+        },
+    }
 </script>
   
 <style scoped>
@@ -40,6 +56,22 @@
 
     .search-placeholder {
         margin: auto 0;
+    }
+
+    /* Thêm CSS cho input */
+    .search-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        font-size: 16px;
+        color: #4d2900;
+        outline: none;
+        padding: 5px 0;
+        font-family: inherit;
+    }
+    
+    .search-input::placeholder {
+        color: #7e7777;
     }
 
     @media (max-width: 991px) {

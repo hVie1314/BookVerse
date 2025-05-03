@@ -1,20 +1,56 @@
 <template>
     <nav class="order-category">
-      <div class="category-item">
+      <div 
+        class="category-item" 
+        :class="{ active: activeCategory === 'all' }"
+        @click="changeCategory('all')"
+      >
         <h2 class="category-text">Tất cả</h2>
-        <div class="category-underline"></div>
+        <div class="category-underline" v-if="activeCategory === 'all'"></div>
       </div>
-      <h2 class="category-text pending">Chờ thanh toán</h2>
-      <h2 class="category-text completed">Hoàn thành</h2>
-      <h2 class="category-text cancelled">Đã hủy</h2>
+      <div 
+        class="category-item"
+        :class="{ active: activeCategory === 'pending' }"
+        @click="changeCategory('pending')"
+      >
+        <h2 class="category-text pending">Chờ thanh toán</h2>
+        <div class="category-underline" v-if="activeCategory === 'pending'"></div>
+      </div>
+      <div 
+        class="category-item"
+        :class="{ active: activeCategory === 'completed' }"
+        @click="changeCategory('completed')"
+      >
+        <h2 class="category-text completed">Hoàn thành</h2>
+        <div class="category-underline" v-if="activeCategory === 'completed'"></div>
+      </div>
+      <div 
+        class="category-item"
+        :class="{ active: activeCategory === 'cancelled' }"
+        @click="changeCategory('cancelled')"
+      >
+        <h2 class="category-text cancelled">Đã hủy</h2>
+        <div class="category-underline" v-if="activeCategory === 'cancelled'"></div>
+      </div>
     </nav>
-  </template>
+</template>
   
-  <script>
-  export default {
-    name: 'OrderCategoryTabs'
-  }
-  </script>
+<script>
+    export default {
+        name: 'OrderCategoryTabs',
+        props: {
+            activeCategory: {
+                type: String,
+                default: 'all'
+            }
+        },
+        methods: {
+            changeCategory(category) {
+                this.$emit('change-category', category);
+            }
+        }
+    }
+</script>
   
 <style scoped>
     .order-category {
@@ -29,6 +65,22 @@
         font-size: 18px; /* Giảm từ 25px */
         color: #4d2900;
         text-align: center;
+        justify-content: space-between;
+    }
+
+    .category-item {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 8px 0;
+    }
+    
+    .category-item:hover .category-text {
+        color: #cd5252;
+    }
+    
+    .active .category-text {
+        color: #cd5252;
+        font-weight: 700;
     }
 
     .category-text {
