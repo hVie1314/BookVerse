@@ -23,6 +23,11 @@ export default {
 
     // Tạo yêu cầu thanh toán với MoMo
     createMomoPayment(orderId, amount) {
+        console.log('Dữ liệu gửi đi:', { orderId, amount });
+        if (!orderId) {
+            console.error('Lỗi: Missing orderId in MOMO payment request');
+            return Promise.reject(new Error('Missing orderId'));
+        }
         return Api().post('payment/momo', { orderId, amount });
     },
 

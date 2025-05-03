@@ -166,91 +166,113 @@
           // Hiển thị trạng thái loading
           this.loading = true;
           
-          // Tạo dữ liệu đơn hàng
+          // 1. Tạo đơn hàng trước
           const orderData = {
             userId: AuthenticationService.getCurrentUser().id,
             items: this.cartItems.map(item => ({
-              bookId: item.cartItemId || item._id, // Thay đổi productId thành bookId
+              bookId: item.cartItemId || item._id,
               quantity: item.quantity
-              // Loại bỏ trường price vì backend không cần
             })),
             totalAmount: this.calculatedTotalPrice,
-            paymentMethod: 'MOMO' // Thay đổi paymentStatus thành paymentMethod
-            // Loại bỏ các trường không cần thiết: orderStatus, shippingAddress
+            paymentMethod: 'MOMO'
           };
           
-          console.log('Đang tạo đơn hàng đã thanh toán với dữ liệu:', orderData);
+          console.log('Đang tạo đơn hàng với MoMo:', orderData);
           
           // Tạo đơn hàng
-          const response = await OrderService.createOrder(orderData);
-          console.log('Kết quả tạo đơn hàng:', response.data);
+          const orderResponse = await OrderService.createOrder(orderData);
+          console.log('Kết quả tạo đơn hàng:', orderResponse.data);
           
-          // Kiểm tra response
-          if (response.data && (response.data.success || response.data._id)) {
-            // Xóa giỏ hàng
-            const userId = AuthenticationService.getCurrentUser().id;
-            await CartService.clearUserCart(userId);
+          if (orderResponse.data && (orderResponse.data.success || orderResponse.data._id)) {
+            // 2. Lấy orderId từ response
+            console.log('Chi tiết response tạo đơn hàng:', JSON.stringify(orderResponse.data));
+            const orderId = orderResponse.data._id || 
+                orderResponse.data.data?._id || 
+                orderResponse.data.data?.order?._id || 
+                (orderResponse.data.order && orderResponse.data.order._id);
+
+            console.log('OrderId trích xuất:', orderId);
+            const totalAmount = this.calculatedTotalPrice;
             
-            // Phát sự kiện để cập nhật số lượng giỏ hàng
-            eventBus.emit('cart-updated');
+            // 3. Tạo yêu cầu thanh toán MoMo
+            const paymentResponse = await OrderService.createMomoPayment(orderId, totalAmount);
+            console.log('Kết quả tạo thanh toán MoMo:', paymentResponse.data);
             
-            // Hiển thị thông báo thành công
-            eventBus.emit('show-alert', {
-              show: true,
-              type: 'success',
-              title: 'Đặt hàng thành công',
-              message: 'Bạn đã thanh toán thành công đơn hàng, đơn hàng sẽ sớm được giao cho bạn.',
-              autoClose: true,
-              duration: 5000
-            });
-            
-            // Chuyển hướng đến trang đơn hàng
-            setTimeout(() => {
-              this.$router.push('/my-orders');
-            }, 2000);
-          }
-        } catch (error) {
-          console.error('Lỗi khi tạo đơn hàng:', error);
-          
-          // Fallback: Mô phỏng thành công nếu API không hoạt động trong môi trường development
-          if (process.env.NODE_ENV === 'development') {
-            console.log('Sử dụng fallback để mô phỏng tạo đơn hàng thành công');
-            
-            // Xóa giỏ hàng
-            try {
+            if (paymentResponse.data && 
+                  (paymentResponse.data.payUrl || 
+                  paymentResponse.data.url || 
+                  (paymentResponse.data.data && paymentResponse.data.data.url))
+              ) {
+              // Lấy URL thanh toán từ bất kỳ trường nào có giá trị
+              const paymentUrl = paymentResponse.data.payUrl || paymentResponse.data.url||(paymentResponse.data.data && paymentResponse.data.data.url);
+              
+              console.log('URL thanh toán MoMo:', paymentUrl);
+              
+              // 4. Xóa giỏ hàng sau khi tạo đơn hàng thành công
               const userId = AuthenticationService.getCurrentUser().id;
               await CartService.clearUserCart(userId);
               eventBus.emit('cart-updated');
-            } catch (err) {
-              console.error('Lỗi khi xóa giỏ hàng:', err);
+              
+              // 5. Lưu orderId để kiểm tra sau này
+              localStorage.setItem('pendingOrderId', orderId);
+              
+              // 6. Chuyển hướng người dùng đến trang thanh toán MoMo
+              window.location.href = paymentUrl;
+              return;
             }
             
-            // Hiển thị thông báo thành công
+            // Nếu không có payUrl, hiển thị thông báo lỗi
             eventBus.emit('show-alert', {
               show: true,
-              type: 'success',
-              title: 'Đặt hàng thành công',
-              message: this.isPaymentOrder 
-                ? 'Bạn đã thanh toán thành công đơn hàng, đơn hàng sẽ sớm được giao cho bạn.' 
-                : 'Bạn đã đặt hàng thành công, vui lòng qua đơn hàng của tôi để xác nhận thanh toán.',
-              autoClose: true,
-              duration: 5000
+              type: 'error',
+              title: 'Lỗi thanh toán',
+              message: 'Không thể tạo liên kết thanh toán MoMo. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.',
+              autoClose: true
             });
-            
-            // Chuyển hướng đến trang đơn hàng
-            setTimeout(() => {
-              this.$router.push('/my-orders');
-            }, 2000);
-            
-            return;
           }
+        } catch (error) {
+          console.error('Lỗi khi tạo đơn hàng và thanh toán:', error);
           
-          // Hiển thị thông báo lỗi (phần còn lại như cũ)
+          // Fallback cho môi trường development
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Đang sử dụng fallback trong môi trường development');
+            
+            try {
+                // Xóa giỏ hàng
+                const userId = AuthenticationService.getCurrentUser().id;
+                await CartService.clearUserCart(userId);
+                eventBus.emit('cart-updated');
+                
+                // Lưu thông tin đơn hàng giả lập vào localStorage
+                const mockOrderId = 'mock-' + Date.now();
+                localStorage.setItem('pendingOrderId', mockOrderId);
+                
+                // Hiển thị thông báo và chuyển hướng đến trang callback thay vì my-orders
+                eventBus.emit('show-alert', {
+                    show: true,
+                    type: 'success',
+                    title: 'Đơn hàng đã tạo',
+                    message: 'Đang chuyển hướng đến trang thanh toán...',
+                    autoClose: true,
+                    duration: 2000
+                });
+                
+                // Chuyển hướng đến trang callback thay vì my-orders
+                setTimeout(() => {
+                  this.$router.push('/payment/callback?resultCode=0&orderId=' + mockOrderId);
+                }, 2000);
+            } catch (err) {
+                console.error('Lỗi khi thực hiện fallback:', err);
+            }
+            return;
+        }
+          
+          // Hiển thị thông báo lỗi
           eventBus.emit('show-alert', {
             show: true,
             type: 'error',
             title: 'Đặt hàng thất bại',
-            message: 'Có lỗi xảy ra khi tạo đơn hàng, vui lòng thử lại',
+            message: 'Có lỗi xảy ra khi tạo đơn hàng hoặc thanh toán, vui lòng thử lại sau',
             autoClose: true
           });
         } finally {
