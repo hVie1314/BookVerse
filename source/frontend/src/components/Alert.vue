@@ -380,12 +380,12 @@
 }
 
 .cancel-button {
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: #ffffff;
+  color: #4d2900;
   border: 1px solid #ddd;
 }
 
 .cancel-button:hover {
-  background-color: #e0e0e0;
+  background-color: #b9b1b1;
 }
 </style>
