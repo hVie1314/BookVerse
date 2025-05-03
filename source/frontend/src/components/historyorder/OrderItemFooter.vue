@@ -8,8 +8,8 @@
         <p class="total-amount">{{ total }}</p>
       </div>
       <div v-if="showActions" class="action-buttons">
-        <button class="action-button payment">Thanh toán</button>
-        <button class="action-button cancel">Hủy đơn</button>
+        <button class="action-button payment" @click="$emit('pay')">Thanh toán</button>
+        <button class="action-button cancel" @click="$emit('cancel')">Hủy đơn</button>
       </div>
     </footer>
 </template>
@@ -30,7 +30,8 @@
         type: String,
         default: ''
       }
-    }
+    },
+    emits: ['pay', 'cancel']
   }
 </script>
   

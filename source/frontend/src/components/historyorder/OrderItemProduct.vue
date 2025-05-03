@@ -30,7 +30,8 @@
         width: 100%;
         align-items: stretch;
         gap: 5px; /* Giảm từ 8px */
-        color: #4d2900;
+        font-weight: 600;
+        color: #000000;
         flex-wrap: wrap;
         justify-content: space-between;
     }
@@ -48,18 +49,18 @@
         object-fit: contain;
         object-position: center;
         width: 50px; /* Giảm từ 65px */
-        flex-shrink: 0;
         max-width: 100%;
     }
 
     .product-title {
-        font-size: 13px; /* Giảm từ 15px */
+        font-size: 20px; /* Giảm từ 15px */
         margin: 0;
-        font-weight: 600;
+        font-weight: 400;
     }
 
     .product-author {
         color: #917c7c;
+        font-weight: 400;
         font-size: 11px; /* Giảm từ 12px */
         margin: 3px 0 0 0; /* Giảm từ 5px */
     }
@@ -85,4 +86,5 @@
         margin-top: 40px;
         }
     }
+
 </style>

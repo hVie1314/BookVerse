@@ -11,6 +11,8 @@
           :total="total"
           :showActions="showActions"
           :cancelMessage="cancelMessage"
+          @pay="$emit('pay')"
+          @cancel="$emit('cancel')"
         />
       </div>
     </article>
@@ -52,7 +54,8 @@
         type: String,
         default: ''
       }
-    }
+    },
+    emits: ['pay', 'cancel']
   }
 </script>
   

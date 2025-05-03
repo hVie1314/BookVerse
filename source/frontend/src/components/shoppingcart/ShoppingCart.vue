@@ -23,7 +23,7 @@
       </main>
       <footer-form />
     </div>
-  </template>
+</template>
     
   <script>
   import Nav from "../navbar/Nav.vue";
