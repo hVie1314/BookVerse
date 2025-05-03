@@ -80,7 +80,7 @@ class ReviewController {
          const book = await Book.findById(req.params.bookId);
          if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
 
-         const reviews = await Review.find({ book_id: book._id, status: 'approved', hidden: 'false' })
+         const reviews = await Review.find({ book_id: book._id, hidden: false })
 
          return res.status(200).json({ reviews });
       } catch (err) {
