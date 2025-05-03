@@ -3,26 +3,31 @@ import Api from '@/services/Api';
 export default {
     // Tạo đơn hàng mới
     createOrder(orderData) {
-        return Api().post('order/', orderData);
+        return Api().post('order/create', orderData);
     },
 
     // Lấy tất cả đơn hàng của một người dùng
     getAllOrders(userId) {
-        return Api().get(`order/user/${userId}`);
+        return Api().get(`order/history/${userId}`);
     },
-
+        
     // Lấy chi tiết một đơn hàng
     getOrderById(orderId) {
-        return Api().get(`order/${orderId}`);
+        return Api().get(`order/details/${orderId}`);
     },
 
     // Cập nhật trạng thái đơn hàng (chỉ staff)
     updateOrderStatus(orderId, orderStatus) {
-        return Api().put(`order/${orderId}`, { orderStatus });
+        return Api().put(`order/update/ ${orderId}`, { orderStatus });
     },
 
     // Tạo yêu cầu thanh toán với MoMo
     createMomoPayment(orderId, amount) {
+        console.log('Dữ liệu gửi đi:', { orderId, amount });
+        if (!orderId) {
+            console.error('Lỗi: Missing orderId in MOMO payment request');
+            return Promise.reject(new Error('Missing orderId'));
+        }
         return Api().post('payment/momo', { orderId, amount });
     },
 

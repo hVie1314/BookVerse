@@ -139,13 +139,14 @@ export default {
   width: 100%;
   height: 500px;
   border-radius: 16px;
-  overflow: hidden;
+  overflow: visible;
   background-color: transparent;
 }
 
 .carousel-inner {
   height: 100%;
   background-color: transparent; 
+  overflow: hidden;
 }
 
 .carousel-item {
@@ -187,30 +188,44 @@ export default {
   font-size: 16px;
 }
 
-/* Style cho controls */
+/* Style cho controls - cập nhật để nửa trong nửa ngoài */
 .carousel-control-prev,
 .carousel-control-next {
   width: 50px;
   height: 50px;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.7);
   border-radius: 50%;
   top: 50%;
   transform: translateY(-50%);
-  opacity: 0.7;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+  position: absolute;
+  z-index: 10;
 }
 
 .carousel-control-prev {
-  left: 20px;
+  left: 0;
+  transform: translateX(-50%) translateY(-50%);
 }
 
 .carousel-control-next {
-  right: 20px;
+  right: 0;
+  transform: translateX(50%) translateY(-50%);
 }
 
 .carousel-control-prev:hover,
 .carousel-control-next:hover {
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.95);
   opacity: 1;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-control-prev:hover {
+  transform: translateX(-50%) translateY(-50%) scale(1.15);
+}
+
+.carousel-control-next:hover {
+  transform: translateX(50%) translateY(-50%) scale(1.15);
 }
 
 .carousel-control-prev-icon,
