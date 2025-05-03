@@ -31,7 +31,7 @@ const ReviewSchema = new mongoose.Schema({
         default: false
     }
 }, {
-    timestamps: { createdAt: 'create_at', updatedAt: false }
+    timestamps: { createdAt: 'create_at', updatedAt: 'update_at' }
 });
 
 const Review = mongoose.model('Review', ReviewSchema);
