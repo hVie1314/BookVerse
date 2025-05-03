@@ -6,7 +6,8 @@ const Login = () => import('../components/Login.vue')
 const Register = () => import('../components/Register.vue')
 const Profile = () => import('../components/profile/ProfileUser.vue')
 const CategoryPage = () => import('../components/categorypage/CategoryPage.vue') 
-
+const ShoppingCart = () => import('../components/shoppingcart/ShoppingCart.vue')
+const Payment = () => import('../components/PaymentCallback.vue')
 const routes = [
   {
     path: '/',
@@ -35,6 +36,16 @@ const routes = [
     path: '/category',
     name: 'category',
     component: CategoryPage
+  },
+  {
+    path: '/cart',
+    name: 'cart',
+    component: ShoppingCart,
+  },
+  {
+    path: '/payment/callback',
+    name: 'PaymentCallback',
+    component: Payment,
   }
 ]
 

@@ -80,5 +80,19 @@ export default {
     // Lấy token hiện tại
     getToken() {
         return localStorage.getItem('userToken');
+    },
+
+    forgotPassword(email) {
+        return Api().post('auth/forgot-password', { email });
+    },
+    
+    // Xác thực OTP
+    verifyOtp(email, otp) {
+        return Api().post('auth/verify-otp', { email, otp });
+    },
+    
+    // Đặt lại mật khẩu
+    resetPassword(email, newPassword) {
+        return Api().post('auth/reset-password', { email, newPassword });
     }
 }
