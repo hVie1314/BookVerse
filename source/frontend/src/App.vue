@@ -4,7 +4,14 @@
       v-model:show="globalAlert.show" 
       :type="globalAlert.type" 
       :title="globalAlert.title" 
-      :message="globalAlert.message" 
+      :message="globalAlert.message"
+      :auto-close="globalAlert.autoClose"
+      :duration="globalAlert.duration || 3000"
+      :show-choices="globalAlert.showChoices || false"
+      :confirm-text="globalAlert.confirmText || 'Đồng ý'"
+      :cancel-text="globalAlert.cancelText || 'Hủy bỏ'"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
     />
     <!-- Loading overlay -->
     <transition name="fade-out">
@@ -64,10 +71,12 @@ export default {
       this.globalAlert = { ...alertData, show: true };
       
       // Chỉ tự động đóng các thông báo thành công về đăng nhập
+      // Chỉ tự động đóng các thông báo thành công về đăng nhập
       if (alertData.type === 'success' && 
           alertData.message && 
           (alertData.message.includes('đăng nhập thành công') || 
-          alertData.message.includes('đăng xuất thành công'))) {
+          alertData.message.includes('đăng xuất thành công')) && 
+          !alertData.showChoices) { // Không tự động đóng nếu có lựa chọn
         setTimeout(() => {
           this.globalAlert.show = false;
         }, alertData.duration || 5000);
@@ -100,11 +109,25 @@ export default {
     // Clean up listener
     eventBus.off('logout', this.handleLogoutEvent);
     eventBus.off('show-alert');
+    eventBus.off('confirm');
+    eventBus.off('cancel');
   },
   methods: {
     handleLogoutEvent() {
       console.log("App nhận sự kiện logout");
       this.isLoggedIn = false;
+    },
+
+    // Thêm phương thức xử lý confirm
+    handleConfirm() {
+      console.log("Alert confirm được nhấn");
+      eventBus.emit('confirm');
+    },
+    
+    // Thêm phương thức xử lý cancel
+    handleCancel() {
+      console.log("Alert cancel được nhấn");
+      eventBus.emit('cancel');
     }
   }
 }
