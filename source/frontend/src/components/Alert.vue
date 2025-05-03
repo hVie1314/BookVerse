@@ -20,11 +20,11 @@
           <div class="alert-body">
             <div class="alert-content">
               <div class="alert-title">{{ title }}</div>
-              <div class="alert-message" v-if="message.includes('category')">
-                {{ message }}
+              <div class="alert-message" v-if="message.includes('category') || message.includes('đặt hàng')">
                 <span>Vui lòng </span>
                 <span class="login-link" @click="redirectToLogin">đăng nhập</span>
-                <span> để thêm sản phẩm vào danh sách yêu thích</span>
+                <span v-if="message.includes('category')"> để thêm sản phẩm vào danh sách yêu thích</span>
+                <span v-else> để đặt hàng</span>
               </div>
               <div class="alert-message" v-else>
                 {{ message }}
@@ -268,6 +268,35 @@
   color: #4d2900;
   font-family: 'Montserrat', sans-serif;
   font-weight: 700; /* Đậm hơn để nổi bật */
+  cursor: pointer;
+  position: relative;
+  display: inline;
+  transition: color 0.3s ease;
+}
+
+.login-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #4d2900;
+  transition: width 0.3s ease;
+}
+
+.login-link:hover {
+  color: #755e47;
+}
+
+.login-link:hover::after {
+  width: 100%;
+}
+
+.login-link {
+  color: #4d2900;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
   cursor: pointer;
   position: relative;
   display: inline;

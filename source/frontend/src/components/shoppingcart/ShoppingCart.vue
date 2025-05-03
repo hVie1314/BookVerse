@@ -164,6 +164,22 @@
           alert('Giỏ hàng của bạn đang trống');
           return;
         }
+        
+        // Kiểm tra đăng nhập
+        const user = AuthenticationService.getCurrentUser();
+        if (!user || !user.id) {
+          console.log('Người dùng chưa đăng nhập, hiển thị thông báo');
+          // Thêm logging để kiểm tra event firing
+          eventBus.emit('show-alert', {
+            show: true,
+            type: 'error',
+            title: 'Thông báo',
+            message: 'đặt hàng',
+            autoClose: false
+          });
+          return;
+        }
+        
         // Chuyển hướng đến trang thanh toán
         this.$router.push('/checkout');
       }
