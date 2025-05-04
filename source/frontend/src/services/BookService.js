@@ -68,7 +68,8 @@ export default {
     },
 
     // Lấy sách liên quan
-    getRelatedBooks(bookId, limit) {
+    getRelatedBooks(bookId, limit = 20) {
+        console.log(`Gọi API lấy sách liên quan với ID: ${bookId}, limit: ${limit}`);
         return Api().get(`book/related/${bookId}/${limit}`);
     },
     

@@ -1,5 +1,5 @@
 <template>
-    <article class="book-card">
+    <article class="book-card" @click="navigateToDetail">
         <img :src="image" :alt="title" class="book-image" />
         <div class="book-detail-info">
             <div class="price-container">
@@ -9,8 +9,8 @@
             <h3 class="book-title">{{ title }}</h3>
             <p class="book-author">{{ author }}</p>
             <div class="footer-card-container">
-                <button class="cart-button" @click="addToCart">{{ cartText }}</button>
-                <i class="fa-regular fa-heart fa-2xl" @click="addToFavorites"></i>
+                <button class="cart-button" @click.stop="addToCart">{{ cartText }}</button>
+                <i class="fa-regular fa-heart fa-2xl" @click.stop="addToFavorites"></i>
             </div>
             <div class="book-sold">
                 <div class="sold-title">
@@ -69,6 +69,13 @@ export default {
         },
     },
     methods: {
+        navigateToDetail() {
+            this.$router.push({
+                name: 'product-detail',
+                params: { id: this.bookId }
+            });
+        },
+
         async addToCart() {
             try {
                 await CartService.addToCart({ bookId: this.bookId, quantity: 1 });

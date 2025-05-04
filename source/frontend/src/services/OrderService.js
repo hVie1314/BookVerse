@@ -1,4 +1,5 @@
 import Api from '@/services/Api';
+import AuthenticationService from '@/services/AuthenticationService';
 
 export default {
     // Tạo đơn hàng mới
@@ -55,7 +56,12 @@ export default {
     
     // Tạo yêu cầu hủy đơn hàng
     createCancelRequest(orderId, reason) {
-        return Api().post(`order/cancel/${orderId}`, { reason });
+        // Lấy token hiện tại và đảm bảo gửi cùng với userId để giải quyết lỗi 403
+        const userId = AuthenticationService.getCurrentUser()?.id;
+        return Api().post(`order/cancel/${orderId}`, { 
+            reason,
+            userId // Thêm userId vào request body
+        });
     },
     
     // Cập nhật trạng thái yêu cầu hủy đơn hàng (chỉ staff)
