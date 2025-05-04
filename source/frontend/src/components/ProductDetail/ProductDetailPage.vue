@@ -1,34 +1,40 @@
 <template>
     <div class="page-wrapper">
-      <!-- Thêm thanh điều hướng -->
         <Nav />
         
         <main class="product-detail-page">
-            <section class="product-section">
+            <section v-if="loading" class="loading-container">
+                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
+            </section>
+            
+            <section v-else-if="error" class="error-message">
+                {{ error }}
+            </section>
+            
+            <section v-else class="product-section">
                 <div class="product-detail-container">
                     <figure class="product-image-detail-column">
                         <img
-                        src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/583d666a999a910a205b5f8084eecbefb04496ba?placeholderIfAbsent=true"
-                        class="product-detail-image"
-                        alt="Book cover"
+                            :src="book.image || 'https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/583d666a999a910a205b5f8084eecbefb04496ba?placeholderIfAbsent=true'"
+                            class="product-detail-image"
+                            :alt="book.title"
                         />
                     </figure>
                     <div class="product-info-column">
-                        <ProductInfo />
+                        <ProductInfo :book="book" />
                     </div>
                 </div>
         
-                <RatingSection />
+                <RatingSection :ratings="book.ratings || []" />
         
-                <ReviewList />
+                <ReviewList :reviews="book.reviews || []" />
         
                 <h2 class="recommended-title">Gợi ý sản phẩm</h2>
+                
+                <RecommendedProducts :currentBookId="book._id || book.id" />
             </section>
-    
-            <RecommendedProducts />
         </main>
         
-        <!-- Thêm footer -->
         <Footer />
     </div>
 </template>
@@ -41,20 +47,89 @@
     import RecommendedProducts from './RecommendedProducts.vue';
     import Nav from '../navbar/Nav.vue'; // Import Nav component
     import Footer from '../footer/footer.vue'; // Import Footer component (chú ý 'f' viết thường)
+    import BookService from '@/services/BookService';
+
     export default {
         name: 'ProductDetailPage',
         components: {
-        ProductInfo,
-        RatingSection,
-        ReviewList,
-        RecommendedProducts,
-        Nav,
-        Footer // Đảm bảo Footer được import đúng cách
+            ProductInfo,
+            RatingSection,
+            ReviewList,
+            RecommendedProducts,
+            Nav,
+            Footer // Đảm bảo Footer được import đúng cách
+        },
+        props: {
+            id: {
+                type: String,
+                required: true
+            }
+        },
+        data() {
+            return {
+                book: {},
+                loading: true,
+                error: null
+            }
+        },
+        methods: {
+            async fetchBookDetails() {
+                this.loading = true;
+                this.error = null;
+                
+                try {
+                    const response = await BookService.getBookById(this.id);
+                    console.log('Book details response:', response);
+                    
+                    if (response.data && response.data.success) {
+                        // Check if book data is nested under data.book
+                        if (response.data.data && response.data.data.book) {
+                            this.book = response.data.data.book;
+                        } 
+                        // If not nested, use data directly (fallback)
+                        else if (response.data.data) {
+                            this.book = response.data.data;
+                        } 
+                        else {
+                            this.error = 'Không tìm thấy thông tin sách';
+                        }
+                    } else {
+                        this.error = 'Không thể tải thông tin sách';
+                    }
+                } catch (error) {
+                    console.error('Error fetching book details:', error);
+                    this.error = 'Đã xảy ra lỗi khi tải thông tin sách';
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
+        created() {
+            this.fetchBookDetails();
+        },
+        watch: {
+            id(newId) {
+                if (newId) {
+                    this.fetchBookDetails();
+                }
+            }
         }
     };
 </script>
   
 <style scoped>
+    .loading-container, .error-message {
+        width: 100%;
+        padding: 50px 0;
+        text-align: center;
+        font-family: "Montserrat", sans-serif;
+        font-size: 18px;
+        color: #4d2900;
+    }
+    
+    .error-message {
+        color: #ff3333;
+    }
     /* Thêm wrapper bao bọc toàn bộ trang */
     .page-wrapper {
         display: flex;

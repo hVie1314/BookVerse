@@ -1,6 +1,7 @@
 import axios from "axios";
 import AuthenticationService from "./AuthenticationService";
 import router from "@/router"; // Import router
+import eventBus from "@/eventBus"; // Import event bus để hiển thị thông báo
 
 // Flag để tránh nhiều yêu cầu refresh token cùng lúc
 let isRefreshing = false;
@@ -75,6 +76,25 @@ export default () => {
                     return Promise.reject(refreshError);
                 } finally {
                     isRefreshing = false;
+                }
+            }
+
+            if (error.response && error.response.status === 403) {
+                console.error('Lỗi quyền truy cập:', error.response.data);
+                
+                // Nếu người dùng đã đăng nhập nhưng không có quyền
+                if (AuthenticationService.isLoggedIn()) {
+                    eventBus.emit('show-alert', {
+                        show: true,
+                        type: 'error',
+                        title: 'Lỗi quyền truy cập',
+                        message: 'Bạn không có quyền thực hiện hành động này.',
+                        autoClose: true,
+                        duration: 3000
+                    });
+                } else {
+                    // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
+                    router.push('/login');
                 }
             }
 

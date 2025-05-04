@@ -2,46 +2,49 @@
     <article class="product-info">
       <div class="info-container">
         <div class="book-info">
-          <h1 class="book-title">Thiên tài bên trái, kẻ điên bên phải</h1>
-          <p class="book-author">Cao Minh</p>
-          <p class="book-price">116.350 đ</p>
+          <h1 class="book-title">{{ book.title || 'Không có tiêu đề' }}</h1>
+          <p class="book-author">{{ book.author || 'Không có tác giả' }}</p>
+          <p class="book-price">{{ formatPrice(book.price) }}</p>
   
           <div class="sold-info">
             <p class="sold-detail-text">
               <span class="sold-label">Đã bán</span>
-              <span class="sold-count">20</span>
+              <span class="sold-count">{{ book.sold || 0 }}</span>
             </p>
             <div class="progress-info-container">
-              <div class="progress-bar"></div>
+              <div class="progress-bar" :style="`width: ${calculateProgressWidth()}%`"></div>
             </div>
           </div>
   
           <section class="description-section">
-            <h2 class="description-title">Mô tả</h2>
-            <p class="description-text">
-              NẾU MỘT NGÀY ANH THẤY TÔI ĐIÊN, THỰC RA CHÍNH LÀ ANH ĐIÊN
-              ĐẤY!<br />Hỡi những con người đang oằn mình trong cuộc sống,
-              bạn biết gì về thế giới của mình? Là vô vàn thứ lý thuyết
-              được các bậc vĩ nhân kiểm chứng, là luật lệ ...
-            </p>
-            <button class="read-more">Đọc thêm</button>
-          </section>
+                <h2 class="description-title">Mô tả</h2>
+                <p class="description-text" :class="{ 'collapsed': !isExpanded }">
+                    {{ book.description || 'Không có mô tả' }}
+                </p>
+                <button 
+                    class="read-more" 
+                    v-if="book.description && book.description.length > 100"
+                    @click="toggleDescription">
+                    {{ isExpanded ? 'Thu gọn' : 'Đọc thêm' }}
+                </button>
+            </section>
   
           <div class="quantity-section">
             <p class="quantity-label">Số lượng</p>
             <div class="quantity-selector">
-              <div class="decrement-button"></div>
-              <span class="quantity-value">1</span>
+              <div class="decrement-button" @click="decrementQuantity"></div>
+              <span class="quantity-value">{{ quantity }}</span>
               <img
                 src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/2b3e53de73fd963852263eb44cecf25179597046?placeholderIfAbsent=true"
                 class="increment-button"
                 alt="Increment quantity"
+                @click="incrementQuantity"
               />
             </div>
           </div>
         </div>
   
-        <ProductActions />
+        <ProductActions :book="book" :quantity="quantity" />
       </div>
     </article>
 </template>
@@ -52,7 +55,47 @@
     export default {
         name: 'ProductInfo',
         components: {
-        ProductActions
+            ProductActions
+        },
+        props: {
+            book: {
+                type: Object,
+                required: true,
+                default: () => ({})
+            }
+        },
+        data() {
+            return {
+                quantity: 1,
+                isExpanded: false // Biến để theo dõi trạng thái mở rộng của mô tả
+            }
+        },
+        methods: {
+            toggleDescription() {
+            this.isExpanded = !this.isExpanded;
+            },
+            formatPrice(price) {
+                if (!price) return '0 đ';
+                return new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                }).format(price).replace('₫', 'đ');
+            },
+            calculateProgressWidth() {
+                // Giả sử tính toán dựa trên số lượng bán
+                const soldCount = this.book.sold || 0;
+                // Giả sử một sách bán chạy là khoảng 100 cuốn
+                const percentage = Math.min(soldCount / 100 * 100, 100);
+                return percentage;
+            },
+            incrementQuantity() {
+                this.quantity++;
+            },
+            decrementQuantity() {
+                if (this.quantity > 1) {
+                    this.quantity--;
+                }
+            }
         }
     };
 </script>
@@ -152,10 +195,12 @@
     
     .sold-label {
         color: rgba(130, 130, 130, 1);
+        margin-right: 15px;
     }
     
     .sold-count {
         color: rgba(76, 41, 0, 1);
+        font-weight: 700;
     }
     
     .progress-info-container {
@@ -205,14 +250,22 @@
         width: 100%;
         color: rgba(51, 51, 51, 1);
         font-weight: 400;
-        line-height: 28px;
         letter-spacing: 0.2px;
         align-self: stretch;
-        font-size: 14px; /* Giảm từ 20px */
-        line-height: 1.4; /* Giảm từ 28px */
-        margin-top: 8px; /* Giảm từ 21px */
+        font-size: 14px;
+        line-height: 1.4;
+        margin-top: 8px;
+        transition: max-height 0.3s ease;
     }
     
+    /* Thêm class để giới hạn văn bản */
+    .description-text.collapsed {
+        display: -webkit-box;
+        -webkit-line-clamp: 5; /* Giới hạn 5 dòng */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis; /* Hiển thị dấu "..." */
+    }
     @media (max-width: 991px) {
         .description-text {
         max-width: 100%;
@@ -227,10 +280,11 @@
         margin-top: 8px;
         background: none;
         border: none;
-        color: inherit;
+        color: #4c2900;
         cursor: pointer;
         padding: 0;
         text-align: left;
+        /* text-decoration: underline; Thêm gạch chân để rõ là có thể nhấn */
     }
     
     .quantity-section {
@@ -242,6 +296,10 @@
         font-family: Hind Siliguri, -apple-system, Roboto, Helvetica, sans-serif;
         color: #333;
         font-weight: 700;
+    }
+
+    .read-more:hover {
+        opacity: 0.8;
     }
     
     @media (max-width: 991px) {

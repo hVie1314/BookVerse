@@ -30,9 +30,78 @@
 </template>
   
 <script>
+    import CartService from '@/services/CartService';
+    import WishlistService from '@/services/WishlistService';
+    import eventBus from '@/eventBus.js';
     export default {
-        name: 'ProductActions'
-    };
+    name: 'ProductActions',
+    props: {
+        book: {
+            type: Object,
+            required: true
+        },
+        quantity: {
+            type: Number,
+            default: 1
+        }
+    },
+    methods: {
+        async addToCart() {
+            try {
+                await CartService.addToCart({ 
+                    bookId: this.book._id || this.book.id, 
+                    quantity: this.quantity 
+                });
+                
+                eventBus.emit('show-alert', {
+                    show: true,
+                    type: 'success',
+                    title: 'Thành công',
+                    message: 'Đã thêm sản phẩm vào giỏ hàng',
+                    autoClose: true,
+                    duration: 3000
+                });
+                
+                eventBus.emit('cart-updated');
+            } catch (error) {
+                console.error('Lỗi khi thêm vào giỏ hàng:', error);
+                eventBus.emit('show-alert', {
+                    show: true,
+                    type: 'error',
+                    title: 'Lỗi',
+                    message: 'Không thể thêm sản phẩm vào giỏ hàng',
+                    autoClose: true,
+                    duration: 3000
+                });
+            }
+        },
+        
+        async addToFavorites() {
+            try {
+                await WishlistService.addToWishlist(this.book._id || this.book.id);
+                
+                eventBus.emit('show-alert', {
+                    show: true,
+                    type: 'success',
+                    title: 'Thành công',
+                    message: 'Đã thêm sản phẩm vào danh sách yêu thích',
+                    autoClose: true,
+                    duration: 3000
+                });
+            } catch (error) {
+                console.error('Lỗi khi thêm vào danh sách yêu thích:', error);
+                eventBus.emit('show-alert', {
+                    show: true,
+                    type: 'error',
+                    title: 'Lỗi',
+                    message: 'Không thể thêm sản phẩm vào danh sách yêu thích',
+                    autoClose: true,
+                    duration: 3000
+                });
+            }
+        }
+    }
+}
 </script>
   
 <style scoped>
