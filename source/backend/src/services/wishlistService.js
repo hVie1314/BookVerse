@@ -1,6 +1,6 @@
 const Wishlist = require('../app/models/Wishlist');
 const AppError = require('../utils/appError');
-const BookHelper = require('../helpers/bookHelper');
+const BookService = require('./bookService');
 
 class WishlistService {
 
@@ -30,7 +30,7 @@ class WishlistService {
          let wishlist = await this.findWishlist(userId, wishlistId);
 
          // check if book exists
-         await BookHelper.getBookInfoForCartById(productId);
+         await BookService.getBookInfoById(productId);
 
          // check if wishlist not exists, create new one
          if (!wishlist) {

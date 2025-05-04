@@ -1,6 +1,6 @@
 const Cart = require('../app/models/Cart');
 const AppError = require('../utils/appError');
-const BookHelper = require('../helpers/bookHelper');
+const BookService = require('./bookService');
 
 class CartService {
 
@@ -30,7 +30,7 @@ class CartService {
          let cart = await this.findCart(userId, cartId);
 
          // get book info for cart
-         const bookInfo = await BookHelper.getBookInfoForCartById(productId);
+         const bookInfo = await BookService.getBookInfoById(productId);
 
          // check if cart not exists, create new one
          if (!cart) {
@@ -97,7 +97,7 @@ class CartService {
             cart.products[productIndex].quantity = quantity;
 
             // update totalPrice
-            const bookInfo = await BookHelper.getBookInfoForCartById(productId);
+            const bookInfo = await BookService.getBookInfoById(productId);
             cart.totalPrice += (quantityChange * bookInfo.price);
          }
          else {
@@ -205,7 +205,7 @@ class CartService {
             }
 
             // update totalPrice
-            const bookInfo = await BookHelper.getBookInfoForCartById(item.productId);
+            const bookInfo = await BookService.getBookInfoById(item.productId);
             userCart.totalPrice += (item.quantity * bookInfo.price);
          }
 

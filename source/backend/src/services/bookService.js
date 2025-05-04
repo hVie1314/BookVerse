@@ -64,6 +64,25 @@ class BookService {
         throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
         }
     }
+
+    // return name, price and img link
+   async getBookInfoById(id) {
+        try {
+        const book = await Book.findById(id);
+        if (!book) {
+            throw new AppError(404, 'BOOK_NOT_FOUND');
+        }
+
+        return {
+            title: book.title,
+            price: book.price,
+            image: book.image,
+        };
+        }
+        catch (err) {
+        throw new AppError(500, 'INTERNAL_SERVER_ERROR', err.message);
+        }
+    }
 }
 
 module.exports = new BookService();
