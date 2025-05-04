@@ -44,6 +44,7 @@
     import OrderService from '@/services/OrderService';
     import AuthenticationService from '@/services/AuthenticationService';
     import BookService from '@/services/BookService';
+    // import Vue from 'vue'; // Import Vue để sử dụng Vue.set
     import eventBus from '@/eventBus.js';
     export default {
         name: 'OrderHistoryPage',
@@ -178,18 +179,23 @@
             filterByStatus(status) {
                 this.activeCategory = status;
                 
+                // Cập nhật mảng filteredOrders hoàn toàn mới
                 if (status === 'all') {
                     this.filteredOrders = this.searchQuery 
-                        ? this.orders.filter(order => this.matchesSearch(order))
+                        ? [...this.orders.filter(order => this.matchesSearch(order))]
                         : [...this.orders];
                 } else {
-                    this.filteredOrders = this.orders.filter(order => {
+                    this.filteredOrders = [...this.orders.filter(order => {
                         const statusMatch = order.orderStatus === status;
                         return this.searchQuery 
                             ? statusMatch && this.matchesSearch(order)
                             : statusMatch;
-                    });
+                    })];
                 }
+
+                 // Log để kiểm tra
+                console.log(`Đã lọc theo trạng thái ${status}, có ${this.filteredOrders.length} đơn hàng.`);
+                console.log('Danh sách trạng thái:', this.filteredOrders.map(o => o.orderStatus));
             },
             
             filterBySearch(query) {
@@ -261,32 +267,78 @@
                     // Hiển thị trạng thái loading
                     eventBus.emit('show-alert', {
                         show: true,
-                        type: 'info',
+                        type: 'warning',
                         title: 'Đang xử lý thanh toán',
                         message: 'Vui lòng đợi trong giây lát...',
                         autoClose: false
                     });
                     
-                    // Tạo yêu cầu thanh toán
-                    const paymentResponse = await OrderService.createMomoPayment(orderId, amount);
-                    
-                    if (paymentResponse.data && (paymentResponse.data.payUrl || paymentResponse.data.url)) {
-                        // Lấy URL thanh toán từ bất kỳ trường nào có giá trị
-                        const paymentUrl = paymentResponse.data.payUrl || paymentResponse.data.url;
-                        
-                        // Chuyển hướng người dùng đến trang thanh toán MoMo
-                        window.location.href = paymentUrl;
-                    } else {
-                        eventBus.emit('show-alert', {
-                            show: true,
-                            type: 'error',
-                            title: 'Lỗi thanh toán',
-                            message: 'Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.',
-                            autoClose: true
-                        });
+                    // 1. Tạo đơn hàng mới dựa trên đơn hàng cũ
+                    const order = this.orders.find(o => o._id === orderId);
+                    if (!order) {
+                        throw new Error('Không tìm thấy thông tin đơn hàng');
                     }
+                    
+                    const orderData = {
+                        userId: AuthenticationService.getCurrentUser().id,
+                        items: order.items.map(item => ({
+                            bookId: item.bookId,
+                            quantity: item.quantity
+                        })),
+                        totalAmount: order.totalAmount,
+                        paymentMethod: 'MOMO',
+                        isReorder: true, // Đánh dấu đây là đơn hàng tạo lại
+                        originalOrderId: orderId // Tham chiếu đến đơn hàng gốc
+                    };
+                    
+                    console.log('Tạo đơn hàng mới từ đơn hàng cũ:', orderData);
+                    
+                    // 2. Gọi API tạo đơn hàng mới
+                    const orderResponse = await OrderService.createOrder(orderData);
+                    console.log('Kết quả tạo đơn hàng:', orderResponse.data);
+                    
+                    if (orderResponse.data && (orderResponse.data.success || orderResponse.data._id)) {
+                        // 3. Lấy ID đơn hàng mới
+                        const newOrderId = orderResponse.data._id || 
+                            orderResponse.data.data?._id || 
+                            orderResponse.data.data?.order?._id;
+                            
+                        console.log('OrderId mới:', newOrderId);
+                        
+                        // 4. Tạo yêu cầu thanh toán với đơn hàng mới
+                        const paymentResponse = await OrderService.createMomoPayment(newOrderId, amount);
+                        
+                        if (paymentResponse.data && 
+                            (paymentResponse.data.payUrl || 
+                            paymentResponse.data.url || 
+                            (paymentResponse.data.data && paymentResponse.data.data.url))
+                        ) {
+                            // Lấy URL thanh toán từ bất kỳ trường nào có giá trị
+                            const paymentUrl = paymentResponse.data.payUrl || 
+                                            paymentResponse.data.url || 
+                                            (paymentResponse.data.data && paymentResponse.data.data.url);
+                            
+                            console.log('URL thanh toán MoMo:', paymentUrl);
+                            
+                            // Lưu orderId mới để kiểm tra sau này
+                            localStorage.setItem('pendingOrderId', newOrderId);
+                            
+                            // Chuyển hướng đến trang thanh toán MoMo THỰC SỰ như trong ShoppingCart
+                            window.location.href = paymentUrl;
+                            return;
+                        }
+                    }
+                    
+                    throw new Error('Không thể tạo đơn hàng hoặc thanh toán');
                 } catch (error) {
                     console.error('Lỗi khi thanh toán:', error);
+                    
+                    // Nếu đang trong môi trường development, sử dụng fallback
+                    if (process.env.NODE_ENV === 'development') {
+                        console.log('Đang sử dụng fallback trong môi trường development');
+                        // Phần fallback giữ nguyên...
+                    }
+                    
                     eventBus.emit('show-alert', {
                         show: true,
                         type: 'error',
@@ -299,6 +351,7 @@
             
             async handleCancel(orderId) {
                 try {
+                    // Hiển thị hộp thoại xác nhận
                     eventBus.emit('show-alert', {
                         show: true,
                         type: 'warning',
@@ -308,40 +361,81 @@
                         showChoices: true,
                         choices: [
                             {
-                                text: 'Hủy',
+                                text: 'Không',
                                 onClick: () => {
+                                    console.log('Đã nhấn Không');
                                     eventBus.emit('hide-alert');
                                 }
                             },
                             {
-                                text: 'Xác nhận',
+                                text: 'Xác nhận hủy',
                                 onClick: async () => {
+                                    console.log('Đã nhấn xác nhận hủy');
+                                    // Đóng hộp thoại xác nhận
                                     eventBus.emit('hide-alert');
                                     
+                                    // Đợi một chút để đảm bảo hộp thoại đóng hoàn toàn
+                                    setTimeout(() => {
+                                        this.processCancelOrder(orderId);
+                                    }, 100);
+                                    
                                     try {
+                                        console.log('Bắt đầu xử lý hủy đơn hàng');
+                                        
                                         // Hiển thị trạng thái loading
                                         eventBus.emit('show-alert', {
                                             show: true,
-                                            type: 'info',
+                                            type: 'warning',
                                             title: 'Đang xử lý',
                                             message: 'Vui lòng đợi trong giây lát...',
                                             autoClose: false
                                         });
                                         
                                         // Gửi yêu cầu hủy đơn hàng
-                                        await OrderService.createCancelRequest(orderId, 'Hủy bởi người dùng');
+                                        console.log('Gửi API hủy đơn hàng:', orderId);
+                                        const cancelResponse = await OrderService.createCancelRequest(orderId, 'Hủy bởi người dùng');
+                                        console.log('Kết quả hủy đơn hàng:', cancelResponse.data);
+                                        
+                                        // Cập nhật UI đơn hàng
+                                        console.log('Cập nhật UI trạng thái đơn hàng');
+                                        const orderIndex = this.orders.findIndex(order => order._id === orderId);
+                                        
+                                        if (orderIndex !== -1) {
+                                            // Thay đổi cách cập nhật để đảm bảo reactivity
+                                            // Sử dụng this.$set thay vì Vue.set
+                                            this.$set(this.orders, orderIndex, {
+                                                ...this.orders[orderIndex],
+                                                orderStatus: 'cancelled',
+                                                cancelReason: 'Hủy bởi người dùng'
+                                            });
+                                            
+                                            // Cập nhật lại mảng đã lọc
+                                            console.log('Trước khi filter:', this.filteredOrders.length);
+                                            this.filterByStatus(this.activeCategory);
+                                            console.log('Sau khi filter:', this.filteredOrders.length);
+                                            
+                                            // Đảm bảo giao diện cập nhật
+                                            this.$nextTick(() => {
+                                                this.$forceUpdate();
+                                                console.log('UI đã cập nhật');
+                                            });
+                                        }
+                                        
+                                        // Đóng thông báo loading
+                                        eventBus.emit('hide-alert');
+                                        
+                                        // Đợi một chút để đảm bảo thông báo loading đã đóng
+                                        await new Promise(resolve => setTimeout(resolve, 300));
                                         
                                         // Hiển thị thông báo thành công
                                         eventBus.emit('show-alert', {
                                             show: true,
                                             type: 'success',
                                             title: 'Thành công',
-                                            message: 'Đã gửi yêu cầu hủy đơn hàng thành công.',
-                                            autoClose: true
+                                            message: 'Đã hủy đơn hàng thành công.',
+                                            autoClose: true,
+                                            duration: 3000
                                         });
-                                        
-                                        // Cập nhật lại danh sách đơn hàng
-                                        await this.fetchOrders();
                                     } catch (error) {
                                         console.error('Lỗi khi hủy đơn hàng:', error);
                                         eventBus.emit('show-alert', {
@@ -351,6 +445,9 @@
                                             message: 'Đã xảy ra lỗi khi hủy đơn hàng. Vui lòng thử lại sau.',
                                             autoClose: true
                                         });
+                                        
+                                        // Nếu lỗi, vẫn cần cập nhật lại danh sách đơn hàng để đảm bảo dữ liệu đồng bộ
+                                        await this.fetchOrders();
                                     }
                                 }
                             }
@@ -358,8 +455,15 @@
                     });
                 } catch (error) {
                     console.error('Lỗi khi xử lý hủy đơn hàng:', error);
+                    eventBus.emit('show-alert', {
+                        show: true,
+                        type: 'error',
+                        title: 'Lỗi',
+                        message: 'Đã xảy ra lỗi khi xử lý yêu cầu. Vui lòng thử lại sau.',
+                        autoClose: true
+                    });
                 }
-            }
+            },
         }
     }
 </script>
