@@ -75,11 +75,12 @@
     }
     
     .category-item:hover .category-text {
-        color: #cd5252;
+        color: rgba(57, 31, 0, 1);
+        font-weight: 700;
     }
     
     .active .category-text {
-        color: #cd5252;
+        color: rgba(57, 31, 0, 1);
         font-weight: 700;
     }
 
@@ -89,6 +90,7 @@
         font-size: inherit;
         margin: 0;
         line-height: 1.2;
+        white-space: nowrap;
     }
 
     .category-underline {
