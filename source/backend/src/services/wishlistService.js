@@ -11,7 +11,7 @@ class WishlistService {
          const filter = userId ? { userId } : { wishlistId };
          // check if userId or wishlistId is provided
          if (!userId && !wishlistId) {
-            throw new AppError(500, "WISHLIST_NOT_FOUND", 'Either userId or wishlistId is required to find the wishlist');
+            throw new AppError(400, "WISHLIST_NOT_FOUND", 'Either userId or wishlistId is required to find the wishlist');
          }
          wishlist = await Wishlist.findOne(filter);
          return wishlist;
