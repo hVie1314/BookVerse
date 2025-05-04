@@ -36,7 +36,7 @@
         margin-top: 15px; /* Giảm từ 31px */
         padding: 15px 25px; /* Giảm từ 22px 32px */
         flex-direction: column;
-        overflow: hidden;
+        overflow: visible;
         align-items: start;
         font-size: 16px; /* Giảm từ 22px */
         color: #7e7777;
@@ -47,7 +47,8 @@
         align-items: center; /* Thay đổi từ stretch để căn giữa */
         gap: 20px; /* Giảm từ 40px 42px */
         justify-content: start;
-        flex-wrap: wrap;
+        flex-wrap: nowrap; /* Thay đổi từ wrap thành nowrap */
+        width: 100%;
     }
 
     .search-icon {
@@ -68,6 +69,9 @@
         outline: none;
         padding: 5px 0;
         font-family: inherit;
+        min-width: 250px; /* Thêm chiều rộng tối thiểu */
+        white-space: nowrap; /* Ngăn text xuống dòng */
+        text-overflow: ellipsis; 
     }
     
     .search-input::placeholder {
