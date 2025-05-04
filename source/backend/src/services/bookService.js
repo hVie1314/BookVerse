@@ -1,7 +1,9 @@
 const Book = require('../app/models/Book');
 const AppError = require('../utils/appError');
+const Review = require('../app/models/Review');
 
 class BookService {
+
    async searchBooks(query) {
         try {
             const {
@@ -65,8 +67,7 @@ class BookService {
         }
     }
 
-    // return name, price and img link
-   async getBookInfoById(id) {
+    async getBookInfoById(id) {
         try {
         const book = await Book.findById(id);
         if (!book) {
@@ -83,6 +84,38 @@ class BookService {
         throw new AppError(500, 'INTERNAL_SERVER_ERROR', err.message);
         }
     }
+
+    async reCaclBookRating(bookId) {
+        try {
+            const book = await Book.findById(bookId);
+            if (!book) {
+                throw new AppError(404, 'BOOK_NOT_FOUND');
+            }
+
+            // get all reviews for the book
+            const reviews = await Review.find({ 
+                book_id: bookId, 
+                status: 'approved', 
+                hidden: false 
+            });
+
+            if (reviews.length === 0) return 0;
+
+            // calculate the average rating
+            const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
+            const avgRating = Math.round(totalRating / reviews.length * 10) / 10;
+
+            // update the book's rating
+            book.rating = avgRating;
+            await book.save();
+
+            return avgRating;
+
+        } catch (error) {
+            throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
+        }
+    }
+
 }
 
 module.exports = new BookService();
