@@ -8,6 +8,8 @@ const Profile = () => import('../components/profile/ProfileUser.vue')
 const CategoryPage = () => import('../components/categorypage/CategoryPage.vue') 
 const ShoppingCart = () => import('../components/shoppingcart/ShoppingCart.vue')
 const Payment = () => import('../components/PaymentCallback.vue')
+const OrderHistory = () => import('../components/historyorder/OrderHistoryPage.vue')
+
 const routes = [
   {
     path: '/',
@@ -46,7 +48,13 @@ const routes = [
     path: '/payment/callback',
     name: 'PaymentCallback',
     component: Payment,
-  }
+  },
+  {
+    path: '/my-orders',
+    name: 'my-orders',
+    component: OrderHistory,
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({

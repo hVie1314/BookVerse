@@ -60,7 +60,7 @@
       type: {
         type: String,
         default: 'success',
-        validator: (value) => ['success', 'error'].includes(value)
+        validator: value => ['success', 'error', 'warning', 'info'].includes(value)
       },
       title: {
         type: String,

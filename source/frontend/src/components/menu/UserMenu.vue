@@ -12,7 +12,7 @@
                 <div class="menu-items">
                     <transition-group name="item-appear">
                         <button key="catalog" class="menu-item" @click="goToCategory">Danh mục sản phẩm</button>
-                        <button key="orders" class="menu-item menu-item-orders">Đơn hàng của tôi</button>
+                        <button key="orders" class="menu-item menu-item-orders" @click="goToMyOrders">Đơn hàng của tôi</button>
                     </transition-group>
                 </div>
             </div>
@@ -35,6 +35,10 @@ export default {
         goToCategory() {
             this.$router.push({ name: 'category' });
         },
+        goToMyOrders() {
+            this.$router.push({ name: 'my-orders' });
+            this.$emit('close');
+        }
     },
 }
 </script>
