@@ -18,7 +18,7 @@ export default {
 
     // Cập nhật trạng thái đơn hàng (chỉ staff)
     updateOrderStatus(orderId, orderStatus) {
-        return Api().put(`order/update/ ${orderId}`, { orderStatus });
+        return Api().put(`order/update/${orderId}`, { orderStatus }); // Loại bỏ khoảng trắng
     },
 
     // Tạo yêu cầu thanh toán với MoMo
@@ -28,7 +28,24 @@ export default {
             console.error('Lỗi: Missing orderId in MOMO payment request');
             return Promise.reject(new Error('Missing orderId'));
         }
-        return Api().post('payment/momo', { orderId, amount });
+        
+        // Đảm bảo amount là số nguyên
+        const amountInt = parseInt(amount);
+        
+        // Thêm headers nếu cần
+        const headers = {};
+        const token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        // Thử với cấu trúc dữ liệu mới
+        return Api().post('payment/momo', { 
+            orderId, 
+            amount: amountInt,
+            // Thêm các trường khác nếu API yêu cầu
+            redirectUrl: window.location.origin + '/payment/callback'
+        }, { headers });
     },
 
     // Kiểm tra trạng thái thanh toán
