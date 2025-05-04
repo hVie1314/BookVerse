@@ -1,26 +1,28 @@
 <template>
     <section class="recommended-products">
-      <button class="nav-arrow left-arrow">
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/86b2b344cfb856969953b54456f4fe1a831cc5c4?placeholderIfAbsent=true"
-          class="arrow-icon"
-          alt="Previous"
-        />
-      </button>
-  
-      <ProductCard
-        v-for="(product, index) in products"
-        :key="`product-${index}`"
-        :product="product"
-      />
-  
-      <button class="nav-arrow right-arrow">
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/c47e7dad0fc9db7de1cbbc110c8e3a15dd7c654c?placeholderIfAbsent=true"
-          class="arrow-icon"
-          alt="Next"
-        />
-      </button>
+        <div class="recommended-container">
+            <button class="nav-arrow left-arrow">
+                <img
+                src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/86b2b344cfb856969953b54456f4fe1a831cc5c4?placeholderIfAbsent=true"
+                class="arrow-icon"
+                alt="Previous"
+                />
+            </button>
+        
+            <ProductCard
+                v-for="(product, index) in products"
+                :key="`product-${index}`"
+                :product="product"
+            />
+        
+            <button class="nav-arrow right-arrow">
+                <img
+                src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/c47e7dad0fc9db7de1cbbc110c8e3a15dd7c654c?placeholderIfAbsent=true"
+                class="arrow-icon"
+                alt="Next"
+                />
+            </button>
+        </div>
     </section>
 </template>
   
@@ -73,6 +75,7 @@
   
 <style scoped>
     .recommended-products {
+        width: 100%;
         display: flex;
         margin-top: 30px;
         align-items: stretch;
@@ -82,6 +85,13 @@
         color: #4d2900;
         font-weight: 700;
         line-height: 2;
+        justify-content: center;
+    }
+
+    .recommended-container {
+        display: flex;
+        width: 85%;
+        align-items: center;
         justify-content: space-between;
     }
     

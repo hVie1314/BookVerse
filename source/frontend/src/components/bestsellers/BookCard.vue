@@ -1,7 +1,7 @@
 <template>
     <article class="book-card">
         <img :src="image" :alt="title" class="book-image" />
-        <div class="book-info">
+        <div class="book-detail-info">
             <div class="price-container">
                 <p class="current-price">{{ price }}</p>
                 <p v-if="originalPrice" class="original-price">{{ originalPrice }}</p>
@@ -141,7 +141,7 @@ export default {
     transform: scale(1.05);
 }
 
-.book-info {
+.book-detail-info {
     padding: 15px;
     padding-left: 20px;
     padding-right: 20px;

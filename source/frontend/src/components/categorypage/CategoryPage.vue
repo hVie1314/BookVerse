@@ -79,7 +79,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        background-color: #fffaf5;
+        background-color: rgb(244, 235, 225);
     }
 
     .category-content {

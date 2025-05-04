@@ -71,7 +71,7 @@
   
 <style scoped>
     .rating-section {
-        width: 100%;
+        width: 85%;
     }
     
     .rating-title {
@@ -348,10 +348,10 @@
     
     .write-review-button {
         display: flex;
-        width: 160px;
+        width: auto; /* Thay đổi từ 160px */
         max-width: 100%;
-        align-items: stretch;
-        gap: 9px;
+        align-items: center; /* Thay đổi từ stretch để căn giữa */
+        gap: 6px; /* Giảm từ 9px */
         background: none;
         border: none;
         cursor: pointer;
@@ -364,15 +364,16 @@
         aspect-ratio: 1.13;
         object-fit: contain;
         object-position: center;
-        width: 26px;
-        align-self: flex-start;
+        width: 20px; /* Giảm từ 26px */
+        align-self: center; /* Thay đổi từ flex-start để căn giữa theo chiều dọc */
         flex-shrink: 0;
     }
     
     .write-text {
         flex-grow: 1;
         flex-shrink: 1;
-        width: 120px;
+        width: auto; /* Thay đổi từ 120px */
         text-align: left;
+        white-space: nowrap; /* Ngăn text xuống dòng */
     }
 </style>

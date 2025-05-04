@@ -185,6 +185,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: rgb(244, 235, 225);
 }
 
 .login-overlay {

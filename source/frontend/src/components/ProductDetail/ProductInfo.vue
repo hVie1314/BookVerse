@@ -7,11 +7,11 @@
           <p class="book-price">116.350 đ</p>
   
           <div class="sold-info">
-            <p class="sold-text">
+            <p class="sold-detail-text">
               <span class="sold-label">Đã bán</span>
               <span class="sold-count">20</span>
             </p>
-            <div class="progress-container">
+            <div class="progress-info-container">
               <div class="progress-bar"></div>
             </div>
           </div>
@@ -140,7 +140,7 @@
         align-items: stretch;
     }
     
-    .sold-text {
+    .sold-detail-text {
         color: #333333;
         font-family: Hind Siliguri, -apple-system, Roboto, Helvetica, sans-serif;
         font-size: 16px; /* Giảm từ 20px */
@@ -158,7 +158,7 @@
         color: rgba(76, 41, 0, 1);
     }
     
-    .progress-container {
+    .progress-info-container {
         width: 100%;
         border-radius: 5px;
         display: flex;

@@ -222,7 +222,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #fffaf5;
+  background-color: rgb(244, 235, 225);
 }
 
 

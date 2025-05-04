@@ -475,7 +475,7 @@
     width: 100%;
     align-items: center;
     min-height: 100vh;
-    background-color: #fffaf5;
+    background-color: rgb(244, 235, 225);
 }
 
 .order-history-page {
