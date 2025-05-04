@@ -9,13 +9,26 @@ export default {
     // Lấy sách theo ID
     getBookById(id) {
         console.log(`Gọi API lấy thông tin sách với ID: ${id}`);
-        return Api().get(`book/${id}`)
+        // Đảm bảo id không phải là undefined hoặc null
+        if (!id) {
+            console.error('BookID không hợp lệ:', id);
+            return Promise.reject(new Error('BookID không hợp lệ'));
+        }
+        
+        // Đảm bảo cung cấp token nếu cần
+        const headers = {};
+        const token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        return Api().get(`book/${id}`, { headers })
             .then(response => {
                 console.log('Kết quả API sách:', response.data);
                 return response;
             })
             .catch(error => {
-                console.error(`Lỗi khi lấy thông tin sách ID ${id}:`, error);
+                console.error(`Lỗi khi lấy thông tin sách ID ${id}:`, error.response?.data || error.message);
                 throw error;
             });
     },
