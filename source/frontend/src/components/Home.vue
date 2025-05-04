@@ -90,7 +90,7 @@ export default {
   flex-direction: column;
   align-items: center;
   font-family: 'Montserrat', sans-serif;
-  background-color: #fffaf5;
+  background-color: rgb(244, 235, 225);
 }
 
 .main-content {
@@ -100,7 +100,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #fffaf5;
+  background-color: rgb(244, 235, 225);
   margin-top: 20px; /* Thêm margin để tạo khoảng cách với Nav */
 }
 

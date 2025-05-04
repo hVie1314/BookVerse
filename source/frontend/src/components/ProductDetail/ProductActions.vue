@@ -109,13 +109,13 @@
         border-radius: 8px;
         border: 2px solid #4c2900;
         display: flex;
-        min-width: 240px;
-        min-height: 52px;
-        padding: 0 35px;
-        gap: 3px;
+        min-width: 180px; /* Giảm từ 240px */
+        min-height: 48px; /* Giảm từ 52px */
+        padding: 0 20px; /* Giảm từ 35px */
+        gap: 8px; /* Tăng từ 3px để spacing đều hơn */
         flex-grow: 1;
         flex-shrink: 1;
-        width: 246px;
+        width: 240px; /* Đảm bảo cả hai nút đều 240px */
         background-color: #fff;
         cursor: pointer;
     }
@@ -130,9 +130,9 @@
         aspect-ratio: 1;
         object-fit: contain;
         object-position: center;
-        width: 24px;
-        align-self: stretch;
-        margin: auto 0;
+        width: 22px; /* Giảm từ 24px */
+        align-self: center; /* Căn giữa theo chiều dọc */
+        margin: 0;
         flex-shrink: 0;
     }
     
@@ -148,13 +148,13 @@
         border-radius: 8px;
         border: 2px solid #4c2900;
         display: flex;
-        min-width: 240px;
-        min-height: 52px;
-        padding: 0 35px;
-        gap: 3px;
+        min-width: 180px; /* Giảm từ 240px */
+        min-height: 48px; /* Giảm từ 52px */
+        padding: 0 20px; /* Giảm từ 35px */
+        gap: 8px; /* Tăng từ 3px để spacing đều hơn */
         flex-grow: 1;
         flex-shrink: 1;
-        width: 240px;
+        width: 240px; /* Giữ nguyên */
         background-color: #fff;
         cursor: pointer;
     }
@@ -169,12 +169,19 @@
         aspect-ratio: 1;
         object-fit: contain;
         object-position: center;
-        width: 20px;
-        align-self: stretch;
-        margin: auto 0;
+        width: 22px; /* Tăng từ 20px */
+        align-self: center; /* Căn giữa theo chiều dọc */
+        margin: 0;
         flex-shrink: 0;
     }
-    
+
+    .cart-text, .favorite-text {
+        align-self: center; /* Căn giữa theo chiều dọc */
+        margin: 0;
+        width: auto; /* Loại bỏ width cố định */
+        white-space: nowrap; /* Ngăn text bị xuống dòng */
+        font-size: 14px; /* Giảm kích thước chữ để phù hợp */
+    }
     .favorite-text {
         align-self: stretch;
         margin: auto 0;

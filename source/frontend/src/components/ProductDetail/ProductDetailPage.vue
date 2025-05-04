@@ -5,12 +5,11 @@
         
         <main class="product-detail-page">
             <section class="product-section">
-            <div class="product-container">
-                <div class="product-layout">
+                <div class="product-detail-container">
                     <figure class="product-image-detail-column">
                         <img
                         src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/583d666a999a910a205b5f8084eecbefb04496ba?placeholderIfAbsent=true"
-                        class="product-image"
+                        class="product-detail-image"
                         alt="Book cover"
                         />
                     </figure>
@@ -18,13 +17,12 @@
                         <ProductInfo />
                     </div>
                 </div>
-            </div>
-    
-            <RatingSection />
-    
-            <ReviewList />
-    
-            <h2 class="recommended-title">Gợi ý sản phẩm</h2>
+        
+                <RatingSection />
+        
+                <ReviewList />
+        
+                <h2 class="recommended-title">Gợi ý sản phẩm</h2>
             </section>
     
             <RecommendedProducts />
@@ -64,23 +62,24 @@
         align-items: center;
         min-height: 100vh; /* Đảm bảo trang chiếm toàn bộ chiều cao màn hình */
         width: 100%;
+        background-color: antiquewhite;
     }
 
     .product-detail-page {
         display: flex;
         width: 100%;
         flex-direction: column;
-        align-items: center; /* Căn giữa nội dung */
-        flex: 1; /* Đảm bảo phần nội dung mở rộng để footer nằm ở dưới cùng */
+        flex: 1; /*Đảm bảo phần nội dung mở rộng để footer nằm ở dưới cùng*/
         padding: 10px 0; /* Thêm padding trên dưới */
+        margin-bottom: 30px;
     }
   
     
     .product-section {
         display: flex;
-        width: 90%; /* Giảm chiều rộng để phù hợp với navbar và footer */
+        width: 100%;
         flex-direction: column;
-        align-items: stretch;
+        align-items: center;
         margin: 0 auto; /* Căn giữa section */
     }
     
@@ -91,9 +90,11 @@
     }
     
     /* Giảm margin-top */
-    .product-container {
-        width: 100%;
-        max-width: 1200px; /* Giảm từ 1365px */
+    .product-detail-container {
+        width: 85%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
         margin-top: 20px; /* Giảm từ 30px */
     }
     
@@ -102,11 +103,6 @@
         .product-container {
             max-width: 100%;
         }
-    }
-    
-    .product-layout {
-        display: flex;
-        justify-content: space-between;
     }
     
     @media (max-width: 991px) {
@@ -122,8 +118,9 @@
         flex-direction: column;
         align-items: flex-start; /* Thay đổi từ stretch thành flex-start */
         line-height: normal;
-        width: 36%;
+        width: 35%;
         margin: 0;
+        /* max-height: 450px; */
         padding-top: 0; /* Đảm bảo không có padding trên cùng */
     }
     
@@ -133,14 +130,14 @@
         }
     }
     
-    .product-image {
-        aspect-ratio: 0.74;
-        object-fit: cover; /* Thay đổi từ contain thành cover */
+    .product-detail-image {
+        aspect-ratio: 0.8;
+        object-fit: contain; /* Thay đổi từ contain thành cover */
         object-position: top; /* Định vị phần trên của hình ảnh */
         width: 100%;
         flex-grow: 1;
         margin-top: 0; /* Đảm bảo không có margin trên cùng */
-        min-height: 400px; /* Thêm chiều cao tối thiểu */
+        min-height: 180px; /* Thêm chiều cao tối thiểu */
     }
     
     @media (max-width: 991px) {
@@ -155,7 +152,7 @@
         flex-direction: column;
         align-items: stretch;
         line-height: normal;
-        width: 60%; /* Tăng từ 50% */
+        width: 50%; /* Tăng từ 50% */
         margin-left: 0px; /* Giảm từ 20px */
     }
     
@@ -172,8 +169,8 @@
         font-size: 24px; /* Giảm từ 40px */
         font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
         font-weight: 700;
-        align-self: flex-start;
         margin-top: 40px; /* Giảm từ 60px */
+        width: 85%;
         margin-left: 0;
     }
     

@@ -243,7 +243,7 @@ created() {
         flex-direction: column;
         align-items: center;
         min-height: 100vh;
-        background-color: #FFFAF5;
+        background-color: rgb(244, 235, 225);
     }
 
     .profile-main {

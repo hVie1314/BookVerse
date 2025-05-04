@@ -1,11 +1,12 @@
 <template>
     <article class="review-item">
-      <img
+      
+      <div class="review-content">
+        <img
         :src="review.avatar"
         class="reviewer-avatar"
         alt="Reviewer avatar"
-      />
-      <div class="review-content">
+        />
         <div class="reviewer-info">
           <h3 class="reviewer-name">{{ review.name }}</h3>
           <span class="review-date">{{ review.date }}</span>
