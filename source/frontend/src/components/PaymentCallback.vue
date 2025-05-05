@@ -1,26 +1,32 @@
 <template>
-    <div class="payment-callback">
-      <Nav />
-      <div class="container">
-        <div v-if="loading" class="loading">
-          <p>Đang xác thực thanh toán...</p>
+  <div class="payment-callback">
+    <Nav />
+    <div class="container">
+      <div v-if="loading" class="loading">
+        <p>Đang xác thực thanh toán...</p>
+      </div>
+      <div v-else class="result-container">
+        <div class="icon-container" :class="isSuccess ? 'success' : 'failed'">
+          <i v-if="isSuccess" class="fa-light fa-circle-check success-icon"></i>
+          <i v-else class="fa-solid fa-circle-xmark error-icon"></i>
         </div>
-        <div v-else class="result-container">
-          <div class="icon-container" :class="isSuccess ? 'success' : 'failed'">
-            <i v-if="isSuccess" class="fa-light fa-circle-check success-icon"></i>
-            <i v-else class="fa-solid fa-circle-xmark error-icon"></i>
-          </div>
-          <h1>{{ isSuccess ? 'Thanh toán thành công' : 'Thanh toán thất bại' }}</h1>
-          <p>{{ statusMessage }}</p>
-          <div class="button-container">
-            <button @click="goToOrders" class="primary-button">Xem đơn hàng của tôi</button>
-            <button @click="goToHome" class="secondary-button">Tiếp tục mua sắm</button>
-          </div>
+        <h1>{{ isSuccess ? 'Thanh toán thành công' : 'Thanh toán thất bại' }}</h1>
+        <p>{{ statusMessage }}</p>
+        
+        <!-- Thêm dòng hiển thị thời gian tự động chuyển hướng -->
+        <p v-if="isSuccess && countdown > 0" class="redirect-info">
+          Tự động chuyển đến trang đơn hàng trong {{ countdown }} giây...
+        </p>
+        
+        <div class="button-container">
+          <button @click="goToOrders" class="primary-button">Xem đơn hàng của tôi</button>
+          <button @click="goToHome" class="secondary-button">Tiếp tục mua sắm</button>
         </div>
       </div>
-      <footer-form />
     </div>
-  </template>
+    <footer-form />
+  </div>
+</template>
   
   <script>
   import Nav from "@/components/navbar/Nav.vue";
@@ -28,81 +34,80 @@
   import OrderService from '@/services/OrderService';
 //   import eventBus from '@/eventBus.js';
   
-  export default {
-    name: 'PaymentCallback',
-    components: {
-      Nav,
-      FooterForm
-    },
-    data() {
-        return {
-            loading: true,
-            isSuccess: false,
-            statusMessage: '',
-            orderId: '',
-            countdown: 15 // Thêm bộ đếm thời gian
-        };
-    },
-    async created() {
-        // Lấy các tham số từ URL
-        const params = new URLSearchParams(window.location.search);
-        const resultCode = params.get('resultCode');
-        this.orderId = params.get('orderId') || localStorage.getItem('pendingOrderId');
-        
-        if (!this.orderId) {
-            this.loading = false;
-            this.isSuccess = false;
-            this.statusMessage = 'Không tìm thấy thông tin đơn hàng';
-            return;
-        }
-
-        // Hiển thị bộ đếm ngược
-        const timer = setInterval(() => {
-            this.countdown--;
-            if (this.countdown <= 0) {
-            clearInterval(timer);
-            }
-        }, 1000);
-        
-        try {
-            // Gọi API để kiểm tra trạng thái giao dịch
-            const response = await OrderService.checkTransactionStatus(this.orderId);
-            console.log('Kết quả kiểm tra giao dịch:', response.data);
-            
-            this.isSuccess = response.data && (response.data.success || response.data.status === 'success');
-            this.statusMessage = this.isSuccess 
-            ? 'Thanh toán đã được xác nhận, đơn hàng của bạn sẽ sớm được giao.' 
-            : 'Thanh toán không thành công. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.';
-        } catch (error) {
-            console.error('Lỗi khi kiểm tra trạng thái giao dịch:', error);
-            
-            // Sử dụng resultCode từ URL của MoMo nếu API bị lỗi
-            if (resultCode !== null) {
-            // MoMo trả về resultCode=0 khi thành công
-            this.isSuccess = resultCode === '0';
-            this.statusMessage = this.isSuccess
-                ? 'Thanh toán thành công theo thông tin từ MoMo, đơn hàng của bạn sẽ sớm được giao.'
-                : 'Thanh toán không thành công theo thông tin từ MoMo. Vui lòng thử lại sau.';
-            } else {
-            this.isSuccess = false;
-            this.statusMessage = 'Đã xảy ra lỗi khi kiểm tra trạng thái thanh toán. Vui lòng kiểm tra đơn hàng của bạn.';
-            }
-        } finally {
-            // Xóa orderId đã xử lý
-            localStorage.removeItem('pendingOrderId');
-            this.loading = false;
-            clearInterval(timer);
-        }
-    },
-    methods: {
-      goToOrders() {
-        this.$router.push('/my-orders');
-      },
-      goToHome() {
-        this.$router.push('/');
+export default {
+  name: 'PaymentCallback',
+  components: {
+    Nav,
+    FooterForm
+  },
+  data() {
+    return {
+      loading: true,
+      isSuccess: false,
+      statusMessage: '',
+      orderId: '',
+      countdown: 5 // Giảm thời gian chờ xuống 5 giây
+    };
+  },
+  async created() {
+      // Lấy tất cả tham số từ URL
+      const params = new URLSearchParams(window.location.search);
+      const paramsObject = {};
+      
+      // Chuyển đổi URLSearchParams thành object
+      for (const [key, value] of params.entries()) {
+          paramsObject[key] = value;
       }
+      
+      try {
+          // Gọi API xử lý callback
+          const response = await OrderService.handleMomoCallback(paramsObject);
+          console.log('Kết quả xử lý callback:', response.data);
+          
+          // Xác định trạng thái thanh toán
+          this.isSuccess = response.data && response.data.updatedOrder && 
+                          response.data.updatedOrder.orderStatus === 'success';
+          
+          this.statusMessage = this.isSuccess 
+              ? 'Thanh toán đã được xác nhận, đơn hàng của bạn sẽ sớm được giao.' 
+              : 'Thanh toán không thành công. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.';
+          
+          // Tự động chuyển hướng đến trang đơn hàng sau khi thành công
+          if (this.isSuccess) {
+              setTimeout(() => {
+                  this.$router.push('/my-orders');
+              }, this.countdown * 1000);
+          }
+      } catch (error) {
+          console.error('Lỗi khi xử lý callback:', error);
+          
+          // Fallback dùng resultCode từ URL nếu API gặp lỗi
+          const resultCode = params.get('resultCode');
+          if (resultCode) {
+              this.isSuccess = resultCode === '0';
+              this.statusMessage = this.isSuccess
+                  ? 'Thanh toán thành công theo thông tin từ MoMo.'
+                  : 'Thanh toán không thành công theo thông tin từ MoMo.';
+                  
+              if (this.isSuccess) {
+                  setTimeout(() => {
+                      this.$router.push('/my-orders');
+                  }, this.countdown * 1000);
+              }
+          }
+      } finally {
+          this.loading = false;
+      }
+  },
+  methods: {
+    goToOrders() {
+      this.$router.push('/my-orders');
+    },
+    goToHome() {
+      this.$router.push('/');
     }
   }
+}
   </script>
   
   <style scoped>

@@ -77,5 +77,28 @@ export default {
     // Lấy chi tiết yêu cầu hủy đơn hàng (chỉ staff)
     getCancelRequestById(requestId) {
         return Api().get(`order/cancel/${requestId}`);
+    },
+
+    // Thêm phương thức xử lý callback từ MoMo
+    handleMomoCallback(params) {
+        // Lấy các tham số từ URL callback
+        const orderId = params.orderId;
+        const resultCode = params.resultCode;
+        const transId = params.transId;
+        const message = params.message;
+        
+        console.log('Callback data from MoMo:', { orderId, resultCode, transId, message });
+        
+        // Gửi dữ liệu callback đến backend để xác nhận và cập nhật đơn hàng
+        return Api().post('payment/momo/callback', {
+            orderId,
+            resultCode,
+            transId,
+            message,
+            extraData: params.extraData,
+            signature: params.signature,
+            payType: params.payType,
+            responseTime: params.responseTime
+        });
     }
 }
