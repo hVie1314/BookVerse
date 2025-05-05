@@ -101,7 +101,7 @@ export default {
   flex-direction: column;
   align-items: center;
   background-color: rgb(244, 235, 225);
-  margin-top: 20px; /* Thêm margin để tạo khoảng cách với Nav */
+  margin-top: 100px; /* Thêm margin để tạo khoảng cách với Nav */
 }
 
 /* Footer styles from footer.vue */
