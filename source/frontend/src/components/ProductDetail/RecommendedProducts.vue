@@ -15,16 +15,14 @@
         <div v-else class="recommended-container">
             <!-- Navigation Arrow Left -->
             <button 
-                v-if="recommendedBooks.length > booksPerPage"
+                v-if="recommendedBooks.length > booksPerPage && currentPage > 1"
                 @click="previousPage" 
                 :disabled="currentPage === 1"
-                class="nav-arrow"
+                class="carousel-control-prev"
+                type="button"
             >
-                <img
-                    src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/7d3414458ba61b581b3e9422963d7885"
-                    class="arrow-icon"
-                    alt="Previous"
-                />
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
             </button>
             
             <div class="recommended-products">
@@ -43,16 +41,14 @@
             
             <!-- Navigation Arrow Right -->
             <button 
-                v-if="recommendedBooks.length > booksPerPage"
+                v-if="recommendedBooks.length > booksPerPage && currentPage < totalPages"
                 @click="nextPage" 
                 :disabled="currentPage === totalPages"
-                class="nav-arrow"
+                class="carousel-control-next"
+                type="button"
             >
-                <img
-                    src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/6e58d6e8b23fe01ad1f34ac70cd7e2c8"
-                    class="arrow-icon"
-                    alt="Next"
-                />
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
             </button>
         </div>
         
@@ -172,50 +168,37 @@
 </script>
   
 <style scoped>
-    .recommended-container {
+    .recommended-section {
         width: 100%;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: space-between;
+        position: relative; /* Thêm position relative để định vị các nút control */
+        padding: 0 20px; /* Tạo không gian cho các nút control nằm một nửa bên ngoài */
+    }
+
+    .recommended-container {
+        width: 88%; /* Điều chỉnh từ 90% lên 100% */
+        display: flex;
+        align-items: center;
+        justify-content: center; /* Căn giữa nội dung */
+        position: relative;
+        padding: 0; /* Bỏ padding và để các nút nằm ngoài container */
+        margin: 30px 0; /* Thêm margin thay vì dùng padding */
     }
     
     .recommended-products {
-        width: 90%;
+        width: 100%;
         display: flex;
-        margin-top: 30px;
         align-items: stretch;
-        gap: 15px;
+        gap: 0; /* Bỏ gap và dùng space-between để các card cách đều nhau */
         font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
         font-size: 12px;
         color: #4d2900;
         font-weight: 700;
         line-height: 2;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-    
-    .nav-arrow {
-        background: none;
-        border: none;
-        padding: 10px;
-        cursor: pointer;
-        margin: 0 10px;
-    }
-    
-    .nav-arrow:disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-    }
-    
-    .arrow-icon {
-        aspect-ratio: 0.54;
-        object-fit: contain;
-        object-position: center;
-        width: 22px;
-        stroke-width: 1px;
-        stroke: #4d2900;
-        margin: auto 0;
-        flex-shrink: 0;
+        justify-content: space-between; /* Thay đổi từ center sang space-between */
+        flex-wrap: nowrap; /* Không cho phép xuống dòng để các card cách đều nhau */
     }
     
     .pagination-dots {
@@ -258,5 +241,69 @@
         .nav-arrow {
             padding: 5px;
         }
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 35px;
+        height: 35px;
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0.8;
+        transition: all 0.3s ease;
+        position: absolute;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+    }
+
+    .carousel-control-prev {
+        left: 0;
+        transform: translateX(-50%) translateY(-50%);
+    }
+
+    .carousel-control-next {
+        right: 0;
+        transform: translateX(50%) translateY(-50%);
+    }
+
+    .carousel-control-prev:hover,
+    .carousel-control-next:hover {
+        background-color: rgba(255, 255, 255, 0.95);
+        opacity: 1;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .carousel-control-prev:hover {
+        transform: translateX(-50%) translateY(-50%) scale(1.15);
+    }
+
+    .carousel-control-next:hover {
+        transform: translateX(50%) translateY(-50%) scale(1.15);
+    }
+
+    .carousel-control-prev:disabled,
+    .carousel-control-next:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: translateX(-50%) translateY(-50%) scale(1) !important;
+    }
+
+    .carousel-control-next:disabled {
+        transform: translateX(50%) translateY(-50%) scale(1) !important;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        background-color: #000;
+        width: 18px;
+        height: 18px;
+        filter: invert(1); /* Làm cho icon màu đen */
+        opacity: 0.7;
     }
 </style>

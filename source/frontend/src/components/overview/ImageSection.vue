@@ -193,7 +193,7 @@ export default {
 .carousel-control-next {
   width: 50px;
   height: 50px;
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.95);
   border-radius: 50%;
   top: 50%;
   transform: translateY(-50%);
@@ -242,7 +242,7 @@ export default {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.95);
   margin: 0 5px;
 }
 
@@ -294,5 +294,20 @@ export default {
 /* Thêm vào phần <style> trong ImageSection.vue */
 .carousel-item:not(.active) {
   display: none !important; /* Lệnh !important để ghi đè bất kỳ CSS nào khác */
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: #000;
+    width: 18px; /* Giảm từ kích thước mặc định 20px */
+    height: 18px; /* Giảm từ kích thước mặc định 20px */
+    filter: invert(1); /* Làm cho icon màu đen thay vì màu trắng mặc định */
+    opacity: 0.7;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 35px; /* Giảm từ 40px */
+    height: 35px; /* Giảm từ 40px */
 }
 </style>
