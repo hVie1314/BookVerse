@@ -2,7 +2,7 @@
     <div class="category-page">
       <Nav />
       <main class="category-content">
-        <div class="container">
+        <div class="category-container">
           <div class="page-header">
               <h1 class="page-title">
               {{ $route.query.search ? 'Kết quả tìm kiếm' : 'Danh mục sản phẩm' }}
@@ -88,7 +88,7 @@
         padding: 30px 0;
     }
 
-    .container {
+    .category-container {
         width: 85%;
         margin: 0 auto;
         padding: 0 15px;

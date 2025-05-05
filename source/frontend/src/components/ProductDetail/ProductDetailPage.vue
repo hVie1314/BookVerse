@@ -137,7 +137,7 @@
         align-items: center;
         min-height: 100vh; /* Đảm bảo trang chiếm toàn bộ chiều cao màn hình */
         width: 100%;
-        background-color: antiquewhite;
+        background-color: rgb(244, 235, 225);
     }
 
     .product-detail-page {
@@ -147,6 +147,7 @@
         flex: 1; /*Đảm bảo phần nội dung mở rộng để footer nằm ở dưới cùng*/
         padding: 10px 0; /* Thêm padding trên dưới */
         margin-bottom: 30px;
+        margin-top: 100px;
     }
   
     

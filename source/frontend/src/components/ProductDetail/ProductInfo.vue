@@ -300,6 +300,7 @@
 
     .read-more:hover {
         opacity: 0.8;
+        text-decoration: underline;
     }
     
     @media (max-width: 991px) {

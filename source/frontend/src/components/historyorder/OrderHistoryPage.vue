@@ -486,6 +486,7 @@
     font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
     font-weight: 600;
     margin: 20px 0;
+    margin-top: 100px;
 }
 
 .content-wrapper {

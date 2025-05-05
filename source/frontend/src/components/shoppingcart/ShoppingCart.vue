@@ -453,6 +453,7 @@
     display: flex;
     justify-content: center;
     padding: 50px 0;
+    margin-top: 100px;
   }
   
   .shopping-cart-container {
