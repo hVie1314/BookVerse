@@ -86,6 +86,7 @@
         width: 100%;
         flex: 1;
         padding: 30px 0;
+        margin-top: 100px;
     }
 
     .category-container {
