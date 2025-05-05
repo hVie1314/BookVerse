@@ -494,6 +494,7 @@ export default {
   z-index: 1000;
 }
 
+
 .user-menu-container:hover {
   transform: translateY(-4px);
 }
