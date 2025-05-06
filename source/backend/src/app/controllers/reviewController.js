@@ -60,6 +60,7 @@ class ReviewController {
          // rating
          const bookRating = await bookService.reCalcBookRating(bookId);
          book.rating = bookRating;
+         book.save();
 
          review.set(req.body);
          await review.save();
@@ -84,6 +85,7 @@ class ReviewController {
          // rating
          const bookRating = await bookService.reCalcBookRating(bookId);
          book.rating = bookRating;
+         book.save();
 
          // remove review from book
          book.reviews = book.reviews.filter((r) => String(r) !== String(review._id));
