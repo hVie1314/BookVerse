@@ -10,6 +10,7 @@ class BookService {
                 keyword,
                 category,
                 author,
+                rating,
                 minPrice,
                 maxPrice,
                 sortBy,
@@ -32,6 +33,11 @@ class BookService {
             // filter by author
             if (author) {
                 filter.author = author;
+            }
+
+            // filter by rating
+            if (rating) {
+                filter.rating = { $gte: parseFloat(rating) };
             }
 
             // filter by price range
@@ -87,27 +93,17 @@ class BookService {
 
     async reCalcBookRating(bookId) {
         try {
-            const book = await Book.findById(bookId);
-            if (!book) {
-                throw new AppError(404, 'BOOK_NOT_FOUND');
-            }
-
-            // get all reviews for the book
             const reviews = await Review.find({ 
                 book_id: bookId, 
                 status: 'approved', 
                 hidden: false 
             });
-
+            
             if (reviews.length === 0) return 0;
 
             // calculate the average rating
             const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
             const avgRating = Math.round(totalRating / reviews.length * 10) / 10;
-
-            // update the book's rating
-            book.rating = avgRating;
-            await book.save();
 
             return avgRating;
 
