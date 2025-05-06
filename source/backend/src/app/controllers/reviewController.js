@@ -1,4 +1,5 @@
 const Book = require('../models/Book');
+const User = require('../models/User');
 const Review = require('../models/Review')
 const AppError = require('../../utils/appError');
 const bookService = require('../../services/bookService');
@@ -92,7 +93,22 @@ class ReviewController {
 
          const reviews = await Review.find({ book_id: book._id, hidden: false })
 
-         return res.status(200).json({ reviews });
+         // join with user to get username and avatar
+         const reviewsWithUser = await Promise.all(
+            reviews.map(async (review) => {
+               const user = await User.findById(review.user_id, 'username avatar');
+               return {
+                  ...review.toObject(),
+                  user: {
+                     username: user.username,
+                     avatar: user.avatar
+                  }
+               };
+            })
+         );
+
+         return res.status(200).json({ reviewsWithUser });
+      
       } catch (err) {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
       }
