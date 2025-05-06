@@ -1,13 +1,16 @@
 const Book = require('../app/models/Book');
 const AppError = require('../utils/appError');
+const Review = require('../app/models/Review');
 
 class BookService {
+
    async searchBooks(query) {
         try {
             const {
                 keyword,
                 category,
                 author,
+                rating,
                 minPrice,
                 maxPrice,
                 sortBy,
@@ -30,6 +33,11 @@ class BookService {
             // filter by author
             if (author) {
                 filter.author = author;
+            }
+
+            // filter by rating
+            if (rating) {
+                filter.rating = { $gte: parseFloat(rating) };
             }
 
             // filter by price range
@@ -64,6 +72,46 @@ class BookService {
         throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
         }
     }
+
+    async getBookInfoById(id) {
+        try {
+        const book = await Book.findById(id);
+        if (!book) {
+            throw new AppError(404, 'BOOK_NOT_FOUND');
+        }
+
+        return {
+            title: book.title,
+            price: book.price,
+            image: book.image,
+        };
+        }
+        catch (err) {
+        throw new AppError(500, 'INTERNAL_SERVER_ERROR', err.message);
+        }
+    }
+
+    async reCalcBookRating(bookId) {
+        try {
+            const reviews = await Review.find({ 
+                book_id: bookId, 
+                status: 'approved', 
+                hidden: false 
+            });
+            
+            if (reviews.length === 0) return 0;
+
+            // calculate the average rating
+            const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
+            const avgRating = Math.round(totalRating / reviews.length * 10) / 10;
+
+            return avgRating;
+
+        } catch (error) {
+            throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
+        }
+    }
+
 }
 
 module.exports = new BookService();

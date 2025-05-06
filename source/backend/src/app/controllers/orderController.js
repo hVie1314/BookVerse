@@ -27,8 +27,7 @@ class OrderController {
     }
 
     // Get all orders for a user
-    // add next
-    async getAllOrders(req, res, next) {
+    async getAllOrdersOfUser(req, res, next) {
         try {
             const { userId } = req.params;
             const user = await User.findById(userId);
@@ -37,7 +36,22 @@ class OrderController {
 
             // Fetch all orders for the given user ID
             const orders = await Order.find({ userId });
-            res.status(200).json(orders);
+
+            // For each order, join with Book collection to get book details
+            const ordersWithDetails = await Promise.all(
+                orders.map(order =>
+                    Order.findById(order._id).populate([
+                        {
+                            path: 'items.bookId',
+                            model: 'Book',
+                            select: 'title author price image',
+                        },
+                    ])
+                )
+            );
+
+            res.status(200).json({ orders : ordersWithDetails });
+
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching orders'));
         }
@@ -49,7 +63,18 @@ class OrderController {
             const order = await Order.findById(req.params.id);
             if (!order)
                 return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found'));
-            res.status(200).json(order);
+
+            // Join with Book and User collections to get book details and user details
+            const OrderInfo = await Order.findById(req.params.id).populate([
+                { 
+                    path: 'items.bookId', 
+                    model: 'Book', 
+                    select: 'title author price image' // Select specific fields
+                }
+            ]);
+            
+            res.status(200).json(OrderInfo);
+
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching order'));
         }

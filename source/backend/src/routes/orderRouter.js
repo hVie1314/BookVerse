@@ -12,7 +12,7 @@ router.post('/create', orderController.createOrder);
 router.put('/update/:id', orderController.updateOrderStatus);
 
 // Get all orders for a specific user
-router.get('/history/:userId', orderController.getAllOrders);
+router.get('/history/:userId', orderController.getAllOrdersOfUser);
 
 // Get order details by order ID
 router.get('/details/:id', orderController.getOrderById);
