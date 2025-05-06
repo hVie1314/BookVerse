@@ -49,13 +49,13 @@ class BookController {
       }
    }
 
-   // [GET] /book/:page/:limit
+   // [GET] /book/page/:page/limit/:limit
    async getBooks(req, res, next) {
       try {
          const page = parseInt(req.params.page) || 1; // default page 
          const limit = parseInt(req.params.limit); // default limit
          if (isNaN(limit) || limit <= 0) {
-            return next(new AppError(400, 'INVALID_PARAM', 'Parameter n must be a positive number'));
+            return next(new AppError(400, 'INVALID_PARAM', 'Parameter limit must be a positive number'));
          }
 
          const skip = (page - 1) * limit;

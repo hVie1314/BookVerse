@@ -38,17 +38,17 @@ class OrderController {
             const orders = await Order.find({ userId });
 
             // For each order, join with Book collection to get book details
-            const ordersWithDetails = [];
-            for (const order of orders) {
-                const populatedOrder = await Order.findById(order._id).populate([
-                    {
-                        path: 'items.bookId',
-                        model: 'Book',
-                        select: 'title author price image',
-                    },
-                ]);
-                ordersWithDetails.push(populatedOrder);
-            }
+            const ordersWithDetails = await Promise.all(
+                orders.map(order =>
+                    Order.findById(order._id).populate([
+                        {
+                            path: 'items.bookId',
+                            model: 'Book',
+                            select: 'title author price image',
+                        },
+                    ])
+                )
+            );
 
             res.status(200).json({ orders : ordersWithDetails });
 

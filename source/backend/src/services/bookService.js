@@ -98,8 +98,6 @@ class BookService {
                 status: 'approved', 
                 hidden: false 
             });
-
-            console.log('Reviews:', reviews);
             
             if (reviews.length === 0) return 0;
 
