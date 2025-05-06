@@ -9,6 +9,7 @@ const BookSchema = new mongoose.Schema({
     price: { type: Number, required: true },
     stock: { type: String },
     sold: { type: Number, default: 0 },
+    rating: { type: Number, default: 0 },
     image: { type: String, default: '' },
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
 }, {
