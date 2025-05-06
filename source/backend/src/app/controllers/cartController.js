@@ -1,6 +1,5 @@
 const AppError = require('../../utils/appError');
 const CartService = require('../../services/cartService');
-const BookHelper = require('../../helpers/bookHelper');
 const { mongooseToObject, multipleMongooseToObject } = require('../../utils/mongoose');
 
 class CartController {
