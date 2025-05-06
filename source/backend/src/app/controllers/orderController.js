@@ -98,6 +98,31 @@ class OrderController {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error updating order'));
         }
     }
+
+    // [POST] /order/cancel/:id
+    async cancelOrder(req, res, next) {
+        try {
+            const orderId = req.params.id;
+            const order = await Order.findById(orderId);
+            if (!order) {
+                return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found'));
+            }
+
+            if (order.orderStatus !== 'pending') {
+                return next(new AppError(400, 'INVALID_ORDER_STATUS', 'Only pending orders can be cancelled'));
+            }
+
+            order.orderStatus = 'cancelled'; // Update the order status to 'cancelled'
+            await order.save(); // Save the updated order
+
+            res.status(200).json({ message: 'Order cancelled successfully' });
+
+        }
+        catch (err) {
+            next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+        }
+    }
+    
 }
 
 module.exports = new OrderController();
