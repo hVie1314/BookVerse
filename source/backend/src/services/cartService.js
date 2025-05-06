@@ -16,10 +16,32 @@ class CartService {
          cart = await Cart.findOne(filter);
          return cart;
 
-      } catch (error) {
-         if (error instanceof AppError) {
-            throw error;
+      }
+      catch (error) {
+         throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
+      }
+   }
+
+   // get cart with book info 
+   async getCartWithBookInfo(userId, cartId) {
+      try {
+         let cart = await this.findCart(userId, cartId);
+
+         // join with Book model to get book info
+         // get: title, author, price, image
+         if (cart) {
+            cart = await cart.populate({
+               path: 'products.productId', // join with Book model
+               select: 'title author price image', 
+            });
+
+            return cart;
          }
+
+         return null; // cart not found
+      }
+
+      catch (error) {
          throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
       }
    }
