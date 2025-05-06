@@ -1,6 +1,7 @@
 const Book = require('../models/Book');
 const User = require('../models/User');
 const Review = require('../models/Review')
+const Order = require('../models/Order')
 const AppError = require('../../utils/appError');
 const bookService = require('../../services/bookService');
 
@@ -10,19 +11,36 @@ class ReviewController {
    async addReview(req, res, next) {
       try {
          const { rating, comment } = req.body;
-         const user_id = req.userInfo.id;
+         const userId = req.userInfo.id;
          const bookId = req.params.bookId;
    
-         // Kiểm tra book tồn tại
+         // Check if bookId is valid
          const book = await Book.findById(bookId);
          if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
 
-         // TODO: Kiểm tra người dùng đã mua sách này chưa
-   
+         // Check if order exists for this book
+         const order = await Order.findOne({
+            userId,  
+            'items.bookId': bookId,
+            orderStatus: 'success'
+         });
+         if (!order) return next(new AppError(403, 'FORBIDDEN', 'You must buy this book to review it'));
+
+         // check if user already reviewed this book
+         const existingReview = await Review.findOne({ userId, bookId });
+         if (existingReview) {
+            return next(new AppError(403, 'FORBIDDEN', 'You have already reviewed this book'));
+         }
+
+         // Kiểm tra rating hợp lệ
+         if (rating < 1 || rating > 5) {
+            return next(new AppError(400, 'INVALID_RATING', 'Rating must be between 1 and 5'));
+         }
+
          // Tạo review
          const review = new Review({
-            user_id,
-            book_id: bookId,
+            userId,
+            bookId,
             rating,
             comment
          });
@@ -49,11 +67,11 @@ class ReviewController {
          const review = await Review.findById(reviewId);
          if (!review) return next(new AppError(404, 'REVIEW_NOT_FOUND'));
 
-         const bookId = review.book_id;
-         const book = await Book.findById(review.book_id);
+         const bookId = review.bookId;
+         const book = await Book.findById(review.bookId);
          if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
 
-         if (String(review.user_id) !== req.userInfo.id) {
+         if (String(review.userId) !== req.userInfo.id) {
             return next(new AppError(403, 'FORBIDDEN', 'You cannot modify this review'));
          }
 
@@ -78,8 +96,8 @@ class ReviewController {
          const review = await Review.findById(reviewId);
          if (!review) return next(new AppError(404, 'REVIEW_NOT_FOUND'));
 
-         const bookId = review.book_id;
-         const book = await Book.findById(review.book_id);
+         const bookId = review.bookId;
+         const book = await Book.findById(review.bookId);
          if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
 
          // rating
@@ -105,7 +123,7 @@ class ReviewController {
          const book = await Book.findById(req.params.bookId);
          if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
 
-         const reviews = await Review.find({ book_id: book._id, hidden: false })
+         const reviews = await Review.find({ bookId: book._id, hidden: false })
 
          // get rating statistics by rating value, number of reviews and average rating
          const ratingStats = [1, 2, 3, 4, 5].map((ratingValue) => ({
@@ -118,7 +136,7 @@ class ReviewController {
          // join with user to get username and avatar
          const reviewsWithUsers = await Promise.all(
             reviews.map(async (review) => {
-               const user = await User.findById(review.user_id, 'username avatar');
+               const user = await User.findById(review.userId, 'username avatar');
                return {
                   ...review.toObject(),
                   user: {
