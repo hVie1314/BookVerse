@@ -1,6 +1,7 @@
 const Book = require('../models/Book');
 const Review = require('../models/Review')
 const AppError = require('../../utils/appError');
+const bookService = require('../../services/bookService');
 
 class ReviewController {
 
@@ -30,6 +31,9 @@ class ReviewController {
          book.reviews.push(review._id);
          await book.save();
 
+         // update rating 
+         await bookService.reCaclBookRating(bookId);
+
          return res.status(201).json({ review });
       } catch (err) {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
@@ -49,6 +53,9 @@ class ReviewController {
          review.set(req.body);
          await review.save();
 
+         // update rating 
+         await bookService.reCaclBookRating(bookId);
+
          return res.status(200).json({ review });
       } catch (err) {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
@@ -67,6 +74,9 @@ class ReviewController {
          );
 
          await review.remove();
+
+         // update rating 
+         await bookService.reCaclBookRating(bookId);
 
          return res.status(200).json({ message: 'Review deleted' });
       } catch (err) {
