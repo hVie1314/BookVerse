@@ -11,7 +11,7 @@ router.get('/search', bookController.search);
 router.post('/', bookController.create);                // [POST] /book/
 router.put('/:id', bookController.update);              // [PUT] /book/:id
 router.delete('/:id', bookController.delete);           // [DELETE] /book/:id
-router.get('/', bookController.getAll);                 // [GET] /book/
+router.get('/page/:page/limit/:limit', bookController.getBooks);    
 router.get('/:id', bookController.getById);             // [GET] /book/:id
 
 router.get('/top/:n', bookController.getTopSelling);    
