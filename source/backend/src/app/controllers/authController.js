@@ -237,12 +237,12 @@ class AuthController {
          // find user by email
          const user = await User.findOne({ email: email });
          if (!user) {
-            return next(new AppError(404, "USER_NOT_FOUND"));
+            throw new AppError(404, "USER_NOT_FOUND");
          }
 
          // check if new password < 8 characters
          if (newPassword.length < 8) {
-            return next(new AppError(400, "INVALID_PASSWORD"));
+            throw new AppError(400, "INVALID_PASSWORD");
          }
 
          // hash new password
