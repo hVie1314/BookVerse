@@ -32,7 +32,7 @@ class ReviewController {
          await book.save();
 
          // update rating 
-         await bookService.reCaclBookRating(bookId);
+         await bookService.reCalcBookRating(bookId);
 
          return res.status(201).json({ review });
       } catch (err) {
@@ -54,7 +54,7 @@ class ReviewController {
          await review.save();
 
          // update rating 
-         await bookService.reCaclBookRating(bookId);
+         await bookService.reCalcBookRating(bookId);
 
          return res.status(200).json({ review });
       } catch (err) {
@@ -76,7 +76,7 @@ class ReviewController {
          await review.remove();
 
          // update rating 
-         await bookService.reCaclBookRating(bookId);
+         await bookService.reCalcBookRating(bookId);
 
          return res.status(200).json({ message: 'Review deleted' });
       } catch (err) {

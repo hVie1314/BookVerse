@@ -85,7 +85,7 @@ class BookService {
         }
     }
 
-    async reCaclBookRating(bookId) {
+    async reCalcBookRating(bookId) {
         try {
             const book = await Book.findById(bookId);
             if (!book) {
