@@ -103,8 +103,16 @@ class ReviewController {
 
          const reviews = await Review.find({ book_id: book._id, hidden: false })
 
+         // get rating statistics by rating value, number of reviews and average rating
+         const ratingStats = [1, 2, 3, 4, 5].map((ratingValue) => ({
+            rating: ratingValue,
+            count: reviews.filter((review) => review.rating === ratingValue).length,
+         }));
+         const totalReviews = reviews.length;
+         const averageRating = book.rating || 0;
+
          // join with user to get username and avatar
-         const reviewsWithUser = await Promise.all(
+         const reviewsWithUsers = await Promise.all(
             reviews.map(async (review) => {
                const user = await User.findById(review.user_id, 'username avatar');
                return {
@@ -117,7 +125,12 @@ class ReviewController {
             })
          );
 
-         return res.status(200).json({ reviewsWithUser });
+         return res.status(200).json({ 
+            ratingStats,
+            averageRating,
+            totalReviews,
+            reviews: reviewsWithUsers
+          });
       
       } catch (err) {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
@@ -152,7 +165,8 @@ class ReviewController {
       } catch (err) {
          return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
       }
-   }   
+   } 
+
 }
 
 module.exports = new ReviewController();
