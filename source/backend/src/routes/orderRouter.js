@@ -17,6 +17,6 @@ router.get('/history/:userId', orderController.getAllOrdersOfUser);
 router.get('/details/:id', orderController.getOrderById);
 
 // Cancel Request Routes 
-router.post('/cancel/:id', verifyToken, orderController.cancelOrder);     
+router.post('/cancel/:id', orderController.cancelOrder);     
 
 module.exports = router;
