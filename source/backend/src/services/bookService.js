@@ -10,6 +10,7 @@ class BookService {
                 keyword,
                 category,
                 author,
+                rating,
                 minPrice,
                 maxPrice,
                 sortBy,
@@ -32,6 +33,11 @@ class BookService {
             // filter by author
             if (author) {
                 filter.author = author;
+            }
+
+            // filter by rating
+            if (rating) {
+                filter.rating = { $gte: parseFloat(rating) };
             }
 
             // filter by price range

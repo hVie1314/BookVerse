@@ -125,7 +125,6 @@ class BookController {
             return res.status(200).json(result);
       } catch (err) {
             return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
-
       }
    }
 
