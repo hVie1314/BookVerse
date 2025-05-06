@@ -45,10 +45,11 @@ class ReviewController {
    // [PUT] /review/:id
    async updateReview(req, res, next) {
       try {
-         const bookId = req.body.id;
-         const review = await Review.findById(bookId);
+         const reviewId = req.params.id;
+         const review = await Review.findById(reviewId);
          if (!review) return next(new AppError(404, 'REVIEW_NOT_FOUND'));
 
+         const bookId = review.book_id;
          const book = await Book.findById(review.book_id);
          if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
 
@@ -72,10 +73,11 @@ class ReviewController {
    // [DELETE] /review/:id
    async deleteReview(req, res, next) {
       try {
-         const bookId = req.body.id;
-         const review = await Review.findById(bookId);
+         const reviewId = req.params.id;
+         const review = await Review.findById(reviewId);
          if (!review) return next(new AppError(404, 'REVIEW_NOT_FOUND'));
 
+         const bookId = review.book_id;
          const book = await Book.findById(review.book_id);
          if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
 
