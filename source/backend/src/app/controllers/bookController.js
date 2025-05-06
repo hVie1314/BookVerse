@@ -49,11 +49,28 @@ class BookController {
       }
    }
 
-   // [GET] /book/
-   async getAll(req, res, next) {
+   // [GET] /book/:page/:limit
+   async getBooks(req, res, next) {
       try {
-         const books = await Book.find();
-         return res.status(200).json({ books });
+         const page = parseInt(req.params.page) || 1; // default page 
+         const limit = parseInt(req.params.limit); // default limit
+         if (isNaN(limit) || limit <= 0) {
+            return next(new AppError(400, 'INVALID_PARAM', 'Parameter n must be a positive number'));
+         }
+
+         const skip = (page - 1) * limit;
+
+         const books = await Book.find().skip(skip).limit(limit);
+         const totalBooks = await Book.countDocuments();
+
+         return res.status(200).json({
+            books,
+            pagination: {
+               currentPage: page,
+               totalPages: Math.ceil(totalBooks / limit),
+               totalBooks,
+            },
+         });
       } catch (err) {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
       }
