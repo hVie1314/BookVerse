@@ -62,6 +62,16 @@ class AuthMiddleware {
       }
    }
 
+   verifyStaffOrAdmin(req, res, next) {
+      const { role } = req.userInfo;
+      if (role === "staff" || role === "admin") {
+         next();
+      }
+      else {
+         return next(new AppError(403, "FORBIDDEN"));
+      }
+   }
+
 }
 
 module.exports = new AuthMiddleware();
