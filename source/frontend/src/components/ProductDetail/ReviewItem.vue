@@ -13,21 +13,21 @@
         </div>
   
         <div class="review-details">
-          <div class="star-rating">
-            <img
-              v-for="star in 5"
-              :key="`star-${star}`"
-              :src="star <= review.rating ? 'https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/b14ee1ef52e02a8d5f8aad06157d02ea0f835a9a?placeholderIfAbsent=true' : 'https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/244b0e75a1832a0226e3b419e9ebc0a50e647627?placeholderIfAbsent=true'"
-              class="rating-star"
-              alt="Rating star"
-            />
-          </div>
+            <div class="star-rating">
+                <i v-for="index in 5" :key="index" 
+                    :class="[
+                    index <= review.rating ? 'fas fa-star filled-star' : 'far fa-star empty-star'
+                    ]"
+                ></i>
+            </div>
   
           <p class="review-text">
-            {{ review.content }}
+            {{ displayContent }}
           </p>
   
-          <button class="read-more-button">Đọc thêm</button>
+          <button class="read-more-button" v-if="isLongContent" @click="toggleExpandContent">
+          {{ expanded ? 'Thu gọn' : 'Đọc thêm' }}
+        </button>
         </div>
   
         <div class="review-actions">
@@ -61,19 +61,58 @@
     export default {
         name: 'ReviewItem',
         props: {
-        review: {
+            review: {
             type: Object,
             required: true
+            }
+        },
+        data() {
+            return {
+            expanded: false
+            };
+        },
+        computed: {
+            isLongContent() {
+                // Kiểm tra cả content và comment
+                const reviewText = this.review.content || this.review.comment || '';
+                return reviewText.length > 200;
+            },
+            displayContent() {
+                const reviewText = this.review.content || this.review.comment || '';
+                if (!reviewText) return 'Không có nội dung đánh giá';
+                
+                return this.expanded || !this.isLongContent 
+                    ? reviewText 
+                    : reviewText.substring(0, 200) + '...';
+            }
+        },
+        methods: {
+            toggleExpandContent() {
+            this.expanded = !this.expanded;
+            }
         }
-        }
-    };
+        };
 </script>
   
 <style scoped>
+
+    .filled-star {
+        color: #FFD700; /* Màu vàng */
+    }
+
+    .empty-star {
+        color: #D3D3D3; /* Màu xám nhạt */
+    }
+
+    .star-rating i {
+        margin-right: 3px;
+    }
     .review-item {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
+        border: 1px solid #f0f0f0;
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: rgb(244, 235, 225);
     }
     
     .reviewer-avatar {
@@ -95,8 +134,8 @@
         flex-grow: 1;
         flex-shrink: 0;
         flex-basis: 0;
-        width: fit-content;
-        margin-top: 133px;
+        width: 100%; /* Thay đổi từ fit-content sang 100% */
+        margin-top: 0 !important;/* Giảm từ 133px xuống 10px */
         margin-right: 11px;
     }
     
@@ -116,6 +155,7 @@
         font-family: Raleway, -apple-system, Roboto, Helvetica, sans-serif;
         font-size: 16px;
         font-weight: 700;
+        margin-left: 50px;
     }
     
     .reviewer-name {
@@ -135,6 +175,7 @@
         flex-direction: column;
         align-items: stretch;
         justify-content: flex-start;
+        margin-left: 50px; 
     }
     
     @media (max-width: 991px) {

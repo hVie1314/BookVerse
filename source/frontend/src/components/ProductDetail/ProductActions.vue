@@ -1,6 +1,6 @@
 <template>
     <div class="action-buttons">
-      <button class="buy-now-button">
+      <button class="buy-now-button" @click="buyNow">
         <img
           src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/2a79e75e4c878777ec56dd7bdc9146e84a5a316e?placeholderIfAbsent=true"
           class="button-icon"
@@ -9,7 +9,7 @@
         <span class="button-text">Mua sách ngay</span>
       </button>
   
-      <button class="add-to-cart-button">
+      <button class="add-to-cart-button" @click="addToCart">
         <img
           src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/c5ad92d22654c9d4b75f5fd5dfda7ab50490430c?placeholderIfAbsent=true"
           class="cart-icon"
@@ -18,7 +18,7 @@
         <span class="cart-text">Thêm vào giỏ hàng</span>
       </button>
   
-      <button class="favorite-button">
+      <button class="favorite-button" @click="addToFavorites">
         <img
           src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/db3fc608a52b56fc3fba42309cdd515609085107?placeholderIfAbsent=true"
           class="favorite-icon"
@@ -99,6 +99,15 @@
                     duration: 3000
                 });
             }
+        },
+        buyNow() {
+            // Đầu tiên thêm sản phẩm vào giỏ hàng
+            this.addToCart();
+            
+            // Sau đó chuyển hướng đến trang giỏ hàng
+            setTimeout(() => {
+                this.$router.push('/cart');
+            }, 300);
         }
     }
 }

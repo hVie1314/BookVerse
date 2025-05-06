@@ -58,9 +58,26 @@ export default {
     createCancelRequest(orderId, reason) {
         // Lấy token hiện tại và đảm bảo gửi cùng với userId để giải quyết lỗi 403
         const userId = AuthenticationService.getCurrentUser()?.id;
+        console.log('=== BẮT ĐẦU GỬI YÊU CẦU HỦY ĐƠN HÀNG ===');
+        console.log('OrderID:', orderId);
+        console.log('Lý do hủy:', reason);
+        console.log('UserID:', userId);
+        
         return Api().post(`order/cancel/${orderId}`, { 
             reason,
             userId // Thêm userId vào request body
+        })
+        .then(response => {
+            console.log('=== KẾT QUẢ HỦY ĐƠN HÀNG ===');
+            console.log('Status:', response.status);
+            console.log('Response:', response.data);
+            return response;
+        })
+        .catch(error => {
+            console.error('=== LỖI KHI HỦY ĐƠN HÀNG ===');
+            console.error('Error status:', error.response?.status);
+            console.error('Error message:', error.response?.data || error.message);
+            throw error;
         });
     },
     
@@ -100,5 +117,7 @@ export default {
             payType: params.payType,
             responseTime: params.responseTime
         });
-    }
+    },
+
+    
 }

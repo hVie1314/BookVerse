@@ -27,7 +27,7 @@
         
                 <RatingSection :ratings="book.ratings || []" />
         
-                <ReviewList :reviews="book.reviews || []" />
+                <ReviewList :reviews="book.reviews || []" :bookId="book._id || book.id"/>
         
                 <h2 class="recommended-title">Gợi ý sản phẩm</h2>
                 
