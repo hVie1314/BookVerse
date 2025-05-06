@@ -3,6 +3,19 @@
       <div class="info-container">
         <div class="book-info">
           <h1 class="book-title">{{ book.title || 'Không có tiêu đề' }}</h1>
+
+            <div class="rating-container">
+                <div class="star-rating">
+                    <i v-for="index in 5" :key="index" 
+                        :class="[
+                            index <= Math.floor(averageRating) ? 'fas fa-star filled-star' : 
+                            index - averageRating < 1 && index - averageRating > 0 ? 'fas fa-star-half-alt filled-star' : 'far fa-star empty-star'
+                        ]"
+                    ></i>
+                </div>
+                <span class="rating-value">{{ averageRating.toFixed(1) }}/5</span>
+                <span class="review-count">({{ book.reviews ? book.reviews.length : 0 }} đánh giá)</span>
+            </div>
           <p class="book-author">{{ book.author || 'Không có tác giả' }}</p>
           <p class="book-price">{{ formatPrice(book.price) }}</p>
   
@@ -51,7 +64,7 @@
   
 <script>
     import ProductActions from './ProductActions.vue';
-    
+    import BookService from '@/services/BookService';
     export default {
         name: 'ProductInfo',
         components: {
@@ -60,16 +73,21 @@
         props: {
             book: {
                 type: Object,
-                required: true,
-                default: () => ({})
+                required: true
             }
         },
         data() {
             return {
-                quantity: 1,
-                isExpanded: false // Biến để theo dõi trạng thái mở rộng của mô tả
-            }
+            isExpanded: false,
+            quantity: 1,
+            averageRating: 0,
+            loading: false
+            };
         },
+        mounted() {
+            this.fetchBookRating();
+        },
+        
         methods: {
             toggleDescription() {
             this.isExpanded = !this.isExpanded;
@@ -95,12 +113,63 @@
                 if (this.quantity > 1) {
                     this.quantity--;
                 }
-            }
+            },
+            async fetchBookRating() {
+                try {
+                    this.loading = true;
+                    const bookId = this.book._id || this.book.id;
+                    const response = await BookService.getBookRating(bookId);
+                    if (response.data && response.data.success && response.data.data) {
+                        // Chuyển đổi từ chuỗi sang số
+                        this.averageRating = parseFloat(response.data.data.rating) || 0;
+                    } else {
+                        this.averageRating = 0;
+                    }
+                    console.log('Đánh giá trung bình:', this.averageRating);
+                } catch (error) {
+                    console.error('Lỗi khi lấy đánh giá trung bình:', error);
+                    this.averageRating = 0;
+                } finally {
+                    this.loading = false;
+                }
+            },
         }
     };
 </script>
   
 <style scoped>
+    .filled-star {
+        color: #FFD700; /* Màu vàng */
+    }
+
+    .empty-star {
+        color: #D3D3D3; /* Màu xám nhạt */
+    }
+    .rating-container {
+        display: flex;
+        align-items: center;
+        margin: 8px 0 16px 0;
+    }
+
+    .star-rating {
+        display: inline-flex;
+        margin-right: 8px;
+    }
+
+    .star-rating i {
+        margin-right: 2px;
+    }
+
+    .rating-value {
+        font-weight: 600;
+        color: #4c2900;
+        margin-right: 8px;
+    }
+
+    .review-count {
+        color: #666;
+        font-size: 0.9em;
+    }
     .product-info {
         margin-top: 10px; /* Giảm từ 14px */
         width: 100%;

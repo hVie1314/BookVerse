@@ -7,9 +7,13 @@
       :message="globalAlert.message"
       :auto-close="globalAlert.autoClose"
       :duration="globalAlert.duration || 3000"
+      :show-input="globalAlert.showInput"
+      :input-placeholder="globalAlert.inputPlaceholder"
+      :input-required="globalAlert.inputRequired"
       :show-choices="globalAlert.showChoices || false"
       :confirm-text="globalAlert.confirmText || 'Đồng ý'"
       :cancel-text="globalAlert.cancelText || 'Hủy bỏ'"
+      :choices="globalAlert.choices"
       @confirm="handleConfirm"
       @cancel="handleCancel"
     />
@@ -43,13 +47,22 @@ export default {
     return {
       loading: false,
       loadingStartTime: 0,
-      minLoadingTime: 800 ,// Thời gian tối thiểu hiển thị loading (ms)
+      minLoadingTime: 800,
       isLoggedIn: false,
       globalAlert: {
         show: false,
         type: 'success',
         title: '',
-        message: ''
+        message: '',
+        autoClose: true,
+        duration: 3000,
+        showChoices: false,
+        showInput: false,
+        inputPlaceholder: '',
+        inputRequired: false,
+        confirmText: 'Đồng ý',
+        cancelText: 'Hủy bỏ',
+        choices: []
       }
     }
   },
@@ -68,15 +81,21 @@ export default {
     // Trong phần lắng nghe sự kiện của App.vue
     eventBus.on('show-alert', (alertData) => {
       console.log('Received show-alert event:', alertData);
-      this.globalAlert = { ...alertData, show: true };
+      console.log('Input enabled:', alertData.showInput);
       
-      // Chỉ tự động đóng các thông báo thành công về đăng nhập
+      // Đảm bảo truyền tất cả các thuộc tính đến alert
+      this.globalAlert = { 
+        ...alertData,
+        show: true 
+      };
+      
       // Chỉ tự động đóng các thông báo thành công về đăng nhập
       if (alertData.type === 'success' && 
           alertData.message && 
           (alertData.message.includes('đăng nhập thành công') || 
           alertData.message.includes('đăng xuất thành công')) && 
-          !alertData.showChoices) { // Không tự động đóng nếu có lựa chọn
+          !alertData.showChoices && 
+          alertData.autoClose !== false) {
         setTimeout(() => {
           this.globalAlert.show = false;
         }, alertData.duration || 5000);
@@ -119,15 +138,44 @@ export default {
     },
 
     // Thêm phương thức xử lý confirm
-    handleConfirm() {
-      console.log("Alert confirm được nhấn");
-      eventBus.emit('confirm');
+    handleConfirm(inputValue) {
+      console.log("Alert confirm được nhấn với giá trị:", inputValue);
+      
+      // Nếu có callback trong choices, gọi nó
+      if (this.globalAlert.choices && this.globalAlert.choices.length > 0) {
+        const confirmChoice = this.globalAlert.choices.find(choice => 
+          choice.text === this.globalAlert.confirmText);
+        
+        if (confirmChoice && typeof confirmChoice.onClick === 'function') {
+          confirmChoice.onClick(inputValue);
+          return;
+        }
+      }
+      
+      // Emit sự kiện với input value
+      eventBus.emit('confirm', inputValue);
     },
     
     // Thêm phương thức xử lý cancel
     handleCancel() {
       console.log("Alert cancel được nhấn");
+      
+      // Nếu có callback trong choices, gọi nó
+      if (this.globalAlert.choices && this.globalAlert.choices.length > 0) {
+        const cancelChoice = this.globalAlert.choices.find(choice => 
+          choice.text === this.globalAlert.cancelText);
+        
+        if (cancelChoice && typeof cancelChoice.onClick === 'function') {
+          cancelChoice.onClick();
+          return;
+        }
+      }
+      
+      // Emit sự kiện cancel
       eventBus.emit('cancel');
+      
+      // Đóng alert
+      this.globalAlert.show = false;
     }
   }
 }

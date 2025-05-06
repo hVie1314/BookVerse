@@ -8,7 +8,7 @@ export default {
     
     // Lấy sách theo ID
     getBookById(id) {
-        console.log(`Gọi API lấy thông tin sách với ID: ${id}`);
+        // console.log(`Gọi API lấy thông tin sách với ID: ${id}`);
         // Đảm bảo id không phải là undefined hoặc null
         if (!id) {
             console.error('BookID không hợp lệ:', id);
@@ -24,7 +24,7 @@ export default {
         
         return Api().get(`book/${id}`, { headers })
             .then(response => {
-                console.log('Kết quả API sách:', response.data);
+                // console.log('Kết quả API sách:', response.data);
                 return response;
             })
             .catch(error => {

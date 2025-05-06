@@ -32,7 +32,7 @@
       status: {
         type: String,
         required: true,
-        validator: value => ['pending', 'completed', 'cancelled'].includes(value)
+        validator: value => ['pending', 'completed', 'cancelled', 'success'].includes(value)
       },
       statusText: {
         type: String,
