@@ -28,12 +28,13 @@ class ReviewController {
          });
          await review.save();
 
+         // rating
+         const bookRating = await bookService.reCalcBookRating(bookId);
+         book.rating = bookRating;
+
          // Liên kết review với book
          book.reviews.push(review._id);
          await book.save();
-
-         // update rating 
-         await bookService.reCalcBookRating(bookId);
 
          return res.status(201).json({ review });
       } catch (err) {
@@ -44,18 +45,23 @@ class ReviewController {
    // [PUT] /review/:id
    async updateReview(req, res, next) {
       try {
-         const review = await Review.findById(req.params.id);
+         const bookId = req.body.id;
+         const review = await Review.findById(bookId);
          if (!review) return next(new AppError(404, 'REVIEW_NOT_FOUND'));
+
+         const book = await Book.findById(review.book_id);
+         if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
 
          if (String(review.user_id) !== req.userInfo.id) {
             return next(new AppError(403, 'FORBIDDEN', 'You cannot modify this review'));
          }
 
+         // rating
+         const bookRating = await bookService.reCalcBookRating(bookId);
+         book.rating = bookRating;
+
          review.set(req.body);
          await review.save();
-
-         // update rating 
-         await bookService.reCalcBookRating(bookId);
 
          return res.status(200).json({ review });
       } catch (err) {
@@ -66,18 +72,22 @@ class ReviewController {
    // [DELETE] /review/:id
    async deleteReview(req, res, next) {
       try {
-         const review = await Review.findById(req.params.id);
+         const bookId = req.body.id;
+         const review = await Review.findById(bookId);
          if (!review) return next(new AppError(404, 'REVIEW_NOT_FOUND'));
 
-         await Book.updateOne(
-            { _id: review.book_id },
-            { $pull: { reviews: review._id } }
-         );
+         const book = await Book.findById(review.book_id);
+         if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
+
+         // rating
+         const bookRating = await bookService.reCalcBookRating(bookId);
+         book.rating = bookRating;
+
+         // remove review from book
+         book.reviews = book.reviews.filter((r) => String(r) !== String(review._id));
+         await book.save();
 
          await review.remove();
-
-         // update rating 
-         await bookService.reCalcBookRating(bookId);
 
          return res.status(200).json({ message: 'Review deleted' });
       } catch (err) {
