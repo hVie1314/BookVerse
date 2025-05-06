@@ -23,6 +23,11 @@ class AuthController {
             return next(new AppError(400, "USER_ALREADY_EXISTS"));
          }
 
+         // check if password < 8 characters
+         if (password.length < 8) {
+            return next(new AppError(400, "INVALID_PASSWORD"));
+         }
+
          // gen hash password
          const salt = bcrypt.genSaltSync(10);
          const hashPassword = bcrypt.hashSync(password, salt);
