@@ -2,11 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 const statsController = require('../app/controllers/statsController');
+const authMiddleware = require('../app/middlewares/authMiddleware');
 
-// Get order statistics
-router.get('/report', statsController.getFullMonthlyStats.bind(statsController));
-
-// Get revenue statistics
-router.get('/revenue', statsController.getRevenueByDateRange.bind(statsController));
+router.get('/report', authMiddleware.verifyToken, authMiddleware.verifyAdmin, statsController.getFullMonthlyStats);
+router.get('/revenue', authMiddleware.verifyToken, authMiddleware.verifyAdmin, statsController.getRevenueByDateRange);
 
 module.exports = router;
