@@ -2,7 +2,7 @@ import Api from '@/services/Api';
 
 export default {
     // Lấy tất cả sách
-    getAllBooks(page = 1, limit = 10) {
+    getAllBooks(page = 1, limit = 10, filters = {}, sortOption = 'default') {
         // Kiểm tra tham số đầu vào
         if (isNaN(page) || page <= 0) {
             console.error('Page không hợp lệ:', page);
@@ -21,16 +21,72 @@ export default {
             headers['Authorization'] = `Bearer ${token}`;
         }
         
-        console.log(`Gọi API lấy danh sách sách với page: ${page}, limit: ${limit}`);
-        return Api().get(`book/page/${page}/limit/${limit}`, { headers })
-            .then(response => {
-                console.log('Kết quả API danh sách sách:', response.data);
-                return response;
-            })
-            .catch(error => {
-                console.error(`Lỗi khi lấy danh sách sách:`, error.response?.data || error.message);
-                throw error;
-            });
+        // Xây dựng params cho API request
+        const params = {
+            page,
+            limit,
+            sort: sortOption
+        };
+        
+        // Thêm các bộ lọc vào params
+        if (filters.categories && filters.categories.length > 0) {
+            params.categories = filters.categories.join(',');
+        }
+        
+        if (filters.minPrice) {
+            params.minPrice = filters.minPrice;
+        }
+        
+        if (filters.maxPrice) {
+            params.maxPrice = filters.maxPrice;
+        }
+        
+        if (filters.minRating) {
+            params.minRating = filters.minRating;
+        }
+        
+        if (filters.searchQuery) {
+            params.search = filters.searchQuery;
+        }
+        
+        console.log(`Gọi API lấy danh sách sách với params:`, params);
+        
+        return Api().get('book', { 
+            params,
+            headers
+        })
+        .then(response => {
+            console.log('Kết quả API danh sách sách:', response.data);
+            return response;
+        })
+        .catch(error => {
+            console.error(`Lỗi khi lấy danh sách sách:`, error.response?.data || error.message);
+            
+            // Dữ liệu mẫu cho môi trường development
+            if (process.env.NODE_ENV === 'development') {
+                return {
+                    data: {
+                        success: true,
+                        data: {
+                            books: Array(10).fill().map((_, i) => ({
+                                _id: `sample-${i}`,
+                                title: `Sách mẫu #${i}`,
+                                author: 'Tác giả',
+                                price: 100000 + i * 10000,
+                                image: `https://picsum.photos/seed/${i}/300/400`
+                            })),
+                            pagination: {
+                                currentPage: page,
+                                totalPages: 10,
+                                totalBooks: 100
+                            }
+                        }
+                    }
+                };
+            }
+            
+            throw error;
+        });
     },
     
     // Lấy sách theo ID

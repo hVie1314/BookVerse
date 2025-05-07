@@ -36,26 +36,37 @@
             </button>
         </div>
         <div class="catalog-header">
-            <div class="results-count">Hiển thị {{ filteredBooks.length }} sản phẩm</div>
-            <div class="sorting-options">
-            <select v-model="sortOption" class="sort-select">
-                <option value="default">Sắp xếp theo</option>
-                <option value="price-asc">Giá: Thấp đến cao</option>
-                <option value="price-desc">Giá: Cao đến thấp</option>
-                <option value="bestseller">Bán chạy nhất</option>
-                <option value="newest">Mới nhất</option>
-            </select>
-            </div>
-        </div>
-    
-        <BookGrid :books="paginatedBooks" />
-    
-        <Pagination
-            :currentPage="currentPage"
-            :totalPages="totalPages"
-            @page-change="handlePageChange"
-        />
+      <div class="results-count">Hiển thị {{ totalBooks }} sản phẩm</div>
+      <div class="sorting-options">
+        <select v-model="sortOption" class="sort-select" @change="fetchBooks">
+          <option value="default">Sắp xếp theo</option>
+          <option value="price-asc">Giá: Thấp đến cao</option>
+          <option value="price-desc">Giá: Cao đến thấp</option>
+          <option value="bestseller">Bán chạy nhất</option>
+          <option value="newest">Mới nhất</option>
+        </select>
+      </div>
     </div>
+    
+    <div v-if="loading" class="loading-indicator">
+      <div class="spinner"></div>
+      <p>Đang tải sách...</p>
+    </div>
+    
+    <div v-else-if="error" class="error-message">
+      {{ error }}
+    </div>
+    
+    <div v-else>
+      <BookGrid :books="books" />
+    
+      <Pagination
+        :currentPage="currentPage"
+        :totalPages="totalPages"
+        @page-change="handlePageChange"
+      />
+    </div>
+  </div>
   </template>
   
 <script>
@@ -73,7 +84,9 @@
             return {
                 books: [],
                 currentPage: 1,
-                booksPerPage: 16, // 5 sách mỗi hàng x 4 hàng
+                totalPages: 1,
+                totalBooks: 0,
+                booksPerPage: 16,
                 loading: false,
                 error: null,
                 sortOption: 'default',
@@ -138,12 +151,11 @@
                 return result;
             },
             paginatedBooks() {
-                const startIndex = (this.currentPage - 1) * this.booksPerPage;
-                return this.filteredBooks.slice(startIndex, startIndex + this.booksPerPage);
-            },
-            totalPages() {
-                return Math.ceil(this.filteredBooks.length / this.booksPerPage);
+                return this.books; // Trả về books trực tiếp vì đã phân trang từ server
             }
+            // totalPages() {
+            //     return Math.ceil(this.filteredBooks.length / this.booksPerPage);
+            // }
         },
         methods: {
             // Thêm phương thức mới
@@ -165,70 +177,86 @@
                 }
             },
             async fetchBooks() {
-                this.loading = true;
-                this.error = null;
-                
-                try {
-                    const response = await BookService.getAllBooks();
-                    // console.log("API response:", response); // Log để kiểm tra response
-                    
-                    if (response.data && response.data.success) {
-                        // Kiểm tra và đảm bảo dữ liệu là mảng
-                        if (Array.isArray(response.data.data)) {
-                            this.books = response.data.data;
-                        } else if (response.data.data && response.data.data.books && Array.isArray(response.data.data.books)) {
-                            // Trường hợp API trả về { success: true, data: { books: [...] } }
-                            this.books = response.data.data.books;
-                        } else {
-                            // Nếu không phải mảng, ghi log và gán mảng rỗng
-                            console.error('Books data is not an array:', response.data.data);
-                            this.books = [];
-                            this.error = 'Định dạng dữ liệu không hợp lệ';
-                        }
-                    } else {
-                        this.books = [];
-                        this.error = 'Không thể tải danh sách sách';
-                    }
-                } catch (error) {
-                    console.error('Error fetching books:', error);
-                    this.books = [];
-                    this.error = 'Đã xảy ra lỗi khi tải danh sách sách';
-                } finally {
-                    this.loading = false;
-                }
-            },
+      this.loading = true;
+      this.error = null;
+      
+      try {
+        console.log(`Fetching books for page ${this.currentPage} with limit ${this.booksPerPage}`);
+        
+        // Lấy dữ liệu từ API với trang và giới hạn
+        const response = await BookService.getAllBooks(this.currentPage, this.booksPerPage);
+        
+        if (response.data && response.data.success) {
+          // Cập nhật dữ liệu từ API response
+          if (response.data.data) {
+            this.books = response.data.data.books || [];
+            
+            // Cập nhật thông tin phân trang từ API
+            if (response.data.data.pagination) {
+              const pagination = response.data.data.pagination;
+              this.totalPages = pagination.totalPages || 1;
+              this.totalBooks = pagination.totalBooks || 0;
+              this.currentPage = pagination.currentPage || 1;
+            }
+            
+            console.log(`Đã tải ${this.books.length} sách, trang ${this.currentPage}/${this.totalPages}`);
+          }
+        } else {
+          this.error = 'Không thể tải danh sách sách';
+          console.error('API error:', response.data);
+        }
+      } catch (error) {
+        this.error = 'Đã xảy ra lỗi khi tải danh sách sách';
+        console.error('Error fetching books:', error);
+      } finally {
+        this.loading = false;
+      }
+    },
             handlePageChange(page) {
                 this.currentPage = page;
                 // Cuộn lên đầu danh sách sản phẩm
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             },
-            applyFilters(filters) {
-                this.filters = { ...filters };
-                
-                // Lấy searchQuery từ URL query params nếu có
-                if (this.$route.query.search) {
-                    this.searchQuery = this.$route.query.search;
-                }
-                
+            applyFilters(newFilters) {
+                this.filters = { ...newFilters };
                 this.currentPage = 1; // Reset về trang đầu tiên khi áp dụng bộ lọc
-            }
+                this.fetchBooks();
+            },
         },
         created() {
-            this.fetchBooks();
-
+    // Kiểm tra xem có tham số tìm kiếm trong URL không
             if (this.$route.query.search) {
-                this.searchQuery = this.$route.query.search;
+            this.searchQuery = this.$route.query.search;
             }
+            
+            // Cài đặt category từ route nếu có
+            if (this.$route.params.category) {
+            this.filters.categories = [this.$route.params.category];
+            }
+            
+            this.fetchBooks();
         },
         watch: {
-            sortOption() {
-                this.currentPage = 1; // Reset về trang đầu tiên khi thay đổi sắp xếp
-            },
-
             '$route.query.search'(newValue) {
-                this.searchQuery = newValue || '';
-                this.currentPage = 1; // Reset về trang đầu khi tìm kiếm thay đổi
-            }
+      this.searchQuery = newValue || '';
+      this.currentPage = 1; // Reset về trang đầu khi tìm kiếm thay đổi
+      this.fetchBooks();
+    },
+    
+    '$route.params.category'(newValue) {
+      if (newValue) {
+        this.filters.categories = [newValue];
+      } else {
+        delete this.filters.categories;
+      }
+      this.currentPage = 1;
+      this.fetchBooks();
+    },
+    
+    sortOption() {
+      this.currentPage = 1; // Reset về trang đầu tiên khi thay đổi sắp xếp
+      this.fetchBooks();
+    }
         }
     };
 </script>
