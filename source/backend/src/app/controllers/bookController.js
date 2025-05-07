@@ -3,7 +3,6 @@ const Review = require('../models/Review');
 const Category = require('../models/Category');
 const BookService = require('../../services/bookService');
 const AppError = require('../../utils/appError');
-const { mongooseToObject, multipleMongooseToObject } = require('../../utils/mongoose');
 
 
 class BookController {
@@ -93,9 +92,7 @@ class BookController {
    getCategory(req, res, next) {
       Category.find()
          .then(categories => {
-            res.status(200).json({
-               categories: multipleMongooseToObject(categories)
-            });
+            res.status(200).json({ categories });
          })
          .catch(err => {
             return next(new AppError(500, 'SERVER_ERROR', err.message));

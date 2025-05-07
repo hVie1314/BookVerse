@@ -220,20 +220,6 @@ class AuthController {
          await redisClient.del(`otp:${email}`);
 
          // reset password
-         await resetPassword(email, newPassword);
-
-         res.status(200).json();
-
-      } catch (err) {
-         if (err instanceof AppError) {
-            return next(err);
-         }
-         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
-      }
-   }
-
-   async resetPassword(email, newPassword) {
-      try {
          // find user by email
          const user = await User.findOne({ email: email });
          if (!user) {
@@ -256,11 +242,13 @@ class AuthController {
          // delete access token from redis
          await redisClient.del(user._id.toString());
 
-         return true;
-      
-      }
-      catch (err) {
-         throw new AppError(500, "INTERNAL_SERVER_ERROR", err.message);
+         res.status(200).json();
+
+      } catch (err) {
+         if (err instanceof AppError) {
+            return next(err);
+         }
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
       }
    }
 

@@ -1,6 +1,6 @@
 const AppError = require('../../utils/appError');
 const WishlistService = require('../../services/wishlistService');
-const { mongooseToObject, multipleMongooseToObject } = require('../../utils/mongoose');
+
 
 class WishlistController {
    
@@ -35,7 +35,7 @@ class WishlistController {
       try {
          const { userId } = req.params;
          const wishlist = await WishlistService.getWishlist(userId, null);
-         return res.status(200).json(mongooseToObject(wishlist));
+         return res.status(200).json({ wishlist });
       }
       catch (error) {
          return next(error);
@@ -74,7 +74,7 @@ class WishlistController {
       try {
          const { wishlistId } = req.params;
          const wishlist = await WishlistService.getWishlist(null, wishlistId);
-         return res.status(200).json(mongooseToObject(wishlist));
+         return res.status(200).json({ wishlist });
       }
       catch (error) {
          return next(error);
