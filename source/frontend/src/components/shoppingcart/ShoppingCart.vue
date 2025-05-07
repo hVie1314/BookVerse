@@ -73,48 +73,72 @@
     methods: {
       async fetchCartData() {
         try {
-          this.loading = true;
-          const user = AuthenticationService.getCurrentUser();
-          
-          if (user && user.id) {
-             // Lấy giỏ hàng người dùng đã đăng nhập
-            const cartData = await CartService.getCartItemsWithDetails(user.id);
-            console.log("Cart data in component:", cartData);
+            this.loading = true;
+            const user = AuthenticationService.getCurrentUser();
             
-            // Log chi tiết từng sản phẩm để kiểm tra
-            if (cartData.items && cartData.items.length > 0) {
-              console.log("First book sample:", cartData.items[0]);
-            }
-            
-            this.cartItems = cartData.items || [];
-            this.totalPrice = this.cartItems.reduce((total, item) => {
-              const price = item.book?.price || item.price || 0;
-              return total + (price * item.quantity);
-            }, 0);
-            console.log("Total price after conversion:", this.totalPrice);
-          }  else {
-            // Lấy giỏ hàng khách
-            const guestCartId = localStorage.getItem('guestCartId');
-            if (guestCartId) {
-              // Sử dụng phương thức mới để lấy chi tiết giỏ hàng khách
-              const guestCartData = await CartService.getGuestCartItemsWithDetails(guestCartId);
-              this.cartItems = guestCartData.items || [];
-              this.totalPrice = this.calculatedTotalPrice;
-              console.log("Guest cart loaded with items:", this.cartItems.length);
+            if (user && user.id) {
+                // Lấy giỏ hàng người dùng đã đăng nhập
+                const cartData = await CartService.getCartItemsWithDetails(user.id);
+                console.log("Cart data in component:", cartData);
+                
+                // Log chi tiết từng sản phẩm để kiểm tra
+                if (cartData.items && cartData.items.length > 0) {
+                 // Xử lý ảnh cho mỗi sản phẩm
+                  cartData.items = cartData.items.map(item => {
+                    // Giữ lại cấu trúc ban đầu của item
+                    const processedItem = { ...item };
+                    
+                    // Kiểm tra và xử lý trường image nếu là chuỗi mảng
+                    if (item.productId && item.productId.image) {
+                      try {
+                        if (typeof item.productId.image === 'string' && 
+                            item.productId.image.startsWith('[') && 
+                            item.productId.image.endsWith(']')) {
+                          // Parse chuỗi thành mảng và lấy URL đầu tiên
+                          const imageArray = JSON.parse(item.productId.image.replace(/'/g, '"'));
+                          if (imageArray && imageArray.length > 0) {
+                            processedItem._id = item.productId._id;
+                            processedItem.title = item.productId.title;
+                            processedItem.author = item.productId.author;
+                            processedItem.price = item.productId.price;
+                            processedItem.image = imageArray[0]; // Chỉ lấy ảnh đầu tiên
+                            processedItem.quantity = item.quantity;
+                          }
+                        }
+                      } catch (error) {
+                        console.error('Lỗi xử lý ảnh sản phẩm:', error);
+                      }
+                    }
+                    
+                    return processedItem;
+                  });
+                  
+                  console.log("Processed cart items:", cartData.items);
+                }
+                
+                this.cartItems = cartData.items || [];
+                this.totalPrice = cartData.totalPrice || 0;
             } else {
-              this.cartItems = [];
-              this.totalPrice = 0;
+                // Lấy giỏ hàng khách (logic không thay đổi)
+                const guestCartId = localStorage.getItem('guestCartId');
+                if (guestCartId) {
+                    const guestCartData = await CartService.getGuestCartItemsWithDetails(guestCartId);
+                    this.cartItems = guestCartData.items || [];
+                    this.totalPrice = guestCartData.totalPrice || 0;
+                } else {
+                    this.cartItems = [];
+                    this.totalPrice = 0;
+                }
             }
-          }
         } catch (error) {
-          console.error('Lỗi khi lấy dữ liệu giỏ hàng:', error);
-          this.error = 'Không thể tải giỏ hàng. Vui lòng thử lại sau.';
-          this.cartItems = [];
-          this.totalPrice = 0;
+            console.error('Lỗi khi lấy dữ liệu giỏ hàng:', error);
+            this.error = 'Không thể tải giỏ hàng. Vui lòng thử lại sau.';
+            this.cartItems = [];
+            this.totalPrice = 0;
         } finally {
-          this.loading = false;
+            this.loading = false;
         }
-      },
+    },
       async updateQuantity(productId, quantity) {
         try {
           const user = AuthenticationService.getCurrentUser();
@@ -140,18 +164,12 @@
           if (user && user.id) {
             // Sử dụng phương thức mới thay vì updateUserCart với quantity=0
             await CartService.removeFromUserCart(user.id, productId);
-            
-            // Cập nhật lại giỏ hàng và tổng tiền
             await this.fetchCartData();
-            
-            // Sử dụng giá trị calculatedTotalPrice thay vì totalPrice từ API
-            this.totalPrice = this.calculatedTotalPrice;
           } else {
             const guestCartId = localStorage.getItem('guestCartId');
             if (guestCartId) {
               await CartService.removeFromGuestCart(guestCartId, productId);
               await this.fetchCartData();
-              this.totalPrice = this.calculatedTotalPrice;
             }
           }
         } catch (error) {
@@ -170,10 +188,10 @@
           const orderData = {
             userId: AuthenticationService.getCurrentUser().id,
             items: this.cartItems.map(item => ({
-              bookId: item.cartItemId || item._id,
+              bookId: item._id,
               quantity: item.quantity
             })),
-            totalAmount: this.calculatedTotalPrice,
+            totalAmount: this.totalPrice,
             paymentMethod: 'MOMO'
           };
           
@@ -289,10 +307,10 @@
           const orderData = {
             userId: AuthenticationService.getCurrentUser().id,
             items: this.cartItems.map(item => ({
-              bookId: item.cartItemId || item._id, // Thay đổi productId thành bookId
+              bookId: item._id, // Thay đổi productId thành bookId
               quantity: item.quantity
             })),
-            totalAmount: this.calculatedTotalPrice,
+            totalAmount: this.totalPrice,
             paymentMethod: 'COD' // Thay đổi thành paymentMethod với giá trị phù hợp
           };
           

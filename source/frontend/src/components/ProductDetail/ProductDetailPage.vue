@@ -15,10 +15,25 @@
                 <div class="product-detail-container">
                     <figure class="product-image-detail-column">
                         <img
-                            :src="book.image || 'https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/583d666a999a910a205b5f8084eecbefb04496ba?placeholderIfAbsent=true'"
+                            :src="getMainImage(book)"
                             class="product-detail-image"
                             :alt="book.title"
+                            @error="handleImageError"
                         />
+                        
+                        <!-- Thêm gallery hình ảnh nếu có nhiều hình -->
+                        <div v-if="bookImages.length > 1" class="product-image-thumbnails">
+                            <img 
+                                v-for="(image, index) in bookImages.slice(0, 4)" 
+                                :key="index"
+                                :src="image"
+                                @click="selectImage(image)"
+                                class="thumbnail-image"
+                                :class="{ 'active': selectedImage === image }"
+                                @error="handleThumbnailError($event, index)"
+                            />
+                            <div v-if="bookImages.length > 4" class="more-images">+{{ bookImages.length - 4 }}</div>
+                        </div>
                     </figure>
                     <div class="product-info-column">
                         <ProductInfo :book="book" />
@@ -69,7 +84,9 @@
             return {
                 book: {},
                 loading: true,
-                error: null
+                error: null,
+                selectedImage: null,
+                bookImages: []
             }
         },
         methods: {
@@ -81,18 +98,20 @@
                     const response = await BookService.getBookById(this.id);
                     console.log('Book details response:', response);
                     
-                    if (response.data && response.data.success) {
-                        // Check if book data is nested under data.book
-                        if (response.data.data && response.data.data.book) {
+                    if (response.data) {
+                        // Check different response structures
+                        if (response.data.book) {
+                            this.book = response.data.book;
+                        } else if (response.data.data && response.data.data.book) {
                             this.book = response.data.data.book;
-                        } 
-                        // If not nested, use data directly (fallback)
-                        else if (response.data.data) {
+                        } else if (response.data.success && response.data.data) {
                             this.book = response.data.data;
-                        } 
-                        else {
+                        } else {
                             this.error = 'Không tìm thấy thông tin sách';
                         }
+                        
+                        // Process images after setting book data
+                        this.processBookImages();
                     } else {
                         this.error = 'Không thể tải thông tin sách';
                     }
@@ -102,6 +121,56 @@
                 } finally {
                     this.loading = false;
                 }
+            },
+
+            processBookImages() {
+                try {
+                    if (this.book.image) {
+                        // Check if image is a string array representation
+                        if (typeof this.book.image === 'string' && 
+                            this.book.image.startsWith('[') && 
+                            this.book.image.endsWith(']')) {
+                            // Parse the image string to array
+                            const imageArray = JSON.parse(this.book.image.replace(/'/g, '"'));
+                            this.bookImages = imageArray;
+                            // Set selected image to first image
+                            this.selectedImage = imageArray[0];
+                        } else {
+                            // Single image
+                            this.bookImages = [this.book.image];
+                            this.selectedImage = this.book.image;
+                        }
+                    } else {
+                        // Fallback image
+                        const fallbackImage = `https://picsum.photos/seed/${this.book._id || 'default'}/300/400`;
+                        this.bookImages = [fallbackImage];
+                        this.selectedImage = fallbackImage;
+                    }
+                } catch (error) {
+                    console.error('Error processing book images:', error);
+                    const fallbackImage = `https://picsum.photos/seed/${this.book._id || 'default'}/300/400`;
+                    this.bookImages = [fallbackImage];
+                    this.selectedImage = fallbackImage;
+                }
+            },
+            
+            getMainImage(book) {
+                return this.selectedImage || 
+                       (book.mainImage) || 
+                       (this.bookImages && this.bookImages.length > 0 ? this.bookImages[0] : 
+                       `https://picsum.photos/seed/${book._id || 'default'}/300/400`);
+            },
+            
+            selectImage(image) {
+                this.selectedImage = image;
+            },
+            
+            handleImageError(e) {
+                e.target.src = `https://picsum.photos/seed/${this.book._id || 'default'}/300/400`;
+            },
+            
+            handleThumbnailError(e, index) {
+                e.target.src = `https://picsum.photos/seed/${this.book._id || 'default'}-${index}/100/150`;
             }
         },
         created() {
@@ -118,6 +187,44 @@
 </script>
   
 <style scoped>
+    .product-image-thumbnails {
+        display: flex;
+        justify-content: center;
+        margin-top: 15px;
+        gap: 10px;
+    }
+    
+    .thumbnail-image {
+        width: 60px;
+        height: 80px;
+        object-fit: cover;
+        cursor: pointer;
+        border: 2px solid transparent;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+    
+    .thumbnail-image.active {
+        border-color: #4d2900;
+    }
+    
+    .thumbnail-image:hover {
+        transform: scale(1.05);
+    }
+    
+    .more-images {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 80px;
+        background-color: rgba(0,0,0,0.1);
+        color: #4d2900;
+        font-weight: bold;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
     .loading-container, .error-message {
         width: 100%;
         padding: 50px 0;

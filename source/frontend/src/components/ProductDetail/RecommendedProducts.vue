@@ -28,14 +28,15 @@
             <div class="recommended-products">
                 <BookCard
                   v-for="book in currentPageBooks"
-                  :key="book._id || book.id"
-                  :bookId="book._id || book.id"
-                  :image="book.image"
+                  :key="book._id"
+                  :bookId="book._id"
+                  :image="book.processedImage"
                   :price="formatPrice(book.price)"
                   :title="book.title"
                   :author="book.author"
                   :cartText="'Thêm vào giỏ hàng'"
                   :sold="book.sold || 0"
+                  @error="handleImageError"
                 />
             </div>
             
@@ -113,15 +114,31 @@
                 this.error = null;
                 
                 try {
-                    // Sửa lại cách gọi API, chỉ truyền bookId và limit
                     const response = await BookService.getRelatedBooks(this.currentBookId, this.totalLimit);
-    
+                    console.log('Kết quả API sách liên quan:', response.data);
+
+                    let books = [];
                     if (response.data && response.data.books) {
                         // API trả về cấu trúc { books: [...] }
-                        this.recommendedBooks = response.data.books.filter(book => book._id !== this.currentBookId);
+                        books = response.data.books;
                     } else if (response.data && response.data.success && response.data.data && response.data.data.books) {
                         // API với middleware trả về { success: true, data: { books: [...] } }
-                        this.recommendedBooks = response.data.data.books.filter(book => book._id !== this.currentBookId);
+                        books = response.data.data.books;
+                    }
+
+                    // Lọc bỏ sách hiện tại và xử lý hình ảnh cho từng sách
+                    if (books.length > 0) {
+                        this.recommendedBooks = books
+                            .filter(book => book._id !== this.currentBookId)
+                            .map(book => {
+                                // Xử lý chuỗi mảng hình ảnh
+                                let imageUrl = this.extractFirstImageUrl(book.image);
+                                return {
+                                    ...book,
+                                    processedImage: imageUrl, // Lưu url ảnh đã xử lý vào thuộc tính mới
+                                };
+                            });
+                        console.log('Đã xử lý dữ liệu sách liên quan:', this.recommendedBooks.length, 'sách');
                     } else {
                         this.error = 'Không thể tải danh sách sách gợi ý';
                         this.recommendedBooks = [];
@@ -134,6 +151,29 @@
                     this.loading = false;
                 }
             },
+            // Phương thức mới để trích xuất URL hình ảnh đầu tiên từ chuỗi mảng
+extractFirstImageUrl(imageString) {
+    if (!imageString) {
+        return 'https://picsum.photos/seed/noimage/300/400'; // Ảnh mặc định
+    }
+    
+    try {
+        if (typeof imageString === 'string' && 
+            imageString.startsWith('[') && 
+            imageString.endsWith(']')) {
+            // Parse chuỗi thành mảng và lấy URL đầu tiên
+            const imageArray = JSON.parse(imageString.replace(/'/g, '"'));
+            if (imageArray && imageArray.length > 0) {
+                return imageArray[0];
+            }
+        }
+        // Nếu không phải chuỗi mảng, trả về nguyên gốc
+        return imageString;
+    } catch (error) {
+        console.error('Lỗi khi xử lý chuỗi hình ảnh:', error);
+        return 'https://picsum.photos/seed/error/300/400'; // Ảnh dự phòng khi lỗi
+    }
+},
             formatPrice(price) {
                 return new Intl.NumberFormat('vi-VN', {
                     style: 'currency',
@@ -153,6 +193,12 @@
             },
             goToPage(page) {
                 this.currentPage = page;
+            },
+            handleImageError(e) {
+                console.warn('Lỗi tải hình ảnh sách liên quan:', e);
+                const imgElement = e.target;
+                const bookId = imgElement.closest('.book-card').getAttribute('data-id');
+                imgElement.src = `https://picsum.photos/seed/${bookId || 'fallback'}/300/400`;
             }
         },
         watch: {

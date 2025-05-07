@@ -55,6 +55,7 @@ export default {
     },
     
     // Tạo yêu cầu hủy đơn hàng
+    // Tạo yêu cầu hủy đơn hàng
     createCancelRequest(orderId, reason) {
         // Lấy token hiện tại và đảm bảo gửi cùng với userId để giải quyết lỗi 403
         const userId = AuthenticationService.getCurrentUser()?.id;
@@ -63,10 +64,17 @@ export default {
         console.log('Lý do hủy:', reason);
         console.log('UserID:', userId);
         
+        // Đảm bảo headers có token
+        const headers = {};
+        const token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         return Api().post(`order/cancel/${orderId}`, { 
             reason,
             userId // Thêm userId vào request body
-        })
+        }, { headers })
         .then(response => {
             console.log('=== KẾT QUẢ HỦY ĐƠN HÀNG ===');
             console.log('Status:', response.status);

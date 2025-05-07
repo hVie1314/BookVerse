@@ -2,13 +2,39 @@ import Api from '@/services/Api';
 
 export default {
     // Lấy tất cả sách
-    getAllBooks() {
-        return Api().get('book/');
+    getAllBooks(page = 1, limit = 10) {
+        // Kiểm tra tham số đầu vào
+        if (isNaN(page) || page <= 0) {
+            console.error('Page không hợp lệ:', page);
+            page = 1;
+        }
+        
+        if (isNaN(limit) || limit <= 0) {
+            console.error('Limit không hợp lệ:', limit);
+            limit = 10;
+        }
+        
+        // Đảm bảo cung cấp token nếu cần
+        const headers = {};
+        const token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        console.log(`Gọi API lấy danh sách sách với page: ${page}, limit: ${limit}`);
+        return Api().get(`book/page/${page}/limit/${limit}`, { headers })
+            .then(response => {
+                console.log('Kết quả API danh sách sách:', response.data);
+                return response;
+            })
+            .catch(error => {
+                console.error(`Lỗi khi lấy danh sách sách:`, error.response?.data || error.message);
+                throw error;
+            });
     },
     
     // Lấy sách theo ID
     getBookById(id) {
-        // console.log(`Gọi API lấy thông tin sách với ID: ${id}`);
         // Đảm bảo id không phải là undefined hoặc null
         if (!id) {
             console.error('BookID không hợp lệ:', id);
@@ -22,13 +48,54 @@ export default {
             headers['Authorization'] = `Bearer ${token}`;
         }
         
+        console.log(`Gọi API lấy thông tin sách với ID: ${id}`);
         return Api().get(`book/${id}`, { headers })
             .then(response => {
-                // console.log('Kết quả API sách:', response.data);
+                console.log('Kết quả API sách:', response.data);
+                // Kiểm tra nếu sách có dữ liệu ảnh dạng chuỗi mảng
+                if (response.data && response.data.book && response.data.book.image) {
+                    try {
+                        // Nếu image là chuỗi mảng, chuyển thành mảng thực tế
+                        if (typeof response.data.book.image === 'string' && 
+                            response.data.book.image.startsWith('[') && 
+                            response.data.book.image.endsWith(']')) {
+                            const imageArray = JSON.parse(response.data.book.image.replace(/'/g, '"'));
+                            response.data.book.imageArray = imageArray;
+                            response.data.book.mainImage = imageArray[0]; // Lấy ảnh đầu tiên làm ảnh chính
+                        } else {
+                            response.data.book.mainImage = response.data.book.image;
+                        }
+                    } catch (error) {
+                        console.error('Lỗi xử lý dữ liệu ảnh:', error);
+                        response.data.book.mainImage = response.data.book.image;
+                    }
+                }
                 return response;
             })
             .catch(error => {
                 console.error(`Lỗi khi lấy thông tin sách ID ${id}:`, error.response?.data || error.message);
+                
+                // Trong môi trường phát triển, trả về dữ liệu giả nếu API lỗi
+                if (process.env.NODE_ENV === 'development') {
+                    console.warn('Sử dụng dữ liệu mẫu cho môi trường phát triển');
+                    return {
+                        data: {
+                            book: {
+                                _id: id,
+                                title: `Sách mẫu #${id.substring(0, 5)}`,
+                                author: 'Tác giả không xác định',
+                                price: 150000,
+                                originalPrice: 180000,
+                                category: 'Sách mẫu',
+                                description: 'Đây là dữ liệu mẫu được sử dụng khi không thể kết nối đến API.',
+                                mainImage: 'https://picsum.photos/seed/' + id + '/300/400',
+                                sold: 0,
+                                rating: 0
+                            }
+                        }
+                    };
+                }
+                
                 throw error;
             });
     },
@@ -68,10 +135,27 @@ export default {
     },
 
     // Lấy sách liên quan
-    getRelatedBooks(bookId, limit = 20) {
-        console.log(`Gọi API lấy sách liên quan với ID: ${bookId}, limit: ${limit}`);
-        return Api().get(`book/related/${bookId}/${limit}`);
-    },
+   // Lấy sách liên quan
+getRelatedBooks(bookId, limit = 20) {
+    console.log(`Gọi API lấy sách liên quan với ID: ${bookId}, limit: ${limit}`);
+    
+    // Đảm bảo cung cấp token nếu cần
+    const headers = {};
+    const token = localStorage.getItem('token');
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return Api().get(`book/related/${bookId}/${limit}`, { headers })
+        .then(response => {
+            console.log('Kết quả API sách liên quan:', response.data);
+            return response;
+        })
+        .catch(error => {
+            console.error(`Lỗi khi lấy sách liên quan:`, error.response?.data || error.message);
+            throw error;
+        });
+},
     
     // Lấy đánh giá trung bình của sách
     getBookRating(bookId) {

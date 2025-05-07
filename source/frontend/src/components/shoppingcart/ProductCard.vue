@@ -37,11 +37,27 @@ export default {
   },
   methods: {
     getImageSrc() {
-      // Kiểm tra các khả năng đường dẫn hình ảnh
-      const imageUrl = this.product.book?.image || 
-                       this.product.image || 
-                       this.product.coverImage;
-                       
+      // Lấy đường dẫn hình ảnh từ product hoặc product.book (nếu có)
+      let imageUrl = this.product.productId?.image || 
+                    this.product.book?.image || 
+                    this.product.image || 
+                    this.product.coverImage;
+      
+      // Nếu imageUrl là một chuỗi mảng (bắt đầu bằng [ và kết thúc bằng ])
+      if (imageUrl && typeof imageUrl === 'string' && 
+          imageUrl.startsWith('[') && imageUrl.endsWith(']')) {
+        try {
+          // Chuyển đổi chuỗi thành mảng JSON (thay thế dấu nháy đơn bằng dấu nháy kép)
+          const imageArray = JSON.parse(imageUrl.replace(/'/g, '"'));
+          // Lấy URL hình ảnh đầu tiên trong mảng
+          if (imageArray && imageArray.length > 0) {
+            imageUrl = imageArray[0];
+          }
+        } catch (error) {
+          console.error('Lỗi khi xử lý chuỗi hình ảnh:', error);
+        }
+      }
+      
       return imageUrl || 'https://via.placeholder.com/150?text=No+Image';
     },
     getTitle() {

@@ -113,64 +113,60 @@
                     }
                     
                     const response = await OrderService.getAllOrders(user.id);
+                    console.log('Dữ liệu đơn hàng từ API:', response.data);
 
                     if (response.data && response.data.success) {
-                        const orders = response.data.data || [];
+                        const orders = response.data.data.orders || [];
                         
-                        // Lấy thông tin chi tiết cho từng sách trong mỗi đơn hàng
+                        // Trường hợp 1: Xử lý đơn hàng có đầy đủ thông tin sản phẩm
                         for (let order of orders) {
                             if (order.items && Array.isArray(order.items)) {
+                                // Kiểm tra nếu đơn hàng đã có thông tin sách đầy đủ
+                                const hasFullBookInfo = order.items.some(item => 
+                                    item.bookId && typeof item.bookId === 'object' && item.bookId._id);
+                                    
+                                if (hasFullBookInfo) {
+                                    // Đơn hàng mới đã có thông tin sách đầy đủ, không cần fetch thêm
+                                    console.log('Đơn hàng đã có thông tin sách đầy đủ:', order._id);
+                                    continue;
+                                }
                                 
-                                // Lấy thông tin chi tiết cho từng sản phẩm
+                                // Trường hợp 2: Đơn hàng cũ không có thông tin sách, cần fetch thêm
+                                console.log('Đơn hàng cần fetch thông tin sách:', order._id);
                                 const enrichedItems = await Promise.all(
                                     order.items.map(async (item) => {
+                                        if (!item.bookId) {
+                                            console.warn(`Item không có bookId trong đơn hàng ${order._id}`);
+                                            return item;
+                                        }
+                                        
                                         try {
+                                            // Lấy chi tiết sách
                                             const bookResponse = await BookService.getBookById(item.bookId);
-                                            
                                             
                                             // Xử lý linh hoạt với nhiều cấu trúc dữ liệu có thể có
                                             let bookData = null;
                                             
-                                            // Đúng cấu trúc response: success -> data -> book
-                                            if (bookResponse.data && bookResponse.data.success && bookResponse.data.data && bookResponse.data.data.book) {
-                                                bookData = bookResponse.data.data.book;
-                                                // console.log("Trích xuất dữ liệu sách từ cấu trúc chuẩn: data.data.book");
-                                            } 
-                                            // Cấu trúc data -> book
-                                            else if (bookResponse.data && bookResponse.data.data && bookResponse.data.data.book) {
-                                                bookData = bookResponse.data.data.book;
-                                                // console.log("Trích xuất dữ liệu sách từ: data.data.book");
-                                            }
-                                            // Cấu trúc data -> { book properties }
-                                            else if (bookResponse.data && bookResponse.data.data && bookResponse.data.data.title) {
-                                                bookData = bookResponse.data.data;
-                                                // console.log("Trích xuất dữ liệu sách từ: data.data (có title)");
-                                            }
-                                            // Cấu trúc { book properties }
-                                            else if (bookResponse.data && bookResponse.data.title) {
-                                                bookData = bookResponse.data;
-                                                // console.log("Trích xuất dữ liệu sách từ: data (có title)");
-                                            }
-                                            // Cấu trúc { book: { book properties } }
-                                            else if (bookResponse.data && bookResponse.data.book) {
+                                            if (bookResponse.data && bookResponse.data.book) {
                                                 bookData = bookResponse.data.book;
-                                                // console.log("Trích xuất dữ liệu sách từ: data.book");
+                                            } else if (bookResponse.data && bookResponse.data.data && bookResponse.data.data.book) {
+                                                bookData = bookResponse.data.data.book;
+                                            } else if (bookResponse.data && bookResponse.data.data) {
+                                                bookData = bookResponse.data.data;
                                             }
                                             
                                             if (bookData) {
-                                                // console.log(`Đã tìm thấy dữ liệu sách: ${JSON.stringify(bookData)}`);
                                                 return {
                                                     ...item,
                                                     book: {
-                                                        title: bookData.title || bookData.name || 'Sách không xác định',
-                                                        image: bookData.image || bookData.coverImage || `https://picsum.photos/seed/${item.bookId}/150/200`,
-                                                        author: bookData.author || bookData.authorName || 'Không có thông tin',
-                                                        price: bookData.price || bookData.salePrice || 0
+                                                        title: bookData.title || 'Sách không xác định',
+                                                        image: bookData.image || `https://picsum.photos/seed/${item.bookId}/150/200`,
+                                                        author: bookData.author || 'Không có thông tin',
+                                                        price: bookData.price || 0
                                                     }
                                                 };
                                             }
                                             
-                                            console.warn(`Không tìm thấy dữ liệu hợp lệ cho sách ${item.bookId}`);
                                             return item;
                                         } catch (error) {
                                             console.error(`Lỗi khi lấy thông tin sách ${item.bookId}:`, error);
@@ -251,16 +247,65 @@
             formatProducts(items) {
                 if (!items || !Array.isArray(items)) return [];
                 
-                // console.log('Raw order items:', JSON.stringify(items));
-                
                 return items.map(item => {
-                    // Kiểm tra nếu item đã có thông tin book đầy đủ
-                    if (item.book) {
+                    // Trường hợp 1: item có bookId là object đầy đủ (đơn hàng mới)
+                    if (item.bookId && typeof item.bookId === 'object') {
+                        const bookInfo = item.bookId;
+                        let imageUrl = 'https://picsum.photos/300/400';
+                        
+                        // Xử lý ảnh từ chuỗi mảng
+                        if (bookInfo.image) {
+                            try {
+                                if (typeof bookInfo.image === 'string' && 
+                                    bookInfo.image.startsWith('[') && 
+                                    bookInfo.image.endsWith(']')) {
+                                    // Parse chuỗi thành mảng và lấy ảnh đầu tiên
+                                    const imageArray = JSON.parse(bookInfo.image.replace(/'/g, '"'));
+                                    if (imageArray && imageArray.length > 0) {
+                                        imageUrl = imageArray[0];
+                                    }
+                                } else {
+                                    imageUrl = bookInfo.image;
+                                }
+                            } catch (error) {
+                                console.error('Lỗi khi xử lý ảnh:', error);
+                            }
+                        }
+                        
                         // Tính toán tổng giá dựa trên số lượng nhân với đơn giá
+                        const totalItemPrice = bookInfo.price * item.quantity || 0;
+                        
+                        return {
+                            image: imageUrl,
+                            title: bookInfo.title || `Sách không xác định`,
+                            author: bookInfo.author || 'Không có thông tin',
+                            quantity: item.quantity || 1,
+                            price: this.formatPrice(totalItemPrice)
+                        };
+                    }
+                    
+                    // Trường hợp 2: item có book property từ enrichedItems (đơn hàng cũ đã được xử lý)
+                    else if (item.book) {
+                        let imageUrl = item.book.image;
+                        
+                        // Xử lý ảnh nếu là chuỗi mảng
+                        if (typeof imageUrl === 'string' && 
+                            imageUrl.startsWith('[') && 
+                            imageUrl.endsWith(']')) {
+                            try {
+                                const imageArray = JSON.parse(imageUrl.replace(/'/g, '"'));
+                                if (imageArray && imageArray.length > 0) {
+                                    imageUrl = imageArray[0];
+                                }
+                            } catch (error) {
+                                console.error('Lỗi khi xử lý ảnh sách:', error);
+                            }
+                        }
+                        
                         const totalItemPrice = item.book.price * item.quantity || 0;
                         
                         return {
-                            image: item.book.image || `https://picsum.photos/seed/${item.bookId}/150/200`,
+                            image: imageUrl || `https://picsum.photos/seed/${item.bookId}/150/200`,
                             title: item.book.title || `Sách #${item.bookId?.substring(0, 6)}`,
                             author: item.book.author || 'Không có thông tin',
                             quantity: item.quantity || 1,
@@ -268,10 +313,10 @@
                         };
                     }
                     
-                    // Fallback cho trường hợp không có thông tin book
+                    // Trường hợp 3: Fallback khi không có thông tin (item không có bookId hoặc book)
                     return {
-                        image: `https://picsum.photos/seed/${item.bookId}/150/200`,
-                        title: `Sách #${item.bookId?.substring(0, 6)}`,
+                        image: `https://picsum.photos/seed/${item._id || 'unknown'}/150/200`,
+                        title: `Sách không xác định`,
                         author: 'Không có thông tin',
                         quantity: item.quantity || 1,
                         price: this.formatPrice(0)
@@ -441,75 +486,69 @@
 
             // Thêm vào OrderHistoryPage.vue
             async processCancelOrder(orderId, reason) {
-                try {
-                    console.log('Bắt đầu xử lý hủy đơn hàng');
-                    
-                    // Hiển thị trạng thái loading
-                    eventBus.emit('show-alert', {
-                        show: true,
-                        type: 'warning',
-                        title: 'Đang xử lý',
-                        message: 'Vui lòng đợi trong giây lát...',
-                        autoClose: false
-                    });
-                    
-                    // Gửi yêu cầu hủy đơn hàng với lý do từ người dùng
-                    console.log('Gửi API hủy đơn hàng:', orderId);
-                    console.log('Lý do hủy từ người dùng:', reason);
-                    const cancelResponse = await OrderService.createCancelRequest(orderId, reason);
-                    console.log('Kết quả hủy đơn hàng:', cancelResponse.data);
-                    
-                    // Cập nhật UI đơn hàng
-                    console.log('Cập nhật UI trạng thái đơn hàng');
-                    const orderIndex = this.orders.findIndex(order => order._id === orderId);
-                    
-                    if (orderIndex !== -1) {
-                        // Thay đổi cách cập nhật để đảm bảo reactivity
-                        this.$set(this.orders, orderIndex, {
-                            ...this.orders[orderIndex],
-                            orderStatus: 'cancelled',
-                            cancelReason: reason // Sử dụng lý do từ người dùng
-                        });
-                        
-                        // Cập nhật lại mảng đã lọc
-                        this.filterByStatus(this.activeCategory);
-                        
-                        // Đảm bảo giao diện cập nhật
-                        this.$nextTick(() => {
-                            this.$forceUpdate();
-                            console.log('UI đã cập nhật');
-                        });
-                    }
-                    
-                    // Đóng thông báo loading
-                    eventBus.emit('hide-alert');
-                    
-                    // Đợi một chút để đảm bảo thông báo loading đã đóng
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                    
-                    // Hiển thị thông báo thành công
-                    eventBus.emit('show-alert', {
-                        show: true,
-                        type: 'success',
-                        title: 'Thành công',
-                        message: 'Đã hủy đơn hàng thành công.',
-                        autoClose: true,
-                        duration: 3000
-                    });
-                } catch (error) {
-                    console.error('Lỗi khi hủy đơn hàng:', error);
-                    eventBus.emit('show-alert', {
-                        show: true,
-                        type: 'error',
-                        title: 'Lỗi',
-                        message: 'Đã xảy ra lỗi khi hủy đơn hàng. Vui lòng thử lại sau.',
-                        autoClose: true
-                    });
-                    
-                    // Nếu lỗi, vẫn cần cập nhật lại danh sách đơn hàng để đảm bảo dữ liệu đồng bộ
-                    await this.fetchOrders();
-                }
-            }
+    try {
+        console.log('Bắt đầu xử lý hủy đơn hàng');
+        
+        // Hiển thị trạng thái loading
+        eventBus.emit('show-alert', {
+            show: true,
+            type: 'warning',
+            title: 'Đang xử lý',
+            message: 'Vui lòng đợi trong giây lát...',
+            autoClose: false
+        });
+        
+        // Gửi yêu cầu hủy đơn hàng với lý do từ người dùng
+        console.log('Gửi API hủy đơn hàng:', orderId);
+        console.log('Lý do hủy từ người dùng:', reason);
+        const cancelResponse = await OrderService.createCancelRequest(orderId, reason);
+        console.log('Kết quả hủy đơn hàng:', cancelResponse.data);
+        
+        // Cập nhật UI đơn hàng
+        console.log('Cập nhật UI trạng thái đơn hàng');
+        const orderIndex = this.orders.findIndex(order => order._id === orderId);
+        
+        if (orderIndex !== -1) {
+            // Cập nhật đơn hàng với Vue 3 không cần $set
+            this.orders[orderIndex] = {
+                ...this.orders[orderIndex],
+                orderStatus: 'cancelled',
+                cancelReason: reason
+            };
+            
+            // Cập nhật lại mảng đã lọc
+            this.filterByStatus(this.activeCategory);
+        }
+        
+        // Đóng thông báo loading
+        eventBus.emit('hide-alert');
+        
+        // Đợi một chút để đảm bảo thông báo loading đã đóng
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Hiển thị thông báo thành công
+        eventBus.emit('show-alert', {
+            show: true,
+            type: 'success',
+            title: 'Thành công',
+            message: 'Đã hủy đơn hàng thành công.',
+            autoClose: true,
+            duration: 3000
+        });
+    } catch (error) {
+        console.error('Lỗi khi hủy đơn hàng:', error);
+        eventBus.emit('show-alert', {
+            show: true,
+            type: 'error',
+            title: 'Lỗi',
+            message: 'Đã xảy ra lỗi khi hủy đơn hàng. Vui lòng thử lại sau.',
+            autoClose: true
+        });
+        
+        // Nếu lỗi, vẫn cần cập nhật lại danh sách đơn hàng để đảm bảo dữ liệu đồng bộ
+        await this.fetchOrders();
+    }
+}
         }
     }
 </script>

@@ -86,6 +86,7 @@
         },
         mounted() {
             this.fetchBookRating();
+            
         },
         
         methods: {
