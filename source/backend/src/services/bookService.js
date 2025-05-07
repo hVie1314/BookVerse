@@ -64,12 +64,16 @@ class BookService {
 
             return {
                 books,
-                total,
-                page: parseInt(page),
-                totalPages: Math.ceil(total / limit)
+                pagination: {
+                    currentPage: parseInt(page),
+                    totalPages: Math.ceil(total / limit),
+                    totalBooks: total,
+                },
             };
-        } catch (error) {
-        throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
+
+        } 
+        catch (error) {
+            throw new AppError(500, 'INTERNAL_SERVER_ERROR', error.message);
         }
     }
 
