@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const reviewController = require('../app/controllers/reviewController');
-const { verifyToken, verifyStaff } = require('../app/middlewares/authMiddleware');
 
-// CRUD routes for books
-router.post('/:bookId', verifyToken, reviewController.addReview);                     // [POST] /review/:bookId
-router.put('/:id', verifyToken, reviewController.updateReview);                       // [PUT] /review/:id
-router.delete('/:id', verifyToken, verifyStaff, reviewController.deleteReview);       // [DELETE] /review/:id
-router.get('/:bookId', reviewController.getAllReviews);                               // [GET] /review/:bookId
-router.patch('/hide/:id', verifyToken, verifyStaff, reviewController.hideReview);     // [PATCH] /review/hide/:id
-router.patch('/unhide/:id', verifyToken, verifyStaff, reviewController.unhideReview); // [PATCH] /review/unhide/:id
+const reviewController = require('../app/controllers/reviewController');
+const authMiddleware = require('../app/middlewares/authMiddleware');
+
+router.post('/:bookId',authMiddleware.verifyToken, authMiddleware.verifyUser, reviewController.addReview);                    
+router.put('/:id', authMiddleware.verifyToken, authMiddleware.verifyUser, reviewController.updateReview);                      
+router.delete('/:id', authMiddleware.verifyToken, authMiddleware.verifyUserOrStaffOrAdmin, reviewController.deleteReview);      
+router.get('/:bookId', reviewController.getAllReviews);                               
+router.patch('/hide/:id', authMiddleware.verifyToken, authMiddleware.verifyStaffOrAdmin, reviewController.hideReview);    
+router.patch('/unhide/:id', authMiddleware.verifyToken, authMiddleware.verifyStaffOrAdmin, reviewController.unhideReview); 
 
 module.exports = router;

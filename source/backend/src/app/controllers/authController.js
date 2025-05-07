@@ -23,6 +23,11 @@ class AuthController {
             return next(new AppError(400, "USER_ALREADY_EXISTS"));
          }
 
+         // check if password < 8 characters
+         if (password.length < 8) {
+            return next(new AppError(400, "INVALID_PASSWORD"));
+         }
+
          // gen hash password
          const salt = bcrypt.genSaltSync(10);
          const hashPassword = bcrypt.hashSync(password, salt);
@@ -194,10 +199,10 @@ class AuthController {
       }
    }   
 
-   // [POST] /auth/verify-otp
-   async verifyOtp(req, res, next) {
+   // [POST] /auth/verify-otp-and-change-password
+   async verifyOtpAndChangePassword(req, res, next) {                              
       try {
-         const { email, otp } = req.body;
+         const { email, otp, newPassword } = req.body;
 
          // get hashed OTP from redis
          const hashedOtp = await redisClient.get(`otp:${email}`);
@@ -214,23 +219,30 @@ class AuthController {
          // delete OTP from redis
          await redisClient.del(`otp:${email}`);
 
-         // OTP is valid, proceed to reset password
+         // reset password
+         await resetPassword(email, newPassword);
+
          res.status(200).json();
 
       } catch (err) {
+         if (err instanceof AppError) {
+            return next(err);
+         }
          return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
       }
    }
 
-   // [POST] /auth/reset-password
-   async resetPassword(req, res, next) {
+   async resetPassword(email, newPassword) {
       try {
-         const { email, newPassword } = req.body;
-
          // find user by email
          const user = await User.findOne({ email: email });
          if (!user) {
-            return next(new AppError(404, "USER_NOT_FOUND"));
+            throw new AppError(404, "USER_NOT_FOUND");
+         }
+
+         // check if new password < 8 characters
+         if (newPassword.length < 8) {
+            throw new AppError(400, "INVALID_PASSWORD");
          }
 
          // hash new password
@@ -244,11 +256,11 @@ class AuthController {
          // delete access token from redis
          await redisClient.del(user._id.toString());
 
-         return res.status(200).json();
+         return true;
       
       }
       catch (err) {
-         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+         throw new AppError(500, "INTERNAL_SERVER_ERROR", err.message);
       }
    }
 
