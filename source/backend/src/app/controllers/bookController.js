@@ -93,9 +93,7 @@ class BookController {
    getCategory(req, res, next) {
       Category.find()
          .then(categories => {
-            res.status(200).json({
-               categories: multipleMongooseToObject(categories)
-            });
+            res.status(200).json({ categories });
          })
          .catch(err => {
             return next(new AppError(500, 'SERVER_ERROR', err.message));
