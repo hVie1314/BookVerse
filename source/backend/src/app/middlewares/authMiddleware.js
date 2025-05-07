@@ -50,11 +50,46 @@ class AuthMiddleware {
       next();
    }
 
+   verifyUser(req, res, next) {
+      const { id: userId } = req.userInfo;
+      const { userId: targetUserId } = req.params || req.body;
+
+      if (userId === targetUserId) {
+         next();
+      }
+      else {
+         return next(new AppError(403, "FORBIDDEN"));
+      }
+   }
+
    verifyUserOrAdmin(req, res, next) {
       const { id: userId, role } = req.userInfo;
       const { userId: targetUserId } = req.params || req.body;
 
       if (userId === targetUserId || role === "admin") {
+         next();
+      }
+      else {
+         return next(new AppError(403, "FORBIDDEN"));
+      }
+   }
+
+   verifyStaffOrAdmin(req, res, next) {
+      const { role } = req.userInfo;
+      if (role === "staff" || role === "admin") {
+         next();
+      }
+      else {
+         return next(new AppError(403, "FORBIDDEN"));
+      }
+   }
+
+   verifyUserOrStaffOrAdmin(req, res, next) {
+      const { role } = req.userInfo;
+      const { userId: targetUserId } = req.params || req.body;
+      const { id: userId } = req.userInfo;
+
+      if (userId === targetUserId || role === "admin" || role === "staff") {
          next();
       }
       else {
