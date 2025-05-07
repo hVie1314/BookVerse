@@ -126,16 +126,38 @@ export default {
 
         // Hàm tiện ích để định dạng dữ liệu sách
         formatBookData(book) {
+            // Xử lý ảnh từ chuỗi mảng thành URL đầu tiên
+            let imageUrl = '/images/default-book-cover.jpg';
+            
+            if (book.image) {
+                try {
+                // Kiểm tra nếu image là chuỗi mảng
+                if (book.image.startsWith('[') && book.image.endsWith(']')) {
+                    // Parse chuỗi thành mảng
+                    const imageArray = JSON.parse(book.image.replace(/'/g, '"'));
+                    // Lấy URL đầu tiên nếu có
+                    if (imageArray && imageArray.length > 0) {
+                    imageUrl = imageArray[0];
+                    }
+                } else {
+                    // Nếu image không phải chuỗi mảng, sử dụng trực tiếp
+                    imageUrl = book.image;
+                }
+                } catch (error) {
+                console.error("Lỗi xử lý URL hình ảnh:", error);
+                }
+            }
+            
             return {
-                id: book.id || book._id,
-                image: book.image || book.coverImage || '/images/default-book-cover.jpg',
+                id: book._id,
+                image: imageUrl,
                 price: book.price,
                 originalPrice: book.originalPrice > book.price ? book.originalPrice : null,
                 title: book.title,
                 author: book.author,
                 sold: String(book.sold || 0)
             };
-        },
+            },
         
         // Phương thức phân trang
         nextPage() {

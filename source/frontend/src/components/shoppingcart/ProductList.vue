@@ -9,7 +9,7 @@
     </div>
     <ProductCard
       v-for="product in products"
-      :key="product.id || product._id"
+      :key="product._id"
       :product="product"
       @update-quantity="updateProductQuantity"
       @remove="removeProduct"

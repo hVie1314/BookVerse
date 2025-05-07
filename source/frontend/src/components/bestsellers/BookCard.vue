@@ -1,6 +1,11 @@
 <template>
     <article class="book-card" @click="navigateToDetail">
-        <img :src="image" :alt="title" class="book-image" />
+        <img 
+            :src="image" 
+            :alt="title" 
+            class="book-image" 
+            @error="handleImageError" 
+        />
         <div class="book-detail-info">
             <div class="price-container">
                 <p class="current-price">{{ price }}</p>
@@ -69,6 +74,10 @@ export default {
         },
     },
     methods: {
+        handleImageError(e) {
+            // Chuyển sang ảnh dự phòng khi ảnh gốc lỗi
+            e.target.src = '/images/default-book-cover.jpg';
+        },
         navigateToDetail() {
             this.$router.push({
                 name: 'product-detail',

@@ -1,7 +1,7 @@
 <template>
     <div class="product-container">
       <div class="product-details">
-        <img :src="product.image" :alt="product.title" class="product-image" />
+        <img :src="product.image" :alt="product.title" class="product-image" @error="handleImageError" />
         <div class="product-info">
           <h4 class="product-title">{{ product.title }}</h4>
           <p class="product-author">{{ product.author }}</p>
@@ -20,7 +20,20 @@
             type: Object,
             required: true
         }
+        },
+        mounted() {
+        // Kiểm tra xem product đã có xử lý ảnh chưa
+        if (this.product.image && 
+            typeof this.product.image === 'string' && 
+            this.product.image.startsWith('[')) {
+            console.warn('Ảnh sản phẩm chưa được xử lý đúng cách:', this.product.image);
         }
+    },
+    methods: {
+        handleImageError(e) {
+            e.target.src = `https://picsum.photos/seed/${Date.now()}/50/80`;
+        }
+    }
     }
 </script>
   

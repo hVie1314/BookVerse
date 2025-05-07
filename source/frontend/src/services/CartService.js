@@ -90,6 +90,7 @@ export default {
     },
     //////////////////////////
     // Lấy chi tiết đầy đủ của tất cả sản phẩm trong giỏ hàng
+    // Lấy chi tiết đầy đủ của tất cả sản phẩm trong giỏ hàng
     async getCartItemsWithDetails(userId) {
         try {
             // 1. Lấy thông tin giỏ hàng cơ bản
@@ -97,63 +98,56 @@ export default {
             const cartResponse = await this.getUserCart(userId);
             console.log('Cart response:', cartResponse.data);
 
-            if (!cartResponse.data || !cartResponse.data.success || !cartResponse.data.data || !cartResponse.data.data.products) {
-                console.log('Cấu trúc dữ liệu giỏ hàng không hợp lệ:', cartResponse.data);
-                return [];
+            if (!cartResponse.data || !cartResponse.data.success) {
+                console.log('API không trả về dữ liệu thành công');
+                return { items: [], totalPrice: 0 };
             }
             
-            const cartItems = cartResponse.data.data.products;
-            const totalPrice = cartResponse.data.data.totalPrice;
-            console.log(`Found ${cartItems.length} items in cart. Total price: ${totalPrice}`);
-            // 2. Lấy thông tin chi tiết cho từng sản phẩm
-            const itemsWithDetails = await Promise.all(
-                cartItems.map(async (item,index) => {
+            const cartData = cartResponse.data.data;
+            if (!cartData || !cartData.products || !Array.isArray(cartData.products)) {
+                console.log('Cấu trúc dữ liệu giỏ hàng không hợp lệ:', cartData);
+                return { items: [], totalPrice: 0 };
+            }
+            
+            // 2. Xử lý phản hồi mới từ API
+            const cartItems = cartData.products.map(item => {
+                const productInfo = item.productId; // Bây giờ productId là một object chứa thông tin sách
+                
+                // Xử lý ảnh
+                let imageUrl = '/images/default-book-cover.jpg';
+                if (productInfo.image) {
                     try {
-                        console.log(`Fetching details for product ${index + 1}/${cartItems.length}: ID ${item.productId}`);
-                        const productResponse = await BookService.getBookById(item.productId);
-                        console.log(`Product ${item.productId} response:`, productResponse.data);
-                        if (productResponse.data && productResponse.data.data) {
-                            const bookData = productResponse.data.data.book || productResponse.data.data;
-                            console.log(`Successfully fetched details for product ${item.productId}`);
-                            
-                            // Kết hợp thông tin chi tiết sản phẩm với số lượng từ giỏ hàng
-                            return {
-                                ...productResponse.data.data, // Giữ cấu trúc gốc
-                                book: bookData, // Đảm bảo có thuộc tính book
-                                quantity: item.quantity,
-                                cartItemId: item.productId
-                            };
+                        if (typeof productInfo.image === 'string' && 
+                            productInfo.image.startsWith('[') && 
+                            productInfo.image.endsWith(']')) {
+                            const imageArray = JSON.parse(productInfo.image.replace(/'/g, '"'));
+                            imageUrl = imageArray[0];
                         } else {
-                            console.warn(`No data found for product ${item.productId}`);
-                            // Dữ liệu fallback nếu không thể lấy chi tiết sản phẩm
-                            return {
-                                id: item.productId,
-                                title: `Sách #${item.productId.substring(item.productId.length - 6)}`,
-                                price: 0,
-                                image: '/src/images/new-books.jpg',
-                                author: 'Không có thông tin',
-                                quantity: item.quantity,
-                                cartItemId: item.productId
-                            };
+                            imageUrl = productInfo.image;
                         }
                     } catch (error) {
-                        console.error(`Lỗi khi lấy chi tiết sản phẩm ${item.productId}:`, error);
-                        // Trả về đối tượng mặc định nếu có lỗi
-                        return {
-                            id: item.productId,
-                            title: 'Không thể tải thông tin sách',
-                            price: 0,
-                            image: '/src/images/new-books.jpg',
-                            author: 'Không có thông tin',
-                            quantity: item.quantity,
-                            cartItemId: item.productId
-                        };
+                        console.error('Lỗi xử lý ảnh:', error);
                     }
-                })
-            );
-            console.log('Final cart items with details:', itemsWithDetails);
+                }
+                
+                return {
+                    _id: productInfo._id,
+                    title: productInfo.title,
+                    author: productInfo.author,
+                    price: productInfo.price,
+                    image: imageUrl,
+                    rawImage: productInfo.image, // Giữ lại ảnh gốc nếu cần
+                    quantity: item.quantity,
+                    cartItemId: productInfo._id, // ID để xóa/cập nhật
+                    book: productInfo // Giữ lại dữ liệu gốc
+                };
+            });
+            
+            const totalPrice = cartData.totalPrice;
+            console.log(`Processed ${cartItems.length} items in cart. Total price: ${totalPrice}`);
+            
             return {
-                items: itemsWithDetails,
+                items: cartItems,
                 totalPrice: totalPrice
             };
         } catch (error) {
