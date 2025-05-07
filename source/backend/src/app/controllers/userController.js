@@ -84,6 +84,30 @@ class UserController {
             return next(new AppError(400, "DELETE_FAILED"));
         }
     }
+
+    // [POST] /user/set-role
+    async setRole(req, res, next) {
+        try {
+            const { userId, role } = req.body;
+            
+            // Validate role
+            const validRoles = ['user', 'admin', 'staff'];
+            if (!validRoles.includes(role)) {
+                return next(new AppError(400, 'INVALID_ROLE', 'Role must be one of: user, admin, staff'));
+            }
+
+            // Find the user by ID and update the role
+            const updatedUser = await user.findByIdAndUpdate(userId, { role }, {
+                new: true,             
+                runValidators: true  
+            });
+
+            return res.status(200).json(updatedUser);
+
+        } catch (err) {
+            return next(new AppError(400, 'INVALID_UPDATE'));
+        }
+    }
 }
 
 module.exports = new UserController();

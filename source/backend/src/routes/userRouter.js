@@ -2,23 +2,14 @@ const express = require('express');
 const router = express.Router();
 
 const userController = require('../app/controllers/userController');
+const authMiddleware = require('../app/middlewares/authMiddleware');
 
-// Get all customers
-router.get('/customer', userController.getAllCustomer);
-
-// Get all staffs
-router.get('/staff', userController.getAllStaff);
-
-// Get all admins
-router.get('/admin', userController.getAllAdmin);
-
-// Get user by ID
-router.get('/:id', userController.getUserById);
-
-// Update user info
-router.put('/:id', userController.updateUserInfo);
-
-// Delete user
-router.delete('/:id', userController.deleteUser);
+router.get('/customer', authMiddleware.verifyToken, authMiddleware.verifyAdmin, userController.getAllCustomer);
+router.get('/staff', authMiddleware.verifyToken, authMiddleware.verifyAdmin, userController.getAllStaff);
+router.get('/admin', authMiddleware.verifyToken, authMiddleware.verifyAdmin, userController.getAllAdmin);
+router.get('/:id', authMiddleware.verifyToken, authMiddleware.verifyUserOrAdmin, userController.getUserById);
+router.put('/:id', authMiddleware.verifyToken, authMiddleware.verifyUser, userController.updateUserInfo);
+router.delete('/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, userController.deleteUser);
+router.post('/set-role', authMiddleware.verifyToken, authMiddleware.verifyAdmin, userController.setRole);
 
 module.exports = router;
