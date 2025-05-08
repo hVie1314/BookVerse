@@ -66,7 +66,11 @@
         this.$refs.bookCatalog.applyFilters(this.filters);
       },
       applyRatingFilter(ratingFilter) {
-        this.filters = { ...this.filters, minRating: ratingFilter.rating };
+        if (ratingFilter.rating === null) {
+          delete this.filters.minRating;
+        } else {
+          this.filters = { ...this.filters, minRating: ratingFilter.rating };
+        }
         this.$refs.bookCatalog.applyFilters(this.filters);
       }
     }
