@@ -1,6 +1,7 @@
 const user = require('../models/User');
 const AppError = require('../../utils/appError');
 const bcrypt = require('bcryptjs');
+const { redisClient } = require('../../configs/db/redis');
 
 class UserController {
     async getAllCustomer(req, res, next) {        
@@ -65,6 +66,7 @@ class UserController {
 
     async updateUserInfo(req, res, next) {
         try {
+            const userId = req.params.userId;
             // Only allow specific fields to be updated
             const allowedFields = ['password', 'address', 'avatar'];
             const updatedData = {};
@@ -78,20 +80,47 @@ class UserController {
             
             // If the password is being updated, hash it before saving
             if (updatedData.password) {
+                // check if password < 8 characters
+                if (updatedData.password.length < 8) {
+                    return next(new AppError(400, 'INVALID_PASSWORD', 'Password must be at least 8 characters long'));
+                }
                 const salt = bcrypt.genSaltSync(10);
                 updatedData.password = bcrypt.hashSync(updatedData.password, salt);
             }
 
             // Find the user by ID and update the allowed fields
-            const updatedUser = await user.findByIdAndUpdate(req.params.userId, updatedData, {
+            const updatedUser = await user.findByIdAndUpdate(userId, updatedData, {
                 new: true,             
                 runValidators: true  
             });
-    
+
             if (!updatedUser)
                 return next(new AppError(404, 'NOT_FOUND', 'User not found'));
+            
+            // if the password is updated, require re-login
+            if (updatedData.password) {
+                const token = req.headers["authorization"]?.split(" ")[1];
+                
+                // delete token from Redis
+                redisClient.del(userId, (err, reply) => {
+                    if (err) {
+                        return next(new AppError(500, "INTERNAL_SERVER_ERROR", "Failed to delete token from Redis"));
+                    }
+                });
+
+                // add access token to blacklist
+                redisClient.set(`blacklist:${token}`, "blacklisted", { EX: 10 * 60 });
+            }
+
+            // eliminate password field from the response
+            updatedUser.password = null;
+
             res.status(200).json(updatedUser);
+
         } catch (err) {
+            if (err instanceof AppError) {
+                return next(err);
+            }
             return next(new AppError(400, "INVALID_UPDATE"));
         }
     }

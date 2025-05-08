@@ -11,7 +11,7 @@ const emailSender = require('../../utils/emailSender');
 class AuthController {
 
    // [POST] /auth/register
-   register(req, res, next) {
+   async register(req, res, next) {
       // get data from request
       const { username, email, password, role } = req.body;
 
@@ -59,7 +59,7 @@ class AuthController {
    }
 
    // [POST] /auth/login
-   login(req, res, next) {
+   async login(req, res, next) {
 
       // get data from request
       const { username, password } = req.body;
@@ -168,7 +168,7 @@ class AuthController {
    };
 
    // [POST] /auth/logout
-   logout(req, res) {
+   async logout(req, res) {
 
       const token = req.headers["authorization"].split(" ")[1];
       const userId = req.userInfo.id.toString();
