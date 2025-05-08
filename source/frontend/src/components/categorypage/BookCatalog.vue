@@ -212,11 +212,13 @@
         this.loading = false;
       }
     },
-            handlePageChange(page) {
-                this.currentPage = page;
-                // Cuộn lên đầu danh sách sản phẩm
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            },
+    handlePageChange(page) {
+    this.currentPage = page;
+    // Cuộn lên đầu danh sách sản phẩm
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Gọi fetchBooks để tải dữ liệu mới cho trang được chọn
+    this.fetchBooks();
+},
             applyFilters(newFilters) {
                 this.filters = { ...newFilters };
                 this.currentPage = 1; // Reset về trang đầu tiên khi áp dụng bộ lọc
