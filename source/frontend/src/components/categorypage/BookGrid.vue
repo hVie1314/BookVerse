@@ -1,80 +1,66 @@
 <template>
     <div class="book-grid">
-        <div v-for="book in books" :key="book._id || book.id" class="book-card" :data-id="book._id || book.id">
-    <router-link :to="'/product/' + (book._id || book.id)">
-      <img 
-        :src="extractFirstImageUrl(book.image)" 
-        :alt="book.title"
-        class="book-image"
-        @error="handleImageError"
-      />
-      <div class="book-info">
-        <h3 class="book-title">{{ book.title }}</h3>
-        <p class="book-author">{{ book.author }}</p>
-        <p class="book-price">{{ new Intl.NumberFormat('vi-VN', {
-          style: 'currency',
-          currency: 'VND'
-        }).format(book.price) }}</p>
-      </div>
-    </router-link>
-    <button class="add-to-cart" @click="addToCart(book)">
-      <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
-    </button>
-  </div>
+        <BookCard
+            v-for="book in books" 
+            :key="book._id || book.id"
+            :bookId="book._id || book.id"
+            :title="book.title"
+            :author="book.author || 'Chưa rõ tác giả'"
+            :image="extractFirstImageUrl(book.image)"
+            :price="formatPrice(book.price)"
+            :originalPrice="book.originalPrice ? formatPrice(book.originalPrice) : ''"
+            :sold="book.sold || 0"
+            cartText="Thêm vào giỏ"
+        />
     </div>
-  </template>
+</template>
   
 <script>
-    // import BookCard from "@/components/bestsellers/BookCard.vue";
+    import BookCard from "@/components/bestsellers/BookCard.vue";
+    // import CartService from '@/services/CartService';
 
     export default {
         name: "BookGrid",
         components: {
-            // BookCard,
+            BookCard,
         },
         props: {
             books: {
-            type: Array,
-            required: true
+                type: Array,
+                required: true
             }
         },
         methods: {
-            handleImageError(e) {
-                const imgElement = e.target;
-                const bookId = imgElement.closest('.book-card')?.getAttribute('data-id') || 'default';
-                imgElement.src = `https://picsum.photos/seed/${bookId}/300/400`;
-            },
             formatPrice(price) {
-            return new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND'
-            }).format(price);
+                return new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                }).format(price);
             },
-
             extractFirstImageUrl(imageString) {
-        if (!imageString) {
-            return 'https://picsum.photos/seed/noimage/300/400'; // Ảnh mặc định
-        }
-        
-        try {
-            if (typeof imageString === 'string' && 
-                imageString.startsWith('[') && 
-                imageString.endsWith(']')) {
-                // Thay thế dấu nháy đơn bằng dấu nháy kép và parse JSON
-                const imageArray = JSON.parse(imageString.replace(/'/g, '"'));
-                if (imageArray && imageArray.length > 0) {
-                    return imageArray[0];
+                if (!imageString) {
+                    return 'https://picsum.photos/seed/noimage/300/400'; // Ảnh mặc định
+                }
+                
+                try {
+                    if (typeof imageString === 'string' && 
+                        imageString.startsWith('[') && 
+                        imageString.endsWith(']')) {
+                        // Thay thế dấu nháy đơn bằng dấu nháy kép và parse JSON
+                        const imageArray = JSON.parse(imageString.replace(/'/g, '"'));
+                        if (imageArray && imageArray.length > 0) {
+                            return imageArray[0];
+                        }
+                    }
+                    // Nếu không phải chuỗi mảng, trả về nguyên gốc
+                    return imageString;
+                } catch (error) {
+                    console.error('Lỗi khi xử lý chuỗi hình ảnh:', error);
+                    return 'https://picsum.photos/seed/error/300/400'; // Ảnh dự phòng khi lỗi
                 }
             }
-            // Nếu không phải chuỗi mảng, trả về nguyên gốc
-            return imageString;
-        } catch (error) {
-            console.error('Lỗi khi xử lý chuỗi hình ảnh:', error);
-            return 'https://picsum.photos/seed/error/300/400'; // Ảnh dự phòng khi lỗi
         }
-        },
-            }
-        };
+    };
 </script>
   
 <style scoped>
@@ -85,18 +71,16 @@
         margin-bottom: 30px;
     }
 
-    .book-card-grid {
+    /* BookCard sẽ tự động có kích thước bằng nhau vì grid-template-columns */
+    .book-grid :deep(.book-card) {
         width: 100%;
+        margin-bottom: 10px;
     }
 
-    :deep(.book-card-grid .cart-button) {
-        /* CSS tùy chỉnh cho cart-button trong grid */
-        font-size: 8.5px; /* Tăng kích thước font */
-    }
-
+    /* Media queries để responsive */
     @media (max-width: 1200px) {
         .book-grid {
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
         }
     }
 
@@ -115,6 +99,12 @@
     @media (max-width: 480px) {
         .book-grid {
             grid-template-columns: 1fr;
+        }
+        
+        .book-grid :deep(.book-card) {
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
         }
     }
 </style>

@@ -21,10 +21,9 @@ export default {
             headers['Authorization'] = `Bearer ${token}`;
         }
         
+        const url = `book/page/${page}/limit/${limit}`;
         // Xây dựng params cho API request
         const params = {
-            page,
-            limit,
             sort: sortOption
         };
         
@@ -51,7 +50,7 @@ export default {
         
         console.log(`Gọi API lấy danh sách sách với params:`, params);
         
-        return Api().get('book', { 
+        return Api().get(url, { 
             params,
             headers
         })
