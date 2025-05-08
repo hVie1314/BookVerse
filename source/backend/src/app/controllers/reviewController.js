@@ -7,12 +7,11 @@ const bookService = require('../../services/bookService');
 
 class ReviewController {
 
-   // [POST] /review/:bookId
+   // [POST] /review/:userId
    async addReview(req, res, next) {
       try {
-         const { rating, comment } = req.body;
+         const { bookId, rating, comment } = req.body;
          const userId = req.userInfo.id;
-         const bookId = req.params.bookId;
    
          // Check if bookId is valid
          const book = await Book.findById(bookId);
@@ -60,10 +59,10 @@ class ReviewController {
       }
    }
 
-   // [PUT] /review/:id
+   // [PUT] /review/:userId
    async updateReview(req, res, next) {
       try {
-         const reviewId = req.params.id;
+         const { reviewId , comment, rating } = req.body;
          const review = await Review.findById(reviewId);
          if (!review) return next(new AppError(404, 'REVIEW_NOT_FOUND'));
 
@@ -75,24 +74,26 @@ class ReviewController {
             return next(new AppError(403, 'FORBIDDEN', 'You cannot modify this review'));
          }
 
+         review.comment = comment;
+         review.rating = rating;
+         await review.save();
+         
          // rating
          const bookRating = await bookService.reCalcBookRating(bookId);
          book.rating = bookRating;
          book.save();
 
-         review.set(req.body);
-         await review.save();
-
          return res.status(200).json({ review });
+
       } catch (err) {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
       }
    }
 
-   // [DELETE] /review/:id
+   // [DELETE] /review/:userId
    async deleteReview(req, res, next) {
       try {
-         const reviewId = req.params.id;
+         const { reviewId } = req.body;
          const review = await Review.findById(reviewId);
          if (!review) return next(new AppError(404, 'REVIEW_NOT_FOUND'));
 
@@ -100,18 +101,19 @@ class ReviewController {
          const book = await Book.findById(review.bookId);
          if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
 
+         // remove review from book
+         book.reviews = book.reviews.filter((r) => String(r) !== String(review._id));
+         await book.save();
+
+         await Review.findByIdAndDelete(reviewId);
+
          // rating
          const bookRating = await bookService.reCalcBookRating(bookId);
          book.rating = bookRating;
          book.save();
 
-         // remove review from book
-         book.reviews = book.reviews.filter((r) => String(r) !== String(review._id));
-         await book.save();
-
-         await review.remove();
-
          return res.status(200).json({ message: 'Review deleted' });
+
       } catch (err) {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
       }
