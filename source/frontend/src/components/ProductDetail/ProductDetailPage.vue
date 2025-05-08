@@ -40,9 +40,9 @@
                     </div>
                 </div>
         
-                <RatingSection :ratings="book.ratings || []" />
+                <RatingSection v-if="bookId" :bookId="bookId" @open-review-form="openReviewForm" />
         
-                <ReviewList :reviews="book.reviews || []" :bookId="book._id || book.id"/>
+                <ReviewList v-if="bookId" :bookId="bookId" :reviews="reviews" />
         
                 <h2 class="recommended-title">Gợi ý sản phẩm</h2>
                 
@@ -86,7 +86,10 @@
                 loading: true,
                 error: null,
                 selectedImage: null,
-                bookImages: []
+                bookImages: [],
+                bookId: null,
+                reviews: [],
+                showReviewForm: false
             }
         },
         methods: {
@@ -115,6 +118,11 @@
                     } else {
                         this.error = 'Không thể tải thông tin sách';
                     }
+
+                    const reviewResponse = await BookService.getBookReviews(this.bookId);
+                    if (reviewResponse && reviewResponse.data && reviewResponse.data.reviews) {
+                        this.reviews = reviewResponse.data.reviews;
+                    }
                 } catch (error) {
                     console.error('Error fetching book details:', error);
                     this.error = 'Đã xảy ra lỗi khi tải thông tin sách';
@@ -122,7 +130,9 @@
                     this.loading = false;
                 }
             },
-
+            openReviewForm() {
+                this.showReviewForm = true;
+            },
             processBookImages() {
                 try {
                     if (this.book.image) {
@@ -174,7 +184,13 @@
             }
         },
         created() {
+            // Lấy bookId từ route params
+            this.bookId = this.$route.params.id;
+            
+            // Tải dữ liệu sách và reviews
+            if (this.bookId) {
             this.fetchBookDetails();
+            }
         },
         watch: {
             id(newId) {

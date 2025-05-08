@@ -51,13 +51,24 @@
     },
     computed: {
       formattedReviews() {
-        // Kiểm tra xem reviews từ props có phải là mảng các ID (string) không
-        const hasObjectReviews = this.reviews.length > 0 && typeof this.reviews[0] === 'object';
-        
-        // Nếu reviews từ props là object, sử dụng chúng; nếu không, sử dụng fetchedReviews
-        return hasObjectReviews ? this.reviews : this.fetchedReviews;
-      }
-    },
+          // Nếu có reviews từ props, sử dụng chúng
+          if (this.reviews && this.reviews.length > 0) {
+            return this.reviews.map(review => ({
+              id: review._id,
+              name: review.user?.username || 'Người dùng',
+              avatar: review.user?.avatar || 'https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/9c21ecc8fd12f4309a9c06c3afa851e5571e1b4b?placeholderIfAbsent=true',
+              date: this.formatDate(review.createdAt || review.create_at),
+              rating: review.rating,
+              content: review.comment || review.content || '',
+              likes: review.likes || 0,
+              dislikes: review.dislikes || 0
+            }));
+          }
+          
+          // Sử dụng fetchedReviews nếu không có reviews từ props
+          return this.fetchedReviews;
+        }
+      },
     created() {
       // Nếu không có reviews từ props và có bookId, thì fetch từ API
       if (this.bookId) {
@@ -66,6 +77,9 @@
         console.log("Reviews từ props:", this.reviews);
         this.fetchReviews();
       }
+      if ((!this.reviews || this.reviews.length === 0) && this.bookId) {
+        this.fetchReviews();
+      } 
     },
     methods: {
         async fetchReviews() {
