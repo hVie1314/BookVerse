@@ -94,14 +94,17 @@ class BookService {
         };
         }
         catch (err) {
-        throw new AppError(500, 'INTERNAL_SERVER_ERROR', err.message);
+            if (err instanceof AppError) {
+                throw err;
+            }
+            throw new AppError(500, 'INTERNAL_SERVER_ERROR', err.message);
         }
     }
 
     async reCalcBookRating(bookId) {
         try {
             const reviews = await Review.find({ 
-                book_id: bookId, 
+                bookId: bookId, 
                 status: 'approved', 
                 hidden: false 
             });
