@@ -20,7 +20,7 @@
                 <i v-for="index in 5" 
                    :key="`total-star-${index}`" 
                    :class="[
-                     index <= Math.round(averageRating) ? 'fas fa-star filled-star' : 'far fa-star empty-star'
+                     index <= Math.floor(averageRating) ? 'fas fa-star filled-star' : 'far fa-star empty-star'
                    ]"
                 ></i>
               </div>
