@@ -17,6 +17,9 @@
           v-for="(review, index) in formattedReviews"
           :key="`review-${index}`"
           :review="review"
+          @review-updated="updateReview"
+          @visibility-changed="updateReviewVisibility"
+          @review-deleted="fetchReviews"
         />
       </template>
     </section>
@@ -112,7 +115,8 @@
             rating: review.rating,
             content: review.comment || review.content || '',
             likes: review.likes || 0,
-            dislikes: review.dislikes || 0
+            dislikes: review.dislikes || 0,
+            userId: review.userId || "null",
         }));
     } catch (error) {
         console.error('Lỗi khi lấy đánh giá:', error);
@@ -155,6 +159,24 @@
           }
         } catch (e) {
           return dateString; // Trả về nguyên gốc nếu có lỗi
+        }
+      },
+      updateReview(updatedReview) {
+        const index = this.formattedReviews.findIndex(review => review.id === updatedReview.id);
+        if (index !== -1) {
+          this.formattedReviews[index] = {
+            ...this.formattedReviews[index],
+            ...updatedReview
+          };
+        }
+      },
+      updateReviewVisibility(data) {
+        const index = this.formattedReviews.findIndex(review => review.id === data.id);
+        if (index !== -1) {
+          this.formattedReviews[index] = {
+            ...this.formattedReviews[index],
+            hidden: data.hidden
+          };
         }
       }
     }
