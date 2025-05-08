@@ -8,7 +8,7 @@ class BookService {
         try {
             const {
                 keyword,
-                category,
+                categories,
                 author,
                 rating,
                 minPrice,
@@ -25,11 +25,14 @@ class BookService {
                 filter.title = { $regex: keyword, $options: 'i' };
             }
 
-            // filter by category
-            if (category) {
-                filter.category = category;
+            // filter by categories 
+            if (categories) {
+                const categoryArray = categories.split(',').map(cat => cat.trim());
+                if (categoryArray.length > 0) {
+                    filter.category = { $in: categoryArray };
+                }
             }
-
+            
             // filter by author
             if (author) {
                 filter.author = author;
