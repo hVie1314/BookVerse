@@ -50,17 +50,40 @@ class AuthMiddleware {
       next();
    }
 
-   verifyUser(req, res, next) {
-      const { id: userId } = req.userInfo;
-      const { userId: targetUserId } = req.params || req.body;
+   // verifyUser(req, res, next) {
+   //    const { id: userId } = req.userInfo;
+   //    const { userId: targetUserId } = req.params || req.body;
 
-      if (userId === targetUserId) {
-         next();
+   //    if (userId === targetUserId) {
+   //       next();
+   //    }
+   //    else {
+   //       return next(new AppError(403, "FORBIDDEN"));
+   //    }
+   // }
+
+   verifyUser(req, res, next) {
+      const { id } = req.userInfo;  // ID từ token JWT
+      const userId = req.body.userId || req.params.userId;  // ID từ request body hoặc params
+      
+      // Log thông tin để debug (tùy chọn) 
+      console.log('User ID from token:', id);
+      console.log('User ID from request:', userId);
+      console.log('Types - token:', typeof id, 'request:', typeof userId);
+      
+      if (!id || !userId) {
+        console.log('Missing user ID in request or token');
+        return next(new AppError(403, "FORBIDDEN"));
       }
-      else {
-         return next(new AppError(403, "FORBIDDEN"));
+      
+      // Chuyển đổi cả hai thành string và so sánh
+      if (String(id) === String(userId)) {
+        next();
+      } else {
+        console.log('User ID mismatch:', String(id), '!==', String(userId));
+        return next(new AppError(403, "FORBIDDEN"));
       }
-   }
+    }
 
    verifyUserOrAdmin(req, res, next) {
       const { id: userId, role } = req.userInfo;

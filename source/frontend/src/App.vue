@@ -133,8 +133,20 @@ export default {
   },
   methods: {
     handleLogoutEvent() {
-      console.log("App nhận sự kiện logout");
       this.isLoggedIn = false;
+        this.userRole = null;
+        
+        // Chuyển hướng về trang chủ
+        this.$router.push('/');
+        
+        // Hiển thị thông báo đăng xuất thành công
+        eventBus.emit('show-alert', {
+            show: true,
+            type: 'success',
+            title: 'Đăng xuất thành công',
+            message: 'Bạn đã đăng xuất khỏi hệ thống',
+            autoClose: true
+        });
     },
 
     // Thêm phương thức xử lý confirm
