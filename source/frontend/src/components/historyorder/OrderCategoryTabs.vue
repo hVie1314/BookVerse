@@ -18,11 +18,11 @@
       </div>
       <div 
         class="category-item"
-        :class="{ active: activeCategory === 'completed' }"
-        @click="changeCategory('completed')"
+        :class="{ active: activeCategory === 'success' }"
+        @click="changeCategory('success')"
       >
-        <h2 class="category-text completed">Hoàn thành</h2>
-        <div class="category-underline" v-if="activeCategory === 'completed'"></div>
+        <h2 class="category-text success">Hoàn thành</h2>
+        <div class="category-underline" v-if="activeCategory === 'success'"></div>
       </div>
       <div 
         class="category-item"
@@ -103,7 +103,7 @@
         width: 140px; /* Giảm từ 183px */
     }
 
-    .completed {
+    .success {
         width: 100px; /* Giảm từ 134px */
     }
 
