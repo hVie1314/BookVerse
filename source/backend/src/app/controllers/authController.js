@@ -114,8 +114,26 @@ class AuthController {
       try {
          // get info from request
          const token = req.headers["authorization"].split(" ")[1];
-         const userId = req.userInfo.id.toString();
-         const userRole = req.userInfo.role;
+         
+         // verify token
+         const decoded = jwt.decode(token, { complete: true });
+         if (!decoded) {
+            return next(new AppError(401, "UNAUTHORIZED"));
+         }
+            
+         // check if token is blacklisted
+         redisClient.get(`blacklist:${token}`, (err, reply) => {
+            if (err) {
+               return next(new AppError(500, "INTERNAL_SERVER_ERROR"));
+            }
+            if (reply) {
+               return next(new AppError(401, "UNAUTHORIZED"));
+            }
+         });
+
+         // retrieve userId and role from decoded token
+         var { id: userId, role: userRole } = decoded.payload;
+         userId = userId.toString();
 
          // get cached token from redis
          const redisToken = await redisClient.get(userId);
@@ -124,6 +142,7 @@ class AuthController {
          if (!redisToken || redisToken != token) {
             return next(new AppError(401, "UNAUTHORIZED"));
          }
+
 
          // after passing all checks
 
