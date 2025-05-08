@@ -122,7 +122,7 @@ class AuthController {
          }
             
          // check if token is blacklisted
-         redisClient.get(`blacklist:${token}`, (err, reply) => {
+         await redisClient.get(`blacklist:${token}`, (err, reply) => {
             if (err) {
                return next(new AppError(500, "INTERNAL_SERVER_ERROR"));
             }
