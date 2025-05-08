@@ -66,7 +66,7 @@
                     'pending': 'CHỜ THANH TOÁN',
                     'processing': 'ĐANG XỬ LÝ',
                     'shipping': 'ĐANG VẬN CHUYỂN',
-                    'completed': 'HOÀN THÀNH',
+                    'success': 'HOÀN THÀNH',
                     'cancelled': 'ĐÃ HỦY'
                 }
             }
