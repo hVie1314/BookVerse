@@ -1,51 +1,59 @@
 <template>
     <article class="review-item">
-      
-      <div class="review-content">
-        <img
-        :src="review.avatar"
-        class="reviewer-avatar"
-        alt="Reviewer avatar"
-        />
-        <div class="reviewer-info">
-          <h3 class="reviewer-name">{{ review.name }}</h3>
-          <span class="review-date">{{ review.date }}</span>
+      <!-- Header chứa avatar và thông tin người dùng -->
+      <div class="review-header">
+        <!-- Avatar -->
+        <div class="avatar-container">
+          <img
+            :src="review.avatar"
+            class="reviewer-avatar"
+            alt="Reviewer avatar"
+            @error="handleAvatarError"
+          />
         </div>
+        
+        <!-- Thông tin người dùng -->
+        <div class="reviewer-info-container">
+          <!-- Hàng 1: Tên và thời gian -->
+          <div class="reviewer-info-row">
+            <h3 class="reviewer-name">{{ review.name }}</h3>
+            <span class="review-date">{{ review.date }}</span>
+          </div>
+          
+          <!-- Hàng 2: Đánh giá sao -->
+          <div class="star-rating">
+            <i v-for="index in 5" :key="index" 
+              :class="[index <= review.rating ? 'fas fa-star filled-star' : 'far fa-star empty-star']">
+            </i>
+          </div>
+        </div>
+      </div>
   
-        <div class="review-details">
-            <div class="star-rating">
-                <i v-for="index in 5" :key="index" 
-                    :class="[
-                    index <= review.rating ? 'fas fa-star filled-star' : 'far fa-star empty-star'
-                    ]"
-                ></i>
-            </div>
-  
-          <p class="review-text">
-            {{ displayContent }}
-          </p>
-  
-          <button class="read-more-button" v-if="isLongContent" @click="toggleExpandContent">
+      <!-- Nội dung đánh giá -->
+      <div class="review-content">
+        <p class="review-text">{{ displayContent }}</p>
+        
+        <button class="read-more-button" v-if="isLongContent" @click="toggleExpandContent">
           {{ expanded ? 'Thu gọn' : 'Đọc thêm' }}
         </button>
+      </div>
+  
+      <!-- Các nút tương tác -->
+      <div class="review-actions">
+        <button class="reply-button">Reply</button>
+  
+        <div class="like-container">
+          <img
+            src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/46c6c4363e26327da7eca6cb690eed8fb44c85b5?placeholderIfAbsent=true"
+            class="like-icon"
+            alt="Like icon"
+          />
+          <span class="like-count">{{ review.likes }}</span>
         </div>
   
-        <div class="review-actions">
-          <button class="reply-button">Reply</button>
-  
-          <div class="like-container">
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/46c6c4363e26327da7eca6cb690eed8fb44c85b5?placeholderIfAbsent=true"
-              class="like-icon"
-              alt="Like icon"
-            />
-            <span class="like-count">{{ review.likes }}</span>
-          </div>
-  
-          <div class="dislike-container">
-            <div class="dislike-icon"></div>
-            <span class="dislike-count">{{ review.dislikes }}</span>
-          </div>
+        <div class="dislike-container">
+          <div class="dislike-icon"></div>
+          <span class="dislike-count">{{ review.dislikes }}</span>
         </div>
       </div>
   
@@ -89,262 +97,163 @@
         methods: {
             toggleExpandContent() {
             this.expanded = !this.expanded;
-            }
+            },
+            handleAvatarError(e) {
+    // Thay thế bằng avatar mặc định khi ảnh lỗi
+    e.target.src = 'https://ui-avatars.com/api/?name=' + 
+      encodeURIComponent(this.review.name) + '&background=4d2900&color=fff';
+  }
         }
         };
 </script>
   
 <style scoped>
+  .review-item {
+    border: 1px solid #f0f0f0;
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: rgb(244, 235, 225);
+  }
+  
+  /* Header chứa avatar và thông tin người dùng */
+  .review-header {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+  }
+  
+  .avatar-container {
+    flex-shrink: 0;
+    margin-right: 15px;
+  }
+  
+  .reviewer-avatar {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 50%;
+    display: block;
+  }
+  
+  /* Container chứa thông tin người dùng (tên, thời gian, rating) */
+  .reviewer-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  /* Hàng 1: Tên và thời gian */
+  .reviewer-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+  
+  .reviewer-name {
+    color: rgba(0, 0, 0, 1);
+    font-family: Raleway, -apple-system, Roboto, Helvetica, sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    margin: 0;
+  }
+  
+  .review-date {
+    color: rgb(159, 155, 155);
+    font-size: 12px;
+  }
+  
+  /* Hàng 2: Đánh giá sao */
+  .star-rating {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  
+  .filled-star {
+    color: #FFD700; /* Màu vàng */
+  }
 
-    .filled-star {
-        color: #FFD700; /* Màu vàng */
-    }
-
-    .empty-star {
-        color: #D3D3D3; /* Màu xám nhạt */
-    }
-
-    .star-rating i {
-        margin-right: 3px;
-    }
-    .review-item {
-        border: 1px solid #f0f0f0;
-        margin-bottom: 20px;
-        padding: 15px;
-        border-radius: 8px;
-        background-color: rgb(244, 235, 225);
-    }
-    
-    .reviewer-avatar {
-        aspect-ratio: 1;
-        object-fit: contain;
-        object-position: center;
-        width: 40px;
-        border-radius: 20px;
-        align-self: flex-start;
-        flex-shrink: 0;
-        float: left;
-        margin-right: 11px;
-    }
-    
-    .review-content {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        flex-grow: 1;
-        flex-shrink: 0;
-        flex-basis: 0;
-        width: 100%; /* Thay đổi từ fit-content sang 100% */
-        margin-top: 0 !important;/* Giảm từ 133px xuống 10px */
-        margin-right: 11px;
-    }
-    
-    @media (max-width: 991px) {
-        .review-content {
-        max-width: 100%;
-        margin-right: 10px;
-        margin-top: 40px;
-        }
-    }
-    
-    .reviewer-info {
-        align-self: flex-start;
-        display: flex;
-        align-items: stretch;
-        gap: 14px;
-        font-family: Raleway, -apple-system, Roboto, Helvetica, sans-serif;
-        font-size: 16px;
-        font-weight: 700;
-        margin-left: 50px;
-    }
-    
-    .reviewer-name {
-        color: rgba(0, 0, 0, 1);
-        flex-grow: 1;
-        font-size: 14px; /* Giảm từ 16px */
-        margin: 0;
-    }
-    
-    .review-date {
-        color: rgba(217, 217, 217, 1);
-    }
-    
-    .review-details {
-        display: flex;
-        width: 100%;
-        flex-direction: column;
-        align-items: stretch;
-        justify-content: flex-start;
-        margin-left: 50px; 
+  .empty-star {
+    color: #D3D3D3; /* Màu xám nhạt */
+  }
+  
+  /* Phần nội dung đánh giá */
+  .review-content {
+    margin-left: 65px; /* Căn lề trái bằng với width avatar + margin */
+    margin-bottom: 15px;
+  }
+  
+  .review-text {
+    color: rgba(0, 0, 0, 1);
+    font-family: Raleway, -apple-system, Roboto, Helvetica, sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    margin-top: 0;
+    margin-bottom: 5px;
+  }
+  
+  .read-more-button {
+    color: rgba(76, 41, 0, 1);
+    font-size: 14px;
+    font-family: Hind Siliguri, -apple-system, Roboto, Helvetica, sans-serif;
+    font-weight: 500;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: block;
+    margin-top: 5px;
+  }
+  
+  /* Phần actions */
+  .review-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: 65px; /* Căn lề trái bằng với width avatar + margin */
+    margin-top: 10px;
+  }
+  
+  .reply-button {
+    color: rgba(217, 217, 217, 1);
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+  
+  .like-container, .dislike-container {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  
+  .like-icon {
+    width: 20px;
+    object-fit: contain;
+  }
+  
+  .divider {
+    width: 100%;
+    margin-top: 18px;
+  }
+  
+  /* Media queries */
+  @media (max-width: 991px) {
+    .review-content, .review-actions {
+      margin-left: 0;
     }
     
-    @media (max-width: 991px) {
-        .review-details {
-        max-width: 100%;
-        }
+    .review-header {
+      flex-direction: column;
     }
     
-    .star-rating {
-        align-self: flex-start;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        justify-content: flex-start;
+    .avatar-container {
+      margin-bottom: 10px;
     }
-    
-    .rating-star {
-        aspect-ratio: 1;
-        object-fit: contain;
-        object-position: center;
-        width: 15px;
-        align-self: stretch;
-        margin: auto 0;
-        flex-shrink: 0;
-    }
-    
-    .review-text {
-        color: rgba(0, 0, 0, 1);
-        font-family: Raleway, -apple-system, Roboto, Helvetica, sans-serif;
-        font-weight: 700;
-        font-size: 14px; /* Giảm từ 16px */
-        margin-top: 5px; /* Giảm từ 8px */
-    }
-    
-    @media (max-width: 991px) {
-        .review-text {
-        max-width: 100%;
-        }
-    }
-    
-    .read-more-button {
-        color: rgba(76, 41, 0, 1);
-        font-size: 18px;
-        font-family: Hind Siliguri, -apple-system, Roboto, Helvetica, sans-serif;
-        font-weight: 500;
-        line-height: 2;
-        letter-spacing: 0.18px;
-        margin-top: 8px;
-        background: none;
-        border: none;
-        padding: 0;
-        text-align: left;
-        cursor: pointer;
-        align-self: flex-start;
-    }
-    
-    @media (max-width: 991px) {
-        .read-more-button {
-        max-width: 100%;
-        }
-    }
-    
-    .review-actions {
-        align-self: flex-start;
-        display: flex;
-        margin-top: 19px;
-        margin-left: 59px;
-        align-items: center;
-        gap: 14px;
-        font-family: Raleway, -apple-system, Roboto, Helvetica, sans-serif;
-        font-size: 16px;
-        color: rgba(0, 0, 0, 1);
-        font-weight: 700;
-        white-space: nowrap;
-        justify-content: flex-start;
-    }
-    
-    @media (max-width: 991px) {
-        .review-actions {
-        margin-left: 10px;
-        white-space: initial;
-        }
-    }
-    
-    .reply-button {
-        color: rgba(217, 217, 217, 1);
-        align-self: stretch;
-        margin: auto 0;
-        background: none;
-        border: none;
-        padding: 0;
-        font: inherit;
-        cursor: pointer;
-    }
-    
-    .like-container {
-        align-self: stretch;
-        display: flex;
-        margin: auto 0;
-        align-items: center;
-        gap: 3px;
-        justify-content: flex-start;
-    }
-    
-    @media (max-width: 991px) {
-        .like-container {
-        white-space: initial;
-        }
-    }
-    
-    .like-icon {
-        aspect-ratio: 1;
-        object-fit: contain;
-        object-position: center;
-        width: 20px;
-        align-self: stretch;
-        margin: auto 0;
-        flex-shrink: 0;
-    }
-    
-    .like-count {
-        align-self: stretch;
-        margin: auto 0;
-    }
-    
-    .dislike-container {
-        align-self: stretch;
-        display: flex;
-        margin: auto 0;
-        align-items: center;
-        gap: 9px;
-        justify-content: flex-start;
-    }
-    
-    @media (max-width: 991px) {
-        .dislike-container {
-        white-space: initial;
-        }
-    }
-    
-    .dislike-icon {
-        transform: rotate(3.141592653589793rad);
-        align-self: stretch;
-        display: flex;
-        min-height: 20px;
-        margin: auto 0;
-        gap: 10px;
-    }
-    
-    .dislike-count {
-        align-self: stretch;
-        margin: auto 0;
-        width: 8px;
-    }
-    
-    .divider {
-        aspect-ratio: 250;
-        object-fit: contain;
-        object-position: center;
-        width: 100%;
-        align-self: center;
-        margin-top: 18px;
-        margin-left: 10px;
-        max-width: 1340px;
-    }
-    
-    @media (max-width: 991px) {
-        .divider {
-        max-width: 100%;
-        }
-    }
+  }
 </style>

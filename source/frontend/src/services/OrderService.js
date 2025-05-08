@@ -45,23 +45,6 @@ export default {
         const amountInt = parseInt(amount);
         const userId = AuthenticationService.getCurrentUser().id;
         
-        // Thêm headers
-        const headers = {};
-        const token = localStorage.getItem('token');
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-        
-        // Chỉ gửi những dữ liệu mà backend cần
-        return Api().post('payment/momo', { 
-            orderId, 
-            amount: amountInt,
-            userId
-        }, { headers });
-    },
-
-    // Kiểm tra trạng thái thanh toán
-    checkTransactionStatus(orderId) {
         // Thêm headers với token
         const headers = {};
         const token = localStorage.getItem('token');
@@ -69,12 +52,27 @@ export default {
             headers['Authorization'] = `Bearer ${token}`;
         }
         
-        // Thêm userId vào request body để xử lý verifyUserOrAdmin
+        // Thêm userId vào request body
+        return Api().post(`payment/momo/${userId}`, { 
+            orderId, 
+            amount: amountInt
+        }, { headers });
+    },
+
+    // Kiểm tra trạng thái thanh toán
+    checkTransactionStatus(orderId) {
         const userId = AuthenticationService.getCurrentUser()?.id;
+        const token = localStorage.getItem('token');
         
-        return Api().post('payment/momo/check-transaction-status', { 
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        // Thêm userId vào cả path params và request body
+        return Api().post(`payment/momo/check-transaction-status/${userId}`, { 
             orderId,
-            userId 
+            userId
         }, { headers });
     },
     

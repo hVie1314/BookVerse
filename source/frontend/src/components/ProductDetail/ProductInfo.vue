@@ -64,7 +64,7 @@
   
 <script>
     import ProductActions from './ProductActions.vue';
-    import BookService from '@/services/BookService';
+    // import BookService from '@/services/BookService';
     export default {
         name: 'ProductInfo',
         components: {
@@ -85,8 +85,8 @@
             };
         },
         mounted() {
-            this.fetchBookRating();
-            
+            this.averageRating = this.book.rating || 0;
+            console.log('Đánh giá trung bình từ book object:', this.averageRating);
         },
         
         methods: {
@@ -113,25 +113,6 @@
             decrementQuantity() {
                 if (this.quantity > 1) {
                     this.quantity--;
-                }
-            },
-            async fetchBookRating() {
-                try {
-                    this.loading = true;
-                    const bookId = this.book._id || this.book.id;
-                    const response = await BookService.getBookReviews(bookId);
-                    if (response.data && response.data.success && response.data.data) {
-                        // Chuyển đổi từ chuỗi sang số
-                        this.averageRating = parseFloat(response.data.data.rating) || 0;
-                    } else {
-                        this.averageRating = this.book.rating || 0;
-                    }
-                    console.log('Đánh giá trung bình:', this.averageRating);
-                } catch (error) {
-                    console.error('Lỗi khi lấy đánh giá trung bình:', error);
-                    this.averageRating = this.book.rating || 0;
-                } finally {
-                    this.loading = false;
                 }
             },
         }
