@@ -85,14 +85,29 @@ class AuthMiddleware {
       }
     }
 
-   verifyUserOrAdmin(req, res, next) {
-      const { id: userId, role } = req.userInfo;
-      const { userId: targetUserId } = req.params || req.body;
+   // verifyUserOrAdmin(req, res, next) {
+   //    const { id: userId, role } = req.userInfo;
+   //    const { userId: targetUserId } = req.params || req.body;
 
-      if (userId === targetUserId || role === "admin") {
+   //    if (userId === targetUserId || role === "admin") {
+   //       next();
+   //    }
+   //    else {
+   //       return next(new AppError(403, "FORBIDDEN"));
+   //    }
+   // }
+
+   // Nên được cập nhật trong backend
+   verifyUserOrAdmin(req, res, next) {
+      const { id: userIdFromToken, role } = req.userInfo;
+      const targetUserId = req.params.id || req.params.userId || (req.body && req.body.userId);
+      
+      console.log('Token user ID:', userIdFromToken);
+      console.log('Target user ID:', targetUserId);
+      
+      if (String(userIdFromToken) === String(targetUserId) || role === "admin") {
          next();
-      }
-      else {
+      } else {
          return next(new AppError(403, "FORBIDDEN"));
       }
    }

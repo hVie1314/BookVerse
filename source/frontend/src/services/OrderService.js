@@ -4,22 +4,39 @@ import AuthenticationService from '@/services/AuthenticationService';
 export default {
     // Tạo đơn hàng mới
     createOrder(orderData) {
-        return Api().post('order/create', orderData);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Không tìm thấy token - cần đăng nhập lại');
+            return Promise.reject(new Error('Authentication token not found'));
+        }
+        
+        return Api().post('order/create', orderData, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
 
     // Lấy tất cả đơn hàng của một người dùng
     getAllOrders(userId) {
-        return Api().get(`order/history/${userId}`);
+        const token = localStorage.getItem('token');
+        return Api().get(`order/history/${userId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
         
     // Lấy chi tiết một đơn hàng
     getOrderById(orderId) {
-        return Api().get(`order/details/${orderId}`);
+        const token = localStorage.getItem('token');
+        return Api().get(`order/details/${orderId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
 
     // Cập nhật trạng thái đơn hàng (chỉ staff)
     updateOrderStatus(orderId, orderStatus) {
-        return Api().put(`order/update/${orderId}`, { orderStatus }); // Loại bỏ khoảng trắng
+        const token = localStorage.getItem('token');
+        return Api().put(`order/update/${orderId}`, { orderStatus }, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
 
     // Tạo yêu cầu thanh toán với MoMo

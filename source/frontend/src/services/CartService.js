@@ -42,7 +42,10 @@ export default {
     
     // Xóa giỏ hàng người dùng
     clearUserCart(userId) {
-        return Api().delete(`cart/${userId}`);
+        const token = localStorage.getItem('token');
+        return Api().delete(`cart/${userId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Lấy giỏ hàng của người dùng

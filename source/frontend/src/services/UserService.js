@@ -26,7 +26,10 @@ export default {
     
     // Cập nhật thông tin người dùng
     updateUserInfo(id, userData) {
-        return Api().put(`user/${id}`, userData);
+        const token = localStorage.getItem('token');
+        return Api().put(`user/${id}`, userData, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Xóa người dùng (chỉ admin)
