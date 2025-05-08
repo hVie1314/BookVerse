@@ -94,7 +94,10 @@ class BookService {
         };
         }
         catch (err) {
-        throw new AppError(500, 'INTERNAL_SERVER_ERROR', err.message);
+            if (err instanceof AppError) {
+                throw err;
+            }
+            throw new AppError(500, 'INTERNAL_SERVER_ERROR', err.message);
         }
     }
 
