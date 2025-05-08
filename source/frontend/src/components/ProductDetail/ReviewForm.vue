@@ -91,14 +91,19 @@
           
           // Xử lý các loại lỗi thường gặp
           if (error.response) {
-            if (error.response.status === 403) {
-              this.error = 'Bạn cần mua sản phẩm này để đánh giá.';
-            } else if (error.response.data && error.response.data.message) {
-              this.error = error.response.data.message;
+                if (error.response.status === 403) {
+                    if (error.response.data?.message?.includes('buy this book')) {
+                        this.error = 'Bạn cần mua sách này để đánh giá.';
+                    } else if (error.response.data?.message?.includes('already reviewed')) {
+                        this.error = 'Bạn đã đánh giá sách này trước đó.';
+                    } else {
+                        this.error = 'Không có quyền gửi đánh giá. Vui lòng liên hệ hỗ trợ.';
+                        console.error('Chi tiết lỗi:', error.response.data);
+                    }
+                } else {
+                    this.error = error.response.data?.message || 'Không thể gửi đánh giá. Vui lòng thử lại sau.';
+                }
             } else {
-              this.error = 'Không thể gửi đánh giá. Vui lòng thử lại sau.';
-            }
-          } else {
             this.error = 'Lỗi kết nối. Vui lòng thử lại sau.';
           }
         } finally {

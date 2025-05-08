@@ -82,12 +82,13 @@
       } 
     },
     methods: {
-        async fetchReviews() {
+      async fetchReviews() {
     this.loading = true;
     this.error = null;
     
     try {
         const response = await ReviewService.getAllReviews(this.bookId);
+        console.log('API response:', response.data);
         
         // Truy cập đúng vào dữ liệu reviews
         let reviews = [];
@@ -102,16 +103,17 @@
         // Format reviews thành định dạng mà ReviewItem component cần
         this.fetchedReviews = reviews.map(review => ({
             id: review._id,
-            name: 'Người dùng',
-            avatar: 'https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/9c21ecc8fd12f4309a9c06c3afa851e5571e1b4b?placeholderIfAbsent=true',
+            // Lấy tên người dùng từ dữ liệu review
+            name: review.user?.username || review.username || review.userId?.username || 'Người dùng ẩn danh',
+            // Lấy avatar từ dữ liệu review
+            avatar: review.user?.avatar || review.avatar || review.userId?.avatar || 
+                   `https://ui-avatars.com/api/?name=${encodeURIComponent(review.user?.username || 'User')}&background=4d2900&color=fff`,
             date: this.formatDate(review.create_at || review.createdAt),
             rating: review.rating,
             content: review.comment || review.content || '',
-            likes: 0,
-            dislikes: 0
+            likes: review.likes || 0,
+            dislikes: review.dislikes || 0
         }));
-        
-        console.log('fetchedReviews sau khi format:', this.fetchedReviews);
     } catch (error) {
         console.error('Lỗi khi lấy đánh giá:', error);
         this.error = 'Không thể tải đánh giá. Vui lòng thử lại sau.';

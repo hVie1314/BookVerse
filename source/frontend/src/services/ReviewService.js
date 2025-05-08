@@ -1,16 +1,24 @@
 import Api from '@/services/Api';
+import AuthenticationService from '@/services/AuthenticationService';
 
 export default {
     // Thêm đánh giá cho sách
     addReview(bookId, reviewData) {
         const token = localStorage.getItem('token');
+        const userId = AuthenticationService.getCurrentUser().id;
         
         if (!token) {
             console.error('Token không tồn tại - Người dùng chưa đăng nhập');
             return Promise.reject(new Error('Authentication token not found'));
         }
         
-        return Api().post(`review/${bookId}`, reviewData, {
+        // Thêm userId vào request
+        const data = {
+            ...reviewData,
+            userId
+        };
+        
+        return Api().post(`review/${bookId}`, data, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
     },
