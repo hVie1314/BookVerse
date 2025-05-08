@@ -18,6 +18,5 @@ router.get('/:id', bookController.getById);
 router.get('/top/:n', bookController.getTopSelling);    
 router.get('/recently-added/:n', bookController.getRecentAdded); 
 router.get('/related/:id/:limit', bookController.getRelated); 
-router.get('/rating/:bookId', bookController.getRating);
 
 module.exports = router;
