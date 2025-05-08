@@ -145,12 +145,12 @@ export default {
         }
         
         // Kiểm tra độ dài mật khẩu
-        if (this.formData.password.length < 4) {
+        if (this.formData.password.length < 8) {
           this.alert = {
             show: true,
             type: 'error',
             title: 'Lỗi mật khẩu',
-            message: 'Mật khẩu phải có ít nhất 4 ký tự!'
+            message: 'Mật khẩu phải có ít nhất 8 ký tự!'
           };
           return;
         }
