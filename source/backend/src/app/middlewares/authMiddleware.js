@@ -52,7 +52,11 @@ class AuthMiddleware {
 
    verifyUser(req, res, next) {
       const { id: userId } = req.userInfo;
-      const { userId: targetUserId } = req.params || req.body;
+      var { userId: targetUserId } = req.body;  // get from body
+      if (!targetUserId) {
+         // get from params
+         ({ userId: targetUserId } = req.params);
+      }
 
       if (userId === targetUserId) {
          next();
@@ -64,7 +68,11 @@ class AuthMiddleware {
 
    verifyUserOrAdmin(req, res, next) {
       const { id: userId, role } = req.userInfo;
-      const { userId: targetUserId } = req.params || req.body;
+      var { userId: targetUserId } = req.body;  // get from body
+      if (!targetUserId) {
+         // get from params
+         ({ userId: targetUserId } = req.params);
+      }
 
       if (userId === targetUserId || role === "admin") {
          next();
@@ -86,8 +94,12 @@ class AuthMiddleware {
 
    verifyUserOrStaffOrAdmin(req, res, next) {
       const { role } = req.userInfo;
-      const { userId: targetUserId } = req.params || req.body;
       const { id: userId } = req.userInfo;
+      var { userId: targetUserId } = req.body;  // get from body
+      if (!targetUserId) {
+         // get from params
+         ({ userId: targetUserId } = req.params);
+      }
 
       if (userId === targetUserId || role === "admin" || role === "staff") {
          next();
