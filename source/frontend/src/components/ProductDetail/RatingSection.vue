@@ -2,45 +2,52 @@
     <section class="rating-section">
       <h2 class="rating-title">Đánh giá</h2>
   
-      <div class="rating-container">
+      <div v-if="loading" class="loading-message">
+        <p>Đang tải dữ liệu đánh giá...</p>
+      </div>
+      
+      <div v-else-if="error" class="error-message">
+        <p>{{ error }}</p>
+      </div>
+      
+      <div v-else class="rating-container">
         <div class="rating-layout">
           <div class="rating-summary-column">
             <div class="rating-summary">
-              <p class="average-rating">4.8/5</p>
+              <p class="average-rating">{{ averageRating.toFixed(1) }}/5</p>
               <div class="star-total">
-                <img
-                  v-for="index in 5"
-                  :key="`total-star-${index}`"
-                  src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/414f90627008252814be720cb220e6222197a11c?placeholderIfAbsent=true"
-                  class="star-icon"
-                  alt="Star"
-                />
+                <!-- Hiển thị sao đầy dựa trên xếp hạng trung bình -->
+                <i v-for="index in 5" :key="`total-star-${index}`" 
+                   :class="[
+                     index <= Math.round(averageRating) ? 'fas fa-star filled-star' : 'far fa-star empty-star'
+                   ]"
+                ></i>
               </div>
-              <p class="total-reviews">9 đánh giá</p>
+              <p class="total-reviews">{{ totalReviews }} đánh giá</p>
             </div>
           </div>
   
           <div class="rating-details-column">
             <div class="rating-details">
-              <div class="rating-row" v-for="(count, star) in [28, 9, 4, 1, 1]" :key="`star-${6-star}`">
+              <div class="rating-row" v-for="star in 5" :key="`star-${star}`">
                 <div class="star-label-container">
-                  <span class="star-label">{{ 6-star }}</span>
+                  <span class="star-label">{{ star }}</span>
                   <div class="progress-container">
-                    <div class="progress-bar" :style="`width: ${getProgressWidth(count)}`"></div>
+                    <div class="progress-bar" :style="`width: ${getProgressWidth(getRatingCount(star))}`"></div>
                   </div>
                 </div>
-                <span class="count-label">{{ count }}</span>
+                <span class="count-label">{{ getRatingCount(star) }}</span>
               </div>
             </div>
           </div>
   
           <div class="rating-action-column">
             <div class="rating-action">
-              <p class="login-message">
+              <p v-if="!isLoggedIn" class="login-message">
                 Vui lòng đăng nhập hoặc đăng ký để đánh giá sản phẩm!
               </p>
               <div class="write-review-container">
-                <button class="write-review-button">
+                <button class="write-review-button" @click="handleWriteReview">
                   <img
                     src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/cb33a1d71faef1ae7e405602e6c9ca474fd29e55?placeholderIfAbsent=true"
                     class="write-icon"
@@ -57,16 +64,93 @@
 </template>
   
 <script>
-    export default {
-        name: 'RatingSection',
-        methods: {
+import BookService from '@/services/BookService';
+import AuthenticationService from '@/services/AuthenticationService';
+
+export default {
+    name: 'RatingSection',
+    props: {
+        bookId: {
+            type: String,
+            required: true
+        }
+    },
+    data() {
+        return {
+            loading: true,
+            error: null,
+            averageRating: 0,
+            totalReviews: 0,
+            ratingStats: [],
+            reviews: [],
+            isLoggedIn: false
+        };
+    },
+    created() {
+        this.isLoggedIn = AuthenticationService.isLoggedIn();
+        this.fetchReviewData();
+    },
+    methods: {
+        async fetchReviewData() {
+        this.loading = true;
+        this.error = null;
+        
+        try {
+            const response = await BookService.getBookReviews(this.bookId);
+            
+            // Kiểm tra xem component có còn mounted không
+            if (this._isDestroyed || this._isBeingDestroyed) {
+                return; // Thoát nếu component đã bị hủy
+            }
+            
+            if (response && response.data) {
+                this.averageRating = response.data.averageRating || 0;
+                // ...
+            }
+        } catch (error) {
+            // Cũng kiểm tra ở đây
+            if (this._isDestroyed || this._isBeingDestroyed) return;
+            
+            console.error('Lỗi khi tải dữ liệu đánh giá:', error);
+            this.error = 'Không thể tải dữ liệu đánh giá. Vui lòng thử lại sau.';
+        } finally {
+            if (!this._isDestroyed && !this._isBeingDestroyed) {
+                this.loading = false;
+            }
+        }
+    },
+        
         getProgressWidth(count) {
-            // Calculate width based on count relative to maximum (28)
-            const percentage = (count / 28) * 100;
+            if (!this.ratingStats.length) return '0%';
+            
+            // Tìm giá trị cao nhất trong ratingStats
+            const maxCount = Math.max(...this.ratingStats.map(stat => stat.count), 1);
+            
+            // Tính phần trăm dựa trên giá trị cao nhất
+            const percentage = (count / maxCount) * 100;
             return `${percentage}%`;
+        },
+        
+        getRatingCount(star) {
+            const statItem = this.ratingStats.find(item => item.rating === star);
+            return statItem ? statItem.count : 0;
+        },
+        
+        handleWriteReview() {
+            if (!this.isLoggedIn) {
+                // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
+                this.$router.push({
+                    path: '/login',
+                    query: { redirect: this.$route.fullPath }
+                });
+                return;
+            }
+            
+            // Nếu đã đăng nhập, mở form viết đánh giá
+            this.$emit('open-review-form');
         }
-        }
-    };
+    }
+};
 </script>
   
 <style scoped>
@@ -74,6 +158,30 @@
         width: 85%;
     }
     
+    .filled-star {
+        color: #FFD700; /* Màu vàng */
+        font-size: 26px;
+        margin-right: 3px;
+    }
+
+    .empty-star {
+        color: #D3D3D3; /* Màu xám nhạt */
+        font-size: 26px;
+        margin-right: 3px;
+    }
+    
+    .loading-message,
+    .error-message {
+        text-align: center;
+        padding: 20px;
+        font-family: Raleway, -apple-system, Roboto, Helvetica, sans-serif;
+    }
+    
+    .error-message {
+        color: #e53935;
+    }
+    
+    /* Các style khác giữ nguyên */
     .rating-title {
         color: rgba(77, 41, 0, 1);
         font-size: 28px; /* Giảm từ 40px */

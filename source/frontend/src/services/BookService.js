@@ -215,5 +215,65 @@ getRelatedBooks(bookId, limit = 20) {
     // Lấy đánh giá trung bình của sách
     getBookRating(bookId) {
         return Api().get(`book/rating/${bookId}`);
+    },
+
+    // Thêm vào cuối file, trước dấu đóng ngoặc cuối cùng
+
+    // Lấy đánh giá của sách
+    getBookReviews(bookId) {
+        // Kiểm tra tham số đầu vào
+        if (!bookId) {
+            console.error('BookID không hợp lệ:', bookId);
+            return Promise.reject(new Error('BookID không hợp lệ'));
+        }
+        
+        // Đảm bảo cung cấp token nếu cần
+        const headers = {};
+        const token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        console.log(`Gọi API lấy đánh giá của sách với ID: ${bookId}`);
+        return Api().get(`review/${bookId}`, { headers })
+            .then(response => {
+                console.log('Kết quả API đánh giá sách:', response.data);
+                return response;
+            })
+            .catch(error => {
+                console.error(`Lỗi khi lấy đánh giá sách ID ${bookId}:`, error.response?.data || error.message);
+                
+                // Trong môi trường phát triển, trả về dữ liệu giả nếu API lỗi
+                if (process.env.NODE_ENV === 'development') {
+                    console.warn('Sử dụng dữ liệu mẫu cho đánh giá sách');
+                    return {
+                        data: {
+                            ratingStats: [
+                                { rating: 1, count: 1 },
+                                { rating: 2, count: 2 },
+                                { rating: 3, count: 3 },
+                                { rating: 4, count: 8 },
+                                { rating: 5, count: 5 }
+                            ],
+                            averageRating: 3.7,
+                            totalReviews: 19,
+                            reviews: Array(5).fill().map((_, i) => ({
+                                _id: `review-${i}`,
+                                userId: `user-${i}`,
+                                bookId: bookId,
+                                rating: Math.min(5, Math.floor(Math.random() * 5) + 1),
+                                comment: `Đây là một đánh giá mẫu ${i+1} cho sách này.`,
+                                createdAt: new Date(Date.now() - i * 86400000).toISOString(),
+                                user: {
+                                    username: `user${i+1}`,
+                                    avatar: `https://randomuser.me/api/portraits/${i % 2 ? 'women' : 'men'}/${i+1}.jpg`
+                                }
+                            }))
+                        }
+                    };
+                }
+                
+                throw error;
+            });
     }
 }
