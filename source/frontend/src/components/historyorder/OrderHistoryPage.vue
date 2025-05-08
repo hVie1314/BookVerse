@@ -64,8 +64,6 @@
                 searchQuery: '',
                 statusMap: {
                     'pending': 'CHỜ THANH TOÁN',
-                    'processing': 'ĐANG XỬ LÝ',
-                    'shipping': 'ĐANG VẬN CHUYỂN',
                     'success': 'HOÀN THÀNH',
                     'cancelled': 'ĐÃ HỦY'
                 }
