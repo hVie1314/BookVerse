@@ -113,7 +113,7 @@ class ReviewController {
          // rating
          const bookRating = await bookService.reCalcBookRating(bookId);
          book.rating = bookRating;
-         book.save();
+         await book.save();
 
          return res.status(200).json({ message: 'Review deleted' });
 

@@ -102,14 +102,14 @@ class UserController {
                 const token = req.headers["authorization"]?.split(" ")[1];
                 
                 // delete token from Redis
-                redisClient.del(userId, (err, reply) => {
+                await redisClient.del(userId, (err, reply) => {
                     if (err) {
                         return next(new AppError(500, "INTERNAL_SERVER_ERROR", "Failed to delete token from Redis"));
                     }
                 });
 
                 // add access token to blacklist
-                redisClient.set(`blacklist:${token}`, "blacklisted", { EX: 10 * 60 });
+                await redisClient.set(`blacklist:${token}`, "blacklisted", { EX: 10 * 60 });
             }
 
             // eliminate password field from the response
