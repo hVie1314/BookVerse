@@ -9,6 +9,7 @@ const CategoryPage = () => import('../components/categorypage/CategoryPage.vue')
 const ShoppingCart = () => import('../components/shoppingcart/ShoppingCart.vue')
 const OrderHistory = () => import('../components/historyorder/OrderHistoryPage.vue')
 const ProductDetail = () => import('../components/ProductDetail/ProductDetailPage.vue')
+const PaymentCallback = () => import('../components/payment/PaymentCallback.vue')
 const routes = [
   {
     path: '/',
@@ -54,6 +55,12 @@ const routes = [
     name: 'product-detail', 
     component: ProductDetail,
     props: true
+  },
+  {
+    path: '/payment/callback',
+    name: 'payment-callback',
+    component: PaymentCallback,
+    meta: { requiresAuth: false }
   }
 ]
 

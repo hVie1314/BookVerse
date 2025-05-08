@@ -40,7 +40,11 @@
                     </div>
                 </div>
         
-                <RatingSection v-if="bookId" :bookId="bookId" @open-review-form="openReviewForm" />
+                <RatingSection 
+                    v-if="bookId" 
+                    :bookId="bookId" 
+                    @review-added="handleReviewAdded" 
+                />
         
                 <ReviewList v-if="bookId" :bookId="bookId" :reviews="reviews" />
         
@@ -181,6 +185,20 @@
             
             handleThumbnailError(e, index) {
                 e.target.src = `https://picsum.photos/seed/${this.book._id || 'default'}-${index}/100/150`;
+            },
+
+            handleReviewAdded() {
+                // Cập nhật lại dữ liệu sách (để cập nhật rating)
+                this.fetchBookDetails();
+                
+                // Thông báo đánh giá thành công
+                this.$store.dispatch('showAlert', {
+                show: true,
+                type: 'success',
+                title: 'Đánh giá thành công',
+                message: 'Cảm ơn bạn đã đánh giá sản phẩm!',
+                autoClose: true
+                });
             }
         },
         created() {

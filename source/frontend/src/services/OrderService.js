@@ -41,34 +41,41 @@ export default {
 
     // Tạo yêu cầu thanh toán với MoMo
     createMomoPayment(orderId, amount) {
-        console.log('Dữ liệu gửi đi:', { orderId, amount });
-        if (!orderId) {
-            console.error('Lỗi: Missing orderId in MOMO payment request');
-            return Promise.reject(new Error('Missing orderId'));
-        }
-        
         // Đảm bảo amount là số nguyên
         const amountInt = parseInt(amount);
+        const userId = AuthenticationService.getCurrentUser().id;
         
-        // Thêm headers nếu cần
+        // Thêm headers
         const headers = {};
         const token = localStorage.getItem('token');
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
         
-        // Thử với cấu trúc dữ liệu mới
+        // Chỉ gửi những dữ liệu mà backend cần
         return Api().post('payment/momo', { 
             orderId, 
             amount: amountInt,
-            // Thêm các trường khác nếu API yêu cầu
-            redirectUrl: window.location.origin + '/payment/callback'
+            userId
         }, { headers });
     },
 
     // Kiểm tra trạng thái thanh toán
     checkTransactionStatus(orderId) {
-        return Api().post('payment/momo/check-transaction-status', { orderId });
+        // Thêm headers với token
+        const headers = {};
+        const token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        // Thêm userId vào request body để xử lý verifyUserOrAdmin
+        const userId = AuthenticationService.getCurrentUser()?.id;
+        
+        return Api().post('payment/momo/check-transaction-status', { 
+            orderId,
+            userId 
+        }, { headers });
     },
     
     // Tạo yêu cầu hủy đơn hàng

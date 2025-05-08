@@ -3,7 +3,16 @@ import Api from '@/services/Api';
 export default {
     // Thêm đánh giá cho sách
     addReview(bookId, reviewData) {
-        return Api().post(`review/${bookId}`, reviewData);
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            console.error('Token không tồn tại - Người dùng chưa đăng nhập');
+            return Promise.reject(new Error('Authentication token not found'));
+        }
+        
+        return Api().post(`review/${bookId}`, reviewData, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Cập nhật đánh giá
