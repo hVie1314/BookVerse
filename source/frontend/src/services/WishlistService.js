@@ -5,17 +5,30 @@ import eventBus from '@/eventBus.js';
 export default {
     // Thêm sản phẩm vào wishlist người dùng
     addToUserWishlist(userId, productId) {
-        return Api().post('wishlist/', { userId, productId });
+        const token = localStorage.getItem('token');
+        return Api().post('wishlist/', { 
+            userId,
+            productId 
+        }, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Xóa sản phẩm khỏi wishlist người dùng
     removeFromUserWishlist(userId, productId) {
-        return Api().delete('wishlist/', { data: { userId, productId } });
+        const token = localStorage.getItem('token');
+        return Api().delete('wishlist/', { 
+            headers: { 'Authorization': `Bearer ${token}` },
+            data: { userId, productId }
+        });
     },
     
     // Lấy wishlist của người dùng theo userId
     getUserWishlist(userId) {
-        return Api().get(`wishlist/${userId}`);
+        const token = localStorage.getItem('token');
+        return Api().get(`wishlist/${userId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Thêm sản phẩm vào wishlist khách

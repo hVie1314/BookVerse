@@ -51,8 +51,9 @@ export default {
     // Lấy giỏ hàng của người dùng
     getUserCart(userId) {
         const token = localStorage.getItem('token');
-        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-        return Api().get(`cart/${userId}`, { headers });
+        return Api().get(`cart/${userId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Thêm sản phẩm vào giỏ hàng khách

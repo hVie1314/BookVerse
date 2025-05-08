@@ -330,7 +330,7 @@ export default {
 
 .progress-bar {
     height: 100%;
-    background-color: #4D2900;
+    background-color: #FFD700;
     border-radius: 4px;
     transition: width 0.3s ease;
 }
