@@ -11,7 +11,7 @@ const emailSender = require('../../utils/emailSender');
 class AuthController {
 
    // [POST] /auth/register
-   register(req, res, next) {
+   async register(req, res, next) {
       // get data from request
       const { username, email, password, role } = req.body;
 
@@ -59,7 +59,7 @@ class AuthController {
    }
 
    // [POST] /auth/login
-   login(req, res, next) {
+   async login(req, res, next) {
 
       // get data from request
       const { username, password } = req.body;
@@ -114,8 +114,30 @@ class AuthController {
       try {
          // get info from request
          const token = req.headers["authorization"].split(" ")[1];
-         const userId = req.userInfo.id.toString();
-         const userRole = req.userInfo.role;
+         
+         // verify token
+         const decoded = jwt.decode(token, { complete: true });
+         if (!decoded) {
+            return next(new AppError(401, "UNAUTHORIZED"));
+         }
+            
+         // check if token is blacklisted
+         const isBlacklisted = await new Promise((resolve, reject) => {
+            redisClient.get(`blacklist:${token}`, (err, reply) => {
+               if (err) {
+                 reject(new AppError(500, "INTERNAL_SERVER_ERROR"));
+               } else {
+                 resolve(reply);
+               }
+            });
+          });
+         if (isBlacklisted) {
+            return next(new AppError(401, "UNAUTHORIZED"));
+         }
+
+         // retrieve userId and role from decoded token
+         var { id: userId, role: userRole } = decoded.payload;
+         userId = userId.toString();
 
          // get cached token from redis
          const redisToken = await redisClient.get(userId);
@@ -124,6 +146,7 @@ class AuthController {
          if (!redisToken || redisToken != token) {
             return next(new AppError(401, "UNAUTHORIZED"));
          }
+
 
          // after passing all checks
 
@@ -149,7 +172,7 @@ class AuthController {
    };
 
    // [POST] /auth/logout
-   logout(req, res) {
+   async logout(req, res) {
 
       const token = req.headers["authorization"].split(" ")[1];
       const userId = req.userInfo.id.toString();
