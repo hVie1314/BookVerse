@@ -64,7 +64,8 @@
               rating: review.rating,
               content: review.comment || review.content || '',
               likes: review.likes || 0,
-              dislikes: review.dislikes || 0
+              dislikes: review.dislikes || 0,
+              userId: review.user?._id || "null"
             }));
           }
           
