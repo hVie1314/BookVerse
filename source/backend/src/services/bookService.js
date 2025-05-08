@@ -25,9 +25,18 @@ class BookService {
                 filter.title = { $regex: keyword, $options: 'i' };
             }
 
-            // filter by category
+            // // filter by category
+            // if (category) {
+            //     filter.category = category;
+            // }
+
             if (category) {
-                filter.category = category;
+                const categories = category.split(',');
+                if (categories.length > 1) {
+                    filter.category = { $in: categories };
+                } else {
+                    filter.category = category;
+                }
             }
 
             // filter by author

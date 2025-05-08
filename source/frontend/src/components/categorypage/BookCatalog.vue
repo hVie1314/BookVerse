@@ -193,7 +193,8 @@
                     }
                     
                     if (this.filters.categories && this.filters.categories.length > 0) {
-                    searchParams.category = this.filters.categories[0]; // API chỉ hỗ trợ một danh mục
+                        // Gửi tất cả danh mục đã chọn thay vì chỉ lấy danh mục đầu tiên
+                        searchParams.category = this.filters.categories.join(',');
                     }
                     
                     if (this.filters.minPrice) {
