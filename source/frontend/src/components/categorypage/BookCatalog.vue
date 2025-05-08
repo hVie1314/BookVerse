@@ -177,48 +177,89 @@
                 }
             },
             async fetchBooks() {
-      this.loading = true;
-      this.error = null;
-      
-      try {
-        console.log(`Fetching books for page ${this.currentPage} with limit ${this.booksPerPage}`);
-        
-        // Lấy dữ liệu từ API với trang và giới hạn
-        const response = await BookService.getAllBooks(this.currentPage, this.booksPerPage);
-        
-        if (response.data && response.data.success) {
-          // Cập nhật dữ liệu từ API response
-          if (response.data.data) {
-            this.books = response.data.data.books || [];
-            
-            // Cập nhật thông tin phân trang từ API
-            if (response.data.data.pagination) {
-              const pagination = response.data.data.pagination;
-              this.totalPages = pagination.totalPages || 1;
-              this.totalBooks = pagination.totalBooks || 0;
-              this.currentPage = pagination.currentPage || 1;
-            }
-            
-            console.log(`Đã tải ${this.books.length} sách, trang ${this.currentPage}/${this.totalPages}`);
-          }
-        } else {
-          this.error = 'Không thể tải danh sách sách';
-          console.error('API error:', response.data);
-        }
-      } catch (error) {
-        this.error = 'Đã xảy ra lỗi khi tải danh sách sách';
-        console.error('Error fetching books:', error);
-      } finally {
-        this.loading = false;
-      }
-    },
-    handlePageChange(page) {
-    this.currentPage = page;
-    // Cuộn lên đầu danh sách sản phẩm
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Gọi fetchBooks để tải dữ liệu mới cho trang được chọn
-    this.fetchBooks();
-},
+                this.loading = true;
+                this.error = null;
+                
+                try {
+                    // Chuẩn bị các tham số tìm kiếm
+                    const searchParams = {
+                    page: this.currentPage,
+                    limit: this.booksPerPage
+                    };
+                    
+                    // Thêm các tham số lọc
+                    if (this.searchQuery) {
+                    searchParams.keyword = this.searchQuery;
+                    }
+                    
+                    if (this.filters.categories && this.filters.categories.length > 0) {
+                    searchParams.category = this.filters.categories[0]; // API chỉ hỗ trợ một danh mục
+                    }
+                    
+                    if (this.filters.minPrice) {
+                    searchParams.minPrice = this.filters.minPrice;
+                    }
+                    
+                    if (this.filters.maxPrice) {
+                    searchParams.maxPrice = this.filters.maxPrice;
+                    }
+                    
+                    if (this.filters.minRating) {
+                    searchParams.rating = this.filters.minRating;
+                    }
+                    
+                    // Chuyển đổi sortOption sang định dạng backend yêu cầu
+                    switch (this.sortOption) {
+                    case 'price-asc':
+                        searchParams.sortBy = 'price_asc';
+                        break;
+                    case 'price-desc':
+                        searchParams.sortBy = 'price_desc';
+                        break;
+                    case 'bestseller':
+                        searchParams.sortBy = 'bestseller';
+                        break;
+                    case 'newest':
+                        searchParams.sortBy = 'newest';
+                        break;
+                    }
+                    
+                    console.log('Tìm kiếm sách với tham số:', searchParams);
+                    
+                    // Gọi API search thay vì getAllBooks
+                    const response = await BookService.searchBooks(searchParams);
+                    
+                    if (response.data && response.data.success) {
+                    // Cập nhật dữ liệu từ API response
+                    this.books = response.data.data.books || [];
+                    
+                    // Cập nhật thông tin phân trang từ API
+                    if (response.data.data.pagination) {
+                        const pagination = response.data.data.pagination;
+                        this.totalPages = pagination.totalPages || 1;
+                        this.totalBooks = pagination.totalBooks || 0;
+                        this.currentPage = pagination.currentPage || 1;
+                    }
+                    
+                    console.log(`Đã tải ${this.books.length} sách, trang ${this.currentPage}/${this.totalPages}`);
+                    } else {
+                    this.error = 'Không thể tải danh sách sách';
+                    console.error('API error:', response.data);
+                    }
+                } catch (error) {
+                    this.error = 'Đã xảy ra lỗi khi tải danh sách sách';
+                    console.error('Error fetching books:', error);
+                } finally {
+                    this.loading = false;
+                }
+            },
+            handlePageChange(page) {
+                this.currentPage = page;
+                // Cuộn lên đầu danh sách sản phẩm
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // Gọi fetchBooks để tải dữ liệu mới cho trang được chọn
+                this.fetchBooks();
+            },
             applyFilters(newFilters) {
                 this.filters = { ...newFilters };
                 this.currentPage = 1; // Reset về trang đầu tiên khi áp dụng bộ lọc
