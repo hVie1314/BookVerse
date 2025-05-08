@@ -5,7 +5,7 @@ const OrderController = require('./orderController');
 
 class PaymentController {
 
-    // [POST] /payment/momo
+    // [POST] /payment/momo/:userId
     async createPayment(req, res, next) {
         try {
             const { orderId, amount } = req.body;
@@ -48,7 +48,7 @@ class PaymentController {
         }
     }
 
-    // [POST] /payment/momo/check-transaction-status
+    // [POST] /payment/momo/check-transaction-status/:userId
     async checkTransactionStatus(req, res, next) {
         try {
             const { orderId } = req.body;
