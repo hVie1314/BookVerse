@@ -130,7 +130,8 @@ class UserController {
             const deleted = await user.findByIdAndDelete(req.params.userId);
             if (!deleted) 
                 return next(new AppError(404, 'NOT_FOUND', 'User not found'));
-            res.status(204).json();
+
+            return res.status(200).json({ message: 'User deleted successfully' });
         } catch (err) {
             return next(new AppError(400, "DELETE_FAILED"));
         }
