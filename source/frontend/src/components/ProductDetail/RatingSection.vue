@@ -43,22 +43,33 @@
   
           <div class="rating-action-column">
             <div class="rating-action">
-              <p v-if="!isLoggedIn" class="login-message">
+                <!-- Chỉ hiển thị thông báo khi chưa đăng nhập -->
+                <p v-if="!isLoggedIn" class="login-message">
                 Vui lòng đăng nhập hoặc đăng ký để đánh giá sản phẩm!
-              </p>
-              <div class="write-review-container">
+                </p>
+                
+                <!-- Chỉ hiển thị nút khi đã đăng nhập -->
+                <div v-else class="write-review-container">
                 <button class="write-review-button" @click="handleWriteReview">
-                  <img
+                    <img
                     src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/cb33a1d71faef1ae7e405602e6c9ca474fd29e55?placeholderIfAbsent=true"
                     class="write-icon"
                     alt="Write icon"
-                  />
-                  <span class="write-text">Viết đánh giá</span>
+                    />
+                    <span class="write-text">Viết đánh giá</span>
                 </button>
-              </div>
+                </div>
             </div>
-          </div>
         </div>
+        </div>
+      </div>
+
+      <div v-if="showReviewForm" class="review-form-overlay">
+        <ReviewForm 
+          :bookId="bookId" 
+          @close="showReviewForm = false"
+          @submit-success="handleReviewSubmitted"
+        />
       </div>
     </section>
 </template>
@@ -66,9 +77,13 @@
 <script>
 import BookService from '@/services/BookService';
 import AuthenticationService from '@/services/AuthenticationService';
+import ReviewForm from './ReviewForm.vue'; 
 
 export default {
     name: 'RatingSection',
+    components: {
+        ReviewForm
+    },
     props: {
         bookId: {
             type: String,
@@ -83,7 +98,8 @@ export default {
             totalReviews: 0,
             ratingStats: [],
             reviews: [],
-            isLoggedIn: false
+            isLoggedIn: false,
+            showReviewForm: false, // Biến để điều khiển hiển thị form viết đánh giá
         };
     },
     created() {
@@ -137,17 +153,19 @@ export default {
         },
         
         handleWriteReview() {
-            if (!this.isLoggedIn) {
-                // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
-                this.$router.push({
-                    path: '/login',
-                    query: { redirect: this.$route.fullPath }
-                });
-                return;
-            }
+            // Vì đã kiểm tra isLoggedIn ở template, không cần kiểm tra lại ở đây
+            this.showReviewForm = true; // Hiển thị form đánh giá
+        },
+
+        handleReviewSubmitted() {
+            // Đóng form
+            this.showReviewForm = false;
             
-            // Nếu đã đăng nhập, mở form viết đánh giá
-            this.$emit('open-review-form');
+            // Cập nhật lại dữ liệu đánh giá
+            this.fetchReviewData();
+            
+            // Thông báo thành công
+            this.$emit('review-added');
         }
     }
 };
@@ -483,5 +501,18 @@ export default {
         width: auto; /* Thay đổi từ 120px */
         text-align: left;
         white-space: nowrap; /* Ngăn text xuống dòng */
+    }
+
+    .review-form-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
     }
 </style>

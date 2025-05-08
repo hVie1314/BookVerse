@@ -119,17 +119,17 @@
                 try {
                     this.loading = true;
                     const bookId = this.book._id || this.book.id;
-                    const response = await BookService.getBookRating(bookId);
+                    const response = await BookService.getBookReviews(bookId);
                     if (response.data && response.data.success && response.data.data) {
                         // Chuyển đổi từ chuỗi sang số
                         this.averageRating = parseFloat(response.data.data.rating) || 0;
                     } else {
-                        this.averageRating = 0;
+                        this.averageRating = this.book.rating || 0;
                     }
                     console.log('Đánh giá trung bình:', this.averageRating);
                 } catch (error) {
                     console.error('Lỗi khi lấy đánh giá trung bình:', error);
-                    this.averageRating = 0;
+                    this.averageRating = this.book.rating || 0;
                 } finally {
                     this.loading = false;
                 }

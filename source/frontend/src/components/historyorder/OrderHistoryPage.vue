@@ -74,33 +74,26 @@
         async created() {
             await this.fetchOrders();
             
-            // Kiểm tra nếu vừa được chuyển hướng từ trang thanh toán MoMo
+            // Kiểm tra tham số URL để hiển thị thông báo thanh toán thành công
             const params = new URLSearchParams(window.location.search);
-            const resultCode = params.get('resultCode');
+            const paymentStatus = params.get('payment');
             const orderId = params.get('orderId');
             
-            if (resultCode && orderId) {
-                const isSuccess = resultCode === '0';
-                
-                // Hiển thị thông báo kết quả thanh toán
-                eventBus.emit('show-alert', {
-                    show: true,
-                    type: isSuccess ? 'success' : 'error',
-                    title: isSuccess ? 'Thanh toán thành công' : 'Thanh toán thất bại',
-                    message: isSuccess 
-                        ? 'Thanh toán đã được xác nhận, đơn hàng của bạn sẽ sớm được giao.'
-                        : 'Thanh toán không thành công. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.',
-                    autoClose: true,
-                    duration: 5000
-                });
-                
-                // Xóa params từ URL để tránh refresh hiển thị lại thông báo
+            if (paymentStatus === 'success' && orderId) {
+                // Xóa tham số khỏi URL
                 window.history.replaceState({}, document.title, '/my-orders');
                 
-                // Làm mới danh sách đơn hàng
-                await this.fetchOrders();
+                // Hiển thị thông báo thành công
+                eventBus.emit('show-alert', {
+                show: true,
+                type: 'success',
+                title: 'Thanh toán thành công',
+                message: 'Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn sẽ sớm được giao.',
+                autoClose: true,
+                duration: 5000
+                });
             }
-        },
+            },
         methods: {
             async fetchOrders() {
                 try {

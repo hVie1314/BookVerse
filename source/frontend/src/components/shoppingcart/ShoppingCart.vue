@@ -273,20 +273,8 @@
                 const mockOrderId = 'mock-' + Date.now();
                 localStorage.setItem('pendingOrderId', mockOrderId);
                 
-                // Hiển thị thông báo và chuyển hướng đến trang callback thay vì my-orders
-                eventBus.emit('show-alert', {
-                    show: true,
-                    type: 'success',
-                    title: 'Đơn hàng đã tạo',
-                    message: 'Đang chuyển hướng đến trang thanh toán...',
-                    autoClose: true,
-                    duration: 2000
-                });
-                
-                // Chuyển hướng đến trang callback thay vì my-orders
-                setTimeout(() => {
-                  this.$router.push('/payment/callback?resultCode=0&orderId=' + mockOrderId);
-                }, 2000);
+                // Chuyển hướng trực tiếp đến trang đơn hàng mà không hiển thị thông báo
+                this.$router.push('/my-orders');
             } catch (err) {
                 console.error('Lỗi khi thực hiện fallback:', err);
             }
@@ -471,7 +459,8 @@
     flex-direction: column;
     align-items: center;
     background-color: rgb(244, 235, 225);
-    /* min-height: 100vh; */
+    min-height: 100vh;
+    justify-content: space-between; /* Thêm để phân bố không gian */
   }
   
   .shopping-cart {
@@ -480,6 +469,7 @@
     justify-content: center;
     padding: 50px 0;
     margin-top: 100px;
+    flex-grow: 1;
   }
   
   .shopping-cart-container {
