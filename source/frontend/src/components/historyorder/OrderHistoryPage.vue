@@ -271,7 +271,8 @@
                             title: bookInfo.title || `Sách không xác định`,
                             author: bookInfo.author || 'Không có thông tin',
                             quantity: item.quantity || 1,
-                            price: this.formatPrice(totalItemPrice)
+                            price: this.formatPrice(totalItemPrice),
+                            bookId:bookInfo._id // Lưu ID sách từ bookId hoặc _id
                         };
                     }
                     
@@ -300,7 +301,8 @@
                             title: item.book.title || `Sách #${item.bookId?.substring(0, 6)}`,
                             author: item.book.author || 'Không có thông tin',
                             quantity: item.quantity || 1,
-                            price: this.formatPrice(totalItemPrice)
+                            price: this.formatPrice(totalItemPrice),
+                            bookId: item.book._id
                         };
                     }
                     
@@ -310,7 +312,8 @@
                         title: `Sách không xác định`,
                         author: 'Không có thông tin',
                         quantity: item.quantity || 1,
-                        price: this.formatPrice(0)
+                        price: this.formatPrice(0),
+                        bookId: item.bookId || item._id || 'unknown'
                     };
                 });
             },
