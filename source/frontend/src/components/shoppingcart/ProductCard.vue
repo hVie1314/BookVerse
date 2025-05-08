@@ -1,15 +1,23 @@
+<!-- filepath: d:\Prj\BookVerse\source\frontend\src\components\shoppingcart\ProductCard.vue -->
 <template>
   <article class="product-card">
     <div class="product-info">
-      <img 
-        :src="getImageSrc()" 
-        :alt="product.title || product.name" 
-        class="product-image"
-        @error="handleImageError"
-      />
+      <!-- Thêm router-link cho hình ảnh sản phẩm -->
+      <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-image-link">
+        <img 
+          :src="getImageSrc()" 
+          :alt="product.title || product.name" 
+          class="product-image"
+          @error="handleImageError"
+        />
+      </router-link>
+      
       <div class="product-details">
-        <h3 class="product-name">{{ getTitle() }}</h3>
-        <p class="product-description">{{ getAuthor() }}</p>
+        <!-- Thêm router-link cho thông tin sản phẩm -->
+        <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-text-link">
+          <h3 class="product-name">{{ getTitle() }}</h3>
+          <p class="product-description">{{ getAuthor() }}</p>
+        </router-link>
       </div>
     </div>
     <div class="quantity-controls">
@@ -94,7 +102,10 @@ export default {
         style: 'currency',
         currency: 'VND'
       }).format(validPrice);
-    }
+    },
+    getProductId() {
+      return this.product.book?._id || "Không có mã sản phẩm";
+    },
   }
 };
 </script>
@@ -254,5 +265,34 @@ export default {
   .product-description {
     font-size: 12px;
   }
+}
+/* Thêm vào <style scoped> */
+.product-image-link {
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.product-text-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.product-text-link:hover .product-name {
+  color: #4D2900;
+  text-decoration: underline;
+}
+
+/* Đảm bảo hình ảnh có hiệu ứng khi hover */
+.product-image-link:hover .product-image {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+.product-image {
+  transition: transform 0.2s ease;
 }
 </style>
