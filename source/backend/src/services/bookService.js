@@ -104,7 +104,7 @@ class BookService {
     async reCalcBookRating(bookId) {
         try {
             const reviews = await Review.find({ 
-                book_id: bookId, 
+                bookId: bookId, 
                 status: 'approved', 
                 hidden: false 
             });

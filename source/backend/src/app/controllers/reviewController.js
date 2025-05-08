@@ -7,10 +7,11 @@ const bookService = require('../../services/bookService');
 
 class ReviewController {
 
-   // [POST] /review/:userId
+   // [POST] /review/:bookId
    async addReview(req, res, next) {
       try {
-         const { bookId, rating, comment } = req.body;
+         const bookId = req.params.bookId;
+         const { rating, comment } = req.body;
          const userId = req.userInfo.id;
    
          // Check if bookId is valid
@@ -54,20 +55,22 @@ class ReviewController {
          await book.save();
 
          return res.status(201).json({ review });
+
       } catch (err) {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
       }
    }
 
-   // [PUT] /review/:userId
+   // [PUT] /review/:reviewId
    async updateReview(req, res, next) {
       try {
-         const { reviewId , comment, rating } = req.body;
+         const { reviewId } = req.params;
+         const { comment, rating } = req.body;
          const review = await Review.findById(reviewId);
          if (!review) return next(new AppError(404, 'REVIEW_NOT_FOUND'));
 
          const bookId = review.bookId;
-         const book = await Book.findById(review.bookId);
+         const book = await Book.findById(bookId);
          if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
 
          if (String(review.userId) !== req.userInfo.id) {
@@ -90,15 +93,15 @@ class ReviewController {
       }
    }
 
-   // [DELETE] /review/:userId
+   // [DELETE] /review/:reviewId
    async deleteReview(req, res, next) {
       try {
-         const { reviewId } = req.body;
+         const { reviewId } = req.params;
          const review = await Review.findById(reviewId);
          if (!review) return next(new AppError(404, 'REVIEW_NOT_FOUND'));
 
          const bookId = review.bookId;
-         const book = await Book.findById(review.bookId);
+         const book = await Book.findById(bookId);
          if (!book) return next(new AppError(404, 'BOOK_NOT_FOUND'));
 
          // remove review from book
