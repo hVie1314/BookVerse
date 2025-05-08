@@ -68,7 +68,7 @@
 import AuthenticationService from '@/services/AuthenticationService';
 import Alert from '@/components/Alert.vue';
 import CartService from '@/services/CartService';
-import eventBus from '@/eventBus.js';
+// import eventBus from '@/eventBus.js';
 
 export default {
   name: 'LoginForm',
@@ -96,83 +96,110 @@ export default {
     togglePasswordVisibility() {
       this.isPasswordVisible = !this.isPasswordVisible;
     },
-    async handleSubmit() {
-      try {
-        const response = await AuthenticationService.login({
-          username: this.email,
-          password: this.password
-        });
+   // Trong phương thức handleSubmit() của Login.vue
+async handleSubmit() {
+  try {
+    const response = await AuthenticationService.login({
+      username: this.email,
+      password: this.password
+    });
+    
+    console.log('Login response structure:', response.data);
+    
+    if (response.data && response.data.success) {
+      // Xử lý response theo đúng định dạng trả về từ API
+      let userData, token;
+      
+      // Phản hồi có cấu trúc: { success: true, data: { id, username, email, role, accessToken } }
+      if (response.data.data) {
+        userData = response.data.data;
+        token = response.data.data.accessToken || response.data.data.token;
+      } else {
+        userData = response.data;
+        token = response.data.accessToken || response.data.token;
+      }
+      
+      if (userData && token) {
+        // Lưu thông tin vào localStorage
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(userData));
         
-        console.log('dữ liệu gửi đi:', {
-          username: this.email,
-          password: this.password
-        });
-        console.log('Login response:', response.data);
-        
-        // Kiểm tra phản hồi theo cấu trúc thực tế
-        if (response.data && response.data.success) {
-          // Nếu dữ liệu người dùng nằm trong response.data.data
-          const userData = response.data.data;
-          
-          // Tạo đối tượng người dùng với accessToken (nếu không có, tạo giá trị tạm)
-          const userWithToken = {
-            ...userData,
-            accessToken: userData.accessToken || userData.token || 'dummy-token-for-development'
-          };
-          
-          // Lưu thông tin người dùng
-          AuthenticationService.setUser(userWithToken);
-          
-          // Kiểm tra và merge giỏ hàng khách (THÊM MỚI)
-          const guestCartId = localStorage.getItem('guestCartId');
-          if (guestCartId) {
-            try {
-              // Gọi API để merge giỏ hàng
-              await CartService.mergeGuestCartToUserCart(userData.id || userData._id, guestCartId);
-              console.log('Đã merge giỏ hàng khách vào tài khoản');
-              
-              // Xóa guestCartId từ localStorage
-              localStorage.removeItem('guestCartId');
-              
-              // Thông báo cập nhật giỏ hàng để cập nhật UI
-              eventBus.emit('cart-updated');
-            } catch (mergeError) {
-              console.error('Lỗi khi merge giỏ hàng:', mergeError);
-              // Không hiển thị lỗi cho người dùng, vẫn cho phép đăng nhập thành công
+        // Giải mã JWT token để lấy thông tin đúng userID
+        try {
+          // Token có dạng: header.payload.signature
+          const parts = token.split('.');
+          if (parts.length === 3) {
+            const payload = parts[1];
+            // Giải mã base64 url-safe để lấy payload
+            const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+            const parsedPayload = JSON.parse(decodedPayload);
+            
+            // Lấy ID từ payload của token
+            const tokenUserId = parsedPayload.id || parsedPayload.userId;
+            console.log('User ID from token:', tokenUserId);
+            
+            // Đợi một chút để đảm bảo localStorage đã được cập nhật
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Gộp giỏ hàng dựa trên ID từ token (đảm bảo tính nhất quán)
+            const guestCartId = localStorage.getItem('guestCartId');
+            if (guestCartId && tokenUserId) {
+              try {
+                // Sử dụng ID từ token để merge cart
+                await CartService.mergeGuestCartToUserCart(String(tokenUserId), guestCartId);
+                console.log('Đã merge giỏ hàng khách vào tài khoản');
+                // localStorage.removeItem('guestCartId');
+              } catch (mergeError) {
+                console.error('Lỗi khi merge giỏ hàng:', mergeError);
+                localStorage.removeItem('guestCartId');
+              }
             }
           }
-          
-          this.alert = {
-            show: true,
-            type: 'success',
-            title: 'Đăng nhập thành công',
-            message: 'Chào mừng bạn quay trở lại BookVerse!'
-          };
-          
-          setTimeout(() => {
-            const redirectPath = this.$route.query.redirect || '/';
-            this.$router.push(redirectPath);
-          }, 1500);
-        } else {
-          // Xử lý trường hợp đăng nhập thất bại nhưng server không trả về lỗi
-          this.alert = {
-            show: true,
-            type: 'error',
-            title: 'Đăng nhập thất bại',
-            message: 'Không thể xác thực thông tin đăng nhập'
-          };
+        } catch (tokenError) {
+          console.error('Lỗi khi giải mã token:', tokenError);
         }
-      } catch (error) {
-        // Giữ xử lý lỗi như cũ
-        console.error('Login error:', error);
+        
+        // Hiển thị thông báo thành công và chuyển hướng
+        this.alert = {
+          show: true,
+          type: 'success',
+          title: 'Đăng nhập thành công',
+          message: 'Chào mừng bạn quay trở lại BookVerse!'
+        };
+        
+        setTimeout(() => {
+          const redirectPath = this.$route.query.redirect || '/';
+          this.$router.push(redirectPath);
+        }, 1500);
+      } else {
+        // Xử lý trường hợp không tìm thấy userData hoặc token
+        console.error('Không tìm thấy thông tin người dùng hoặc token:', response.data);
         this.alert = {
           show: true,
           type: 'error',
           title: 'Đăng nhập thất bại',
-          message: error.response?.data?.message || 'Thông tin đăng nhập không chính xác'
+          message: 'Không thể xác thực thông tin đăng nhập'
         };
       }
+    } else {
+      // Xử lý trường hợp đăng nhập thất bại
+      this.alert = {
+        show: true,
+        type: 'error',
+        title: 'Đăng nhập thất bại',
+        message: 'Không thể xác thực thông tin đăng nhập'
+      };
     }
+  } catch (error) {
+    console.error('Login error:', error);
+    this.alert = {
+      show: true,
+      type: 'error',
+      title: 'Đăng nhập thất bại',
+      message: error.response?.data?.message || 'Thông tin đăng nhập không chính xác'
+    };
+  }
+}
   }
 }
 </script>

@@ -17,8 +17,11 @@ export default {
     },
     
     // Lấy thông tin người dùng theo ID
-    getUserById(id) {
-        return Api().get(`user/${id}`);
+    getUserById(userId) {
+        const token = localStorage.getItem('token');
+        return Api().get(`user/${userId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Cập nhật thông tin người dùng

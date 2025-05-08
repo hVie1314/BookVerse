@@ -131,10 +131,18 @@
                 }
             }
         } catch (error) {
-            console.error('Lỗi khi lấy dữ liệu giỏ hàng:', error);
-            this.error = 'Không thể tải giỏ hàng. Vui lòng thử lại sau.';
-            this.cartItems = [];
-            this.totalPrice = 0;
+          if (error.response && error.response.status === 401) {
+          // Xóa thông tin đăng nhập nếu bị lỗi 401
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          // Sau đó chuyển sang chế độ khách
+          const guestCartId = localStorage.getItem('guestCartId');
+          if (guestCartId) {
+            const guestCartData = await CartService.getGuestCartItemsWithDetails(guestCartId);
+            this.cartItems = guestCartData.items || [];
+            this.totalPrice = guestCartData.totalPrice || 0;
+          }
+        }
         } finally {
             this.loading = false;
         }
