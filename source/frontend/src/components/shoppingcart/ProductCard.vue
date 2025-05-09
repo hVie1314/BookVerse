@@ -1,15 +1,23 @@
+<!-- filepath: d:\Prj\BookVerse\source\frontend\src\components\shoppingcart\ProductCard.vue -->
 <template>
   <article class="product-card">
     <div class="product-info">
-      <img 
-        :src="getImageSrc()" 
-        :alt="product.title || product.name" 
-        class="product-image"
-        @error="handleImageError"
-      />
+      <!-- Thêm router-link cho hình ảnh sản phẩm -->
+      <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-image-link">
+        <img 
+          :src="getImageSrc()" 
+          :alt="product.title || product.name" 
+          class="product-image"
+          @error="handleImageError"
+        />
+      </router-link>
+      
       <div class="product-details">
-        <h3 class="product-name">{{ getTitle() }}</h3>
-        <p class="product-description">{{ getAuthor() }}</p>
+        <!-- Thêm router-link cho thông tin sản phẩm -->
+        <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-text-link">
+          <h3 class="product-name">{{ getTitle() }}</h3>
+          <p class="product-description">{{ getAuthor() }}</p>
+        </router-link>
       </div>
     </div>
     <div class="quantity-controls">
@@ -37,11 +45,27 @@ export default {
   },
   methods: {
     getImageSrc() {
-      // Kiểm tra các khả năng đường dẫn hình ảnh
-      const imageUrl = this.product.book?.image || 
-                       this.product.image || 
-                       this.product.coverImage;
-                       
+      // Lấy đường dẫn hình ảnh từ product hoặc product.book (nếu có)
+      let imageUrl = this.product.productId?.image || 
+                    this.product.book?.image || 
+                    this.product.image || 
+                    this.product.coverImage;
+      
+      // Nếu imageUrl là một chuỗi mảng (bắt đầu bằng [ và kết thúc bằng ])
+      if (imageUrl && typeof imageUrl === 'string' && 
+          imageUrl.startsWith('[') && imageUrl.endsWith(']')) {
+        try {
+          // Chuyển đổi chuỗi thành mảng JSON (thay thế dấu nháy đơn bằng dấu nháy kép)
+          const imageArray = JSON.parse(imageUrl.replace(/'/g, '"'));
+          // Lấy URL hình ảnh đầu tiên trong mảng
+          if (imageArray && imageArray.length > 0) {
+            imageUrl = imageArray[0];
+          }
+        } catch (error) {
+          console.error('Lỗi khi xử lý chuỗi hình ảnh:', error);
+        }
+      }
+      
       return imageUrl || 'https://via.placeholder.com/150?text=No+Image';
     },
     getTitle() {
@@ -78,7 +102,10 @@ export default {
         style: 'currency',
         currency: 'VND'
       }).format(validPrice);
-    }
+    },
+    getProductId() {
+      return this.product.book?._id || "Không có mã sản phẩm";
+    },
   }
 };
 </script>
@@ -238,5 +265,34 @@ export default {
   .product-description {
     font-size: 12px;
   }
+}
+/* Thêm vào <style scoped> */
+.product-image-link {
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.product-text-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.product-text-link:hover .product-name {
+  color: #4D2900;
+  text-decoration: underline;
+}
+
+/* Đảm bảo hình ảnh có hiệu ứng khi hover */
+.product-image-link:hover .product-image {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+.product-image {
+  transition: transform 0.2s ease;
 }
 </style>

@@ -3,7 +3,6 @@ const Review = require('../models/Review');
 const Category = require('../models/Category');
 const BookService = require('../../services/bookService');
 const AppError = require('../../utils/appError');
-const { mongooseToObject, multipleMongooseToObject } = require('../../utils/mongoose');
 
 
 class BookController {
@@ -49,11 +48,28 @@ class BookController {
       }
    }
 
-   // [GET] /book/
-   async getAll(req, res, next) {
+   // [GET] /book/page/:page/limit/:limit
+   async getBooks(req, res, next) {
       try {
-         const books = await Book.find();
-         return res.status(200).json({ books });
+         const page = parseInt(req.params.page) || 1; // default page 
+         const limit = parseInt(req.params.limit); // default limit
+         if (isNaN(limit) || limit <= 0) {
+            return next(new AppError(400, 'INVALID_PARAM', 'Parameter limit must be a positive number'));
+         }
+
+         const skip = (page - 1) * limit;
+
+         const books = await Book.find().skip(skip).limit(limit);
+         const totalBooks = await Book.countDocuments();
+
+         return res.status(200).json({
+            books,
+            pagination: {
+               currentPage: page,
+               totalPages: Math.ceil(totalBooks / limit),
+               totalBooks,
+            },
+         });
       } catch (err) {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
       }
@@ -76,9 +92,7 @@ class BookController {
    getCategory(req, res, next) {
       Category.find()
          .then(categories => {
-            res.status(200).json({
-               categories: multipleMongooseToObject(categories)
-            });
+            res.status(200).json({ categories });
          })
          .catch(err => {
             return next(new AppError(500, 'SERVER_ERROR', err.message));
@@ -108,7 +122,6 @@ class BookController {
             return res.status(200).json(result);
       } catch (err) {
             return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
-
       }
    }
 
@@ -144,33 +157,6 @@ class BookController {
 
          const relatedBooks = await Book.find({ category: book.category }).limit(limit).exec();
          return res.status(200).json({ books: relatedBooks });
-
-      } catch (err) {
-         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
-      }
-   }
-
-   // [GET] /book/rating/:bookId
-   async getRating(req, res, next) {
-      try {
-         const bookId = req.params.bookId;
-         const book = await Book.findById(bookId);
-         if (!book) {
-            return next(new AppError(404, 'BOOK_NOT_FOUND'));
-         }
-
-         // Calculate the average rating
-         const reviews = await Review.find({ 
-            book_id: bookId, 
-            status: 'approved', 
-            hidden: false,
-         });
-
-         const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
-         const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0;
-         const rating = averageRating.toFixed(1); // Round to 1 decimal place
-
-         res.status(200).json({ rating });
 
       } catch (err) {
          return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));

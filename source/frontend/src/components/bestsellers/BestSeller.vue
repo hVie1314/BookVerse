@@ -1,53 +1,65 @@
 <template>
-  <section class="carousel-container">
-    <!-- Navigation Arrow Left -->
-    <NavigationArrow 
-      v-if="!loading && !error"
-      direction="left" 
-      @click="previousPage" 
-      :disabled="currentPage === 1"
-      class="nav-arrow-left"
-    />
-    
-    <div class="best-seller-container">
-      <h2 class="carousel-title">TOP SÁCH BÁN CHẠY</h2>
-      
-      <!-- Loading indicator -->
-      <div v-if="loading" class="loading-container">
-        <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
-      </div>
-      
-      <!-- Error message -->
-      <div v-else-if="error" class="error-message">
-        {{ error }}
-      </div>
-      
-      <!-- Books display -->
-      <div v-else class="book-grid">
-        <BookCard
-          v-for="book in currentPageBooks"
-          :key="book.id"
-          :bookId="book.id"
-          :image="book.image"
-          :price="`${book.price.toLocaleString('vi-VN')} đ`"
-          :originalPrice="book.originalPrice ? `${book.originalPrice.toLocaleString('vi-VN')} đ` : ''"
-          :title="book.title"
-          :author="book.author"
-          :cartText="'Thêm vào giỏ hàng'"
-          :sold="String(book.sold)"
-        />
-      </div>
-      
+  <section class="recommended-section">
+    <div v-if="loading" class="loading-message">
+      <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
     </div>
     
-    <!-- Navigation Arrow Right -->
-    <NavigationArrow 
-      v-if="!loading && !error"
-      direction="right" 
-      @click="nextPage" 
-      :disabled="currentPage === totalPages"
-      class="nav-arrow-right"
-    />
+    <div v-else-if="error" class="error-message">
+      {{ error }}
+    </div>
+    
+    <div v-else class="recommended-container">
+      <!-- Navigation Arrow Left - Trực tiếp thay vì dùng component -->
+      <button 
+        v-if="books.length > booksPerPage && currentPage > 1"
+        @click="previousPage" 
+        class="carousel-control-prev"
+        type="button"
+      >
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      
+      <div class="best-seller-content">
+        <h2 class="carousel-title">TOP SÁCH BÁN CHẠY</h2>
+        
+        <div class="book-grid">
+          <BookCard
+            v-for="book in currentPageBooks"
+            :key="book.id"
+            :bookId="book.id"
+            :image="book.image"
+            :price="`${book.price.toLocaleString('vi-VN')} đ`"
+            :originalPrice="book.originalPrice ? `${book.originalPrice.toLocaleString('vi-VN')} đ` : ''"
+            :title="book.title"
+            :author="book.author"
+            :cartText="'Thêm vào giỏ hàng'"
+            :sold="String(book.sold)"
+          />
+        </div>
+      </div>
+      
+      <!-- Navigation Arrow Right - Trực tiếp thay vì dùng component -->
+      <button 
+        v-if="books.length > booksPerPage && currentPage < totalPages"
+        @click="nextPage" 
+        class="carousel-control-next"
+        type="button"
+      >
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+    </div>
+    
+    <!-- Pagination Indicators -->
+    <div v-if="books.length > 0" class="pagination-dots">
+      <span 
+        v-for="page in totalPages" 
+        :key="page"
+        :class="['pagination-dot', { active: currentPage === page }]"
+        @click="currentPage = page"
+      ></span>
+    </div>
   </section>
 </template>
 
@@ -55,14 +67,12 @@
 import BookCard from "./BookCard.vue";
 import BookService from '@/services/BookService';
 import CartService from '@/services/CartService';
-import NavigationArrow from "./NavigationArrow.vue";// Import NavigationArrow component
 import eventBus from '@/eventBus.js';
 
 export default {
   name: "BestSeller",
   components: {
-    BookCard,
-    NavigationArrow // Đăng ký NavigationArrow component
+    BookCard
   },
   data() {
     return {
@@ -87,7 +97,7 @@ export default {
     }
   },
   methods: {
-    // Lấy danh sách sách bán chạy từ API
+    // Các phương thức giữ nguyên như trước
     async fetchTopSellingBooks() {
       this.loading = true;
       try {
@@ -115,11 +125,32 @@ export default {
       }
     },
 
-    // Hàm tiện ích để định dạng dữ liệu sách
     formatBookData(book) {
+      // Xử lý ảnh từ chuỗi mảng thành URL đầu tiên
+      let imageUrl = '/images/default-book-cover.jpg';
+      
+      if (book.image) {
+        try {
+          // Kiểm tra nếu image là chuỗi mảng
+          if (book.image.startsWith('[') && book.image.endsWith(']')) {
+            // Parse chuỗi thành mảng
+            const imageArray = JSON.parse(book.image.replace(/'/g, '"'));
+            // Lấy URL đầu tiên nếu có
+            if (imageArray && imageArray.length > 0) {
+              imageUrl = imageArray[0];
+            }
+          } else {
+            // Nếu image không phải chuỗi mảng, sử dụng trực tiếp
+            imageUrl = book.image;
+          }
+        } catch (error) {
+          console.error("Lỗi xử lý URL hình ảnh:", error);
+        }
+      }
+      
       return {
-        id: book.id || book._id,
-        image: book.image || book.coverImage || '/images/default-book-cover.jpg',
+        id: book._id,
+        image: imageUrl,
         price: book.price,
         originalPrice: book.originalPrice > book.price ? book.originalPrice : null,
         title: book.title,
@@ -128,7 +159,6 @@ export default {
       };
     },
     
-    // Phương thức phân trang
     nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++;
@@ -140,7 +170,6 @@ export default {
       }
     },
     
-    // Thêm sách vào giỏ hàng
     async addToCart(bookId) {
       try {
         await CartService.addToCart({ bookId, quantity: 1 });
@@ -160,106 +189,143 @@ export default {
 </script>
 
 <style scoped>
-.carousel-container {
-  width: 100%;
-  margin: 0 auto;
-  padding: 20px;
-  box-sizing: border-box;
-  position: relative;
-  margin-bottom: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* CSS tương tự như trong RecommendedProducts */
+.recommended-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding: 0 20px;
 }
 
-.best-seller-container {
-  width: 88%;
-  /* position: relative; */
+.recommended-container {
+    width: 88%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 0;
+    margin: 30px 0;
+}
+
+/* Thêm style cho phần nội dung chính */
+.best-seller-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .carousel-title {
-  font-family: "Montserrat", sans-serif;
-  font-weight: 900;
-  font-size: 25px;
-  color: #4d2900;
-  margin-bottom: 20px;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 900;
+    font-size: 25px;
+    color: #4d2900;
+    margin-bottom: 20px;
 }
 
 .book-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: space-between;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: nowrap;
 }
 
-/* Loading và Error styles */
-.loading-container, .error-message {
-  width: 100%;
-  padding: 30px;
-  text-align: center;
-  font-family: "Montserrat", sans-serif;
+.pagination-dots {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 8px;
+}
+
+.pagination-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    cursor: pointer;
+}
+
+.pagination-dot.active {
+    background-color: #4d2900;
+}
+
+.loading-message, .error-message {
+    width: 100%;
+    text-align: center;
+    padding: 20px 0;
+    font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+    color: #4d2900;
 }
 
 .error-message {
-  color: #ff3333;
+    color: #e74c3c;
 }
 
-.nav-arrow-left {
-  position: absolute;
-  left: 3%;
-  z-index: 5;
+/* Style cho nút điều khiển - giống hệt RecommendedProducts */
+.carousel-control-prev,
+.carousel-control-next {
+    width: 35px;
+    height: 35px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    position: absolute;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
 }
 
-.nav-arrow-right {
-  position: absolute;
-  right: 3%;
-  z-index: 5;
+.carousel-control-prev {
+    left: 0;
+    transform: translateX(-50%) translateY(-50%);
 }
 
-/* Style cho page indicator nếu cần */
-.page-indicator {
-  text-align: center;
-  margin-top: 20px;
-  font-family: "Montserrat", sans-serif;
-  font-size: 14px;
-  color: #4d2900;
+.carousel-control-next {
+    right: 0;
+    transform: translateX(50%) translateY(-50%);
 }
 
-/* Điều chỉnh để book-grid có position relative để arrow đúng vị trí */
-.best-seller-container {
-  width: 87%;
-  position: relative;
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    background-color: rgba(255, 255, 255, 0.95);
+    opacity: 1;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-control-prev:hover {
+    transform: translateX(-50%) translateY(-50%) scale(1.15);
+}
+
+.carousel-control-next:hover {
+    transform: translateX(50%) translateY(-50%) scale(1.15);
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: #000;
+    width: 18px;
+    height: 18px;
+    filter: invert(1);
+    opacity: 0.7;
 }
 
 @media (max-width: 991px) {
-  .carousel-container {
-    max-width: 991px;
-  }
-
-  .book-grid {
-    justify-content: center;
-  }
+    .book-grid {
+        justify-content: center;
+    }
 }
 
 @media (max-width: 640px) {
-  .carousel-container {
-    max-width: 640px;
-  }
-
-  .carousel-title {
-    font-size: 20px;
-  }
+    .carousel-title {
+        font-size: 20px;
+    }
 }
-
-.loading-container, .error-message {
-  width: 100%;
-  padding: 30px;
-  text-align: center;
-  font-family: "Montserrat", sans-serif;
-}
-
-.error-message {
-  color: #ff3333;
-}
-
 </style>

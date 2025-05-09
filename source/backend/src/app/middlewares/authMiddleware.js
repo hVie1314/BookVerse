@@ -50,11 +50,58 @@ class AuthMiddleware {
       next();
    }
 
+   verifyUser(req, res, next) {
+      const { id: userId } = req.userInfo;
+      var { userId: targetUserId } = req.body;  // get from body
+      if (!targetUserId) {
+         // get from params
+         ({ userId: targetUserId } = req.params);
+      }
+
+      if (userId === targetUserId) {
+         next();
+      }
+      else {
+         return next(new AppError(403, "FORBIDDEN"));
+      }
+   }
+
    verifyUserOrAdmin(req, res, next) {
       const { id: userId, role } = req.userInfo;
-      const { userId: targetUserId } = req.params || req.body;
+      var { userId: targetUserId } = req.body;  // get from body
+      if (!targetUserId) {
+         // get from params
+         ({ userId: targetUserId } = req.params);
+      }
 
       if (userId === targetUserId || role === "admin") {
+         next();
+      }
+      else {
+         return next(new AppError(403, "FORBIDDEN"));
+      }
+   }
+
+   verifyStaffOrAdmin(req, res, next) {
+      const { role } = req.userInfo;
+      if (role === "staff" || role === "admin") {
+         next();
+      }
+      else {
+         return next(new AppError(403, "FORBIDDEN"));
+      }
+   }
+
+   verifyUserOrStaffOrAdmin(req, res, next) {
+      const { role } = req.userInfo;
+      const { id: userId } = req.userInfo;
+      var { userId: targetUserId } = req.body;  // get from body
+      if (!targetUserId) {
+         // get from params
+         ({ userId: targetUserId } = req.params);
+      }
+
+      if (userId === targetUserId || role === "admin" || role === "staff") {
          next();
       }
       else {

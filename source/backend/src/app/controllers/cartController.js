@@ -1,7 +1,5 @@
 const AppError = require('../../utils/appError');
 const CartService = require('../../services/cartService');
-const BookHelper = require('../../helpers/bookHelper');
-const { mongooseToObject, multipleMongooseToObject } = require('../../utils/mongoose');
 
 class CartController {
    
@@ -47,8 +45,8 @@ class CartController {
    async getUserCartByUserId(req, res, next) {
       try {
          const { userId } = req.params;
-         const cart = await CartService.findCart(userId, null);
-         return res.status(200).json(mongooseToObject(cart));
+         const cart = await CartService.getCartWithBookInfo(userId, null);
+         return res.status(200).json(cart);
       }
       catch (error) {
          return next(error);
@@ -99,8 +97,8 @@ class CartController {
    async getGuestCartByCartId(req, res, next) {
       try {
          const { cartId } = req.params;
-         const cart = await CartService.findCart(null, cartId);
-         return res.status(200).json(mongooseToObject(cart));
+         const cart = await CartService.getCartWithBookInfo(null, cartId);
+         return res.status(200).json(cart);
       }
       catch (error) {
          return next(error);

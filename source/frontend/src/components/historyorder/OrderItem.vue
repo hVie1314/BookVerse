@@ -32,7 +32,7 @@
       status: {
         type: String,
         required: true,
-        validator: value => ['pending', 'completed', 'cancelled'].includes(value)
+        validator: value => ['pending', 'success', 'cancelled'].includes(value)
       },
       statusText: {
         type: String,
@@ -98,7 +98,7 @@
         color: #f0ed4d;
     }
 
-    .completed .order-status {
+    .success .order-status {
         color: #70e077;
     }
 

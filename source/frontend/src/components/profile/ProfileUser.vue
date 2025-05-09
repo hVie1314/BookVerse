@@ -168,7 +168,10 @@ created() {
                 }
                 // Chỉ gửi những trường được phép thay đổi theo API
                 const allowedFields = ['password', 'address', 'avatar'];
-                const filteredData = {};
+                const filteredData = {
+                    userId: currentUser.id,  // Thêm userId vào request body
+                    ...updatedData
+                };
                 
                 for (const field of allowedFields) {
                     if (updatedData[field] !== undefined) {
@@ -243,7 +246,7 @@ created() {
         flex-direction: column;
         align-items: center;
         min-height: 100vh;
-        background-color: #FFFAF5;
+        background-color: rgb(244, 235, 225);
     }
 
     .profile-main {

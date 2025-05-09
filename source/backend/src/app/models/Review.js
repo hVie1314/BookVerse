@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
 const ReviewSchema = new mongoose.Schema({
-    user_id: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    book_id: {
+    bookId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Book',
         required: true
@@ -24,14 +24,14 @@ const ReviewSchema = new mongoose.Schema({
     status: {
         type: String,
         enum: ['pending', 'approved', 'rejected'],
-        default: 'pending'
+        default: 'approved'
     },
     hidden: {
         type: Boolean,
         default: false
     }
 }, {
-    timestamps: { createdAt: 'create_at', updatedAt: false }
+    timestamps: { createdAt: 'create_at', updatedAt: 'update_at' }
 });
 
 const Review = mongoose.model('Review', ReviewSchema);
