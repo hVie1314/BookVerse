@@ -15,7 +15,10 @@
             <p class="book-author">{{ author }}</p>
             <div class="footer-card-container">
                 <button class="cart-button" @click.stop="addToCart">{{ cartText }}</button>
-                <i class="fa-regular fa-heart fa-2xl" @click.stop="addToFavorites"></i>
+                <i 
+                    :class="['fa-heart fa-2xl', isInWishlist ? 'fa-solid liked' : 'fa-regular']" 
+                    @click.stop="addToFavorites"
+                ></i>
             </div>
             <div class="book-sold">
                 <div class="sold-title">
@@ -33,6 +36,7 @@
 import CartService from '@/services/CartService';
 import AuthenticationService from '@/services/AuthenticationService';
 import eventBus from '@/eventBus.js';
+import WishlistService from '@/services/WishlistService';
 export default {
     name: "BookCard",
     props: {
@@ -73,7 +77,35 @@ export default {
             }
         },
     },
+    data() {
+        return {
+            isInWishlist: false,
+            fallbackImage: '/images/default-book-cover.jpg'
+        };
+    },
+    mounted() {
+        this.checkWishlistStatus();
+    },
     methods: {
+        async checkWishlistStatus() {
+            if (AuthenticationService.isLoggedIn()) {
+                try {
+                    const userId = AuthenticationService.getCurrentUser().id;
+                    const response = await WishlistService.getUserWishlist(userId);
+                    
+                    if (response.data && response.data.success && response.data.data) {
+                        // Kiểm tra nếu sản phẩm đã có trong wishlist
+                        const wishlistItems = response.data.data.products || [];
+                        this.isInWishlist = wishlistItems.some(item => 
+                            (item.productId === this.bookId) || 
+                            (item.productId && item.productId._id === this.bookId)
+                        );
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi kiểm tra trạng thái wishlist:', error);
+                }
+            }
+        },
         handleImageError(e) {
             // Chuyển sang ảnh dự phòng khi ảnh gốc lỗi
             e.target.src = '/images/default-book-cover.jpg';
@@ -104,22 +136,68 @@ export default {
                 }
             }
         },
-        addToFavorites() {
-    // Kiểm tra trạng thái đăng nhập
+        async addToFavorites() {
+            // Kiểm tra trạng thái đăng nhập
             if (!AuthenticationService.isLoggedIn()) {
-                // Phát sự kiện hiển thị alert toàn cục
+                // Phát sự kiện hiển thị alert
                 eventBus.emit('show-alert', {
-                    type: 'error',
+                    show: true,
+                    type: 'warning',
                     title: 'Yêu cầu đăng nhập',
-                    message: 'Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích'
+                    message: 'Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích',
+                    autoClose: true,
+                    duration: 3000,
+                    showChoices: true,
+                    confirmText: 'Đăng nhập',
+                    cancelText: 'Hủy',
+                    choices: [
+                        {
+                            text: 'Đăng nhập',
+                            onClick: () => this.$router.push('/login')
+                        },
+                        {
+                            text: 'Hủy',
+                            onClick: () => {}
+                        }
+                    ]
                 });
                 return;
             }
-            
-            // Xử lý thêm vào danh sách yêu thích nếu đã đăng nhập
-            console.log("Đã thêm sách vào danh sách yêu thích:", this.bookId);
-            if (this.$toast) {
-                this.$toast.success("Đã thêm vào danh sách yêu thích");
+
+            try {
+                if (this.isInWishlist) {
+                    // Nếu đã có trong wishlist, xóa khỏi wishlist
+                    await WishlistService.removeFromWishlist(this.bookId);
+                    this.isInWishlist = false;
+                    if (this.$toast) {
+                        this.$toast.success("Đã xóa sách khỏi danh sách yêu thích");
+                    }
+                } else {
+                    // Nếu chưa có, thêm vào wishlist
+                    await WishlistService.addToWishlist(this.bookId);
+                    this.isInWishlist = true;
+                    if (this.$toast) {
+                        this.$toast.success("Đã thêm sách vào danh sách yêu thích");
+                    }
+                }
+                // Phát sự kiện để cập nhật UI wishlist (nếu cần)
+                eventBus.emit('wishlist-updated');
+            } catch (error) {
+                console.error("Lỗi khi thao tác với danh sách yêu thích:", error);
+                
+                // Xử lý lỗi với thông báo cụ thể
+                let errorMessage = 'Không thể thực hiện thao tác. Vui lòng thử lại sau.';
+                if (error.response) {
+                    if (error.response.status === 401) {
+                        errorMessage = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
+                    } else if (error.response.status === 409) {
+                        errorMessage = 'Sản phẩm này đã có trong danh sách yêu thích của bạn';
+                    }
+                }
+                
+                if (this.$toast) {
+                    this.$toast.error(errorMessage);
+                }
             }
         }
     },
@@ -127,6 +205,14 @@ export default {
 </script>
   
 <style scoped>
+.fa-heart.liked {
+    color: #e74c3c; /* Màu đỏ khi đã yêu thích */
+    opacity: 1;
+}
+
+.fa-heart.fa-solid {
+    transform: scale(1.1); /* Hiệu ứng hơi phóng to khi đã like */
+}
 .book-card {
     width: 18%;
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.25);

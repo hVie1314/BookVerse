@@ -18,14 +18,13 @@
         <span class="cart-text">Thêm vào giỏ hàng</span>
       </button>
   
-      <button class="favorite-button" @click="addToFavorites">
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/db3fc608a52b56fc3fba42309cdd515609085107?placeholderIfAbsent=true"
-          class="favorite-icon"
-          alt="Favorite icon"
-        />
-        <span class="favorite-text">Yêu thích</span>
-      </button>
+      <button class="favorite-button" @click="addToFavorites" :class="{ 'in-wishlist': isInWishlist }">
+        <i 
+            :class="['fa-heart fa-lg', isInWishlist ? 'fa-solid liked' : 'fa-regular']"
+            aria-hidden="true"
+        ></i>
+        <span class="favorite-text">{{ isInWishlist ? 'Đã yêu thích' : 'Yêu thích' }}</span>
+    </button>
     </div>
 </template>
   
@@ -33,6 +32,7 @@
     import CartService from '@/services/CartService';
     import WishlistService from '@/services/WishlistService';
     import eventBus from '@/eventBus.js';
+    import AuthenticationService from '@/services/AuthenticationService';
     export default {
     name: 'ProductActions',
     props: {
@@ -45,7 +45,64 @@
             default: 1
         }
     },
+    data() {
+        return {
+            isInWishlist: false
+        }
+    },
+    mounted() {
+        this.checkWishlistStatus();
+        eventBus.on('wishlist-updated', this.checkWishlistStatus);
+    },
+    beforeUnmount() {
+        // Hủy lắng nghe khi component bị hủy
+        eventBus.off('wishlist-updated', this.checkWishlistStatus);
+    },
+    watch: {
+        // Theo dõi khi book thay đổi để cập nhật trạng thái
+        'book.id': function() {
+            this.checkWishlistStatus();
+        },
+        'book._id': function() {
+            this.checkWishlistStatus();
+        }
+    },
     methods: {
+         async checkWishlistStatus() {
+            if (AuthenticationService.isLoggedIn()) {
+                try {
+                    const userId = AuthenticationService.getCurrentUser().id;
+                    const bookId = this.book._id || this.book.id;
+                    
+                    const response = await WishlistService.getUserWishlist(userId);
+                    
+                    if (response.data && response.data.success && response.data.data) {
+                        const wishlistItems = response.data.data.products || [];
+                        
+                        // Cải thiện cách so sánh
+                        this.isInWishlist = wishlistItems.some(item => {
+                            if (typeof item.productId === 'string') {
+                                return item.productId === bookId;
+                            }
+                            
+                            if (item.productId && item.productId._id) {
+                                return item.productId._id === bookId;
+                            }
+                            
+                            if (item.productId && item.productId.toString) {
+                                return item.productId.toString() === bookId.toString();
+                            }
+                            
+                            return false;
+                        });
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi kiểm tra trạng thái wishlist:', error);
+                }
+            } else {
+                this.isInWishlist = false;
+            }
+        },
         async addToCart() {
             try {
                 await CartService.addToCart({ 
@@ -78,7 +135,40 @@
         
         async addToFavorites() {
             try {
-                await WishlistService.addToWishlist(this.book._id || this.book.id);
+                const bookId = this.book._id || this.book.id;
+                
+                // Kiểm tra đăng nhập trước khi thêm vào yêu thích
+                if (!AuthenticationService.isLoggedIn()) {
+                    eventBus.emit('show-alert', {
+                        show: true,
+                        type: 'warning',
+                        title: 'Yêu cầu đăng nhập',
+                        message: 'Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích',
+                        autoClose: true,
+                        duration: 3000,
+                        showChoices: true,
+                        confirmText: 'Đăng nhập',
+                        cancelText: 'Hủy',
+                        choices: [
+                            {
+                                text: 'Đăng nhập',
+                                onClick: () => this.$router.push('/login')
+                            },
+                            {
+                                text: 'Hủy',
+                                onClick: () => {}
+                            }
+                        ]
+                    });
+                    return;
+                }
+                
+                const response = await WishlistService.addToWishlist(bookId);
+                
+                // Kiểm tra phản hồi từ API trước khi hiển thị thông báo thành công
+                if (!response.data || !response.data.success) {
+                    throw new Error('Thêm vào yêu thích không thành công');
+                }
                 
                 eventBus.emit('show-alert', {
                     show: true,
@@ -88,13 +178,25 @@
                     autoClose: true,
                     duration: 3000
                 });
+                this.isInWishlist = true; // Cập nhật trạng thái yêu thích
             } catch (error) {
                 console.error('Lỗi khi thêm vào danh sách yêu thích:', error);
+                
+                // Thông báo lỗi cụ thể hơn dựa trên mã lỗi
+                let errorMessage = 'Không thể thêm sản phẩm vào danh sách yêu thích';
+                if (error.response) {
+                    if (error.response.status === 401) {
+                        errorMessage = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
+                    } else if (error.response.status === 409) {
+                        errorMessage = 'Sản phẩm này đã có trong danh sách yêu thích của bạn';
+                    }
+                }
+                
                 eventBus.emit('show-alert', {
                     show: true,
                     type: 'error',
                     title: 'Lỗi',
-                    message: 'Không thể thêm sản phẩm vào danh sách yêu thích',
+                    message: errorMessage,
                     autoClose: true,
                     duration: 3000
                 });
@@ -114,6 +216,25 @@
 </script>
   
 <style scoped>
+    .fa-heart {
+        color: #4d2900;
+        opacity: 0.7;
+        transition: all 0.3s ease;
+        font-size: 22px; /* Đảm bảo kích thước giống như icon trước đó */
+    }
+
+    .fa-heart.liked {
+        color: #e74c3c; /* Màu đỏ khi đã yêu thích */
+        opacity: 1;
+    }
+
+    .favorite-button:hover .fa-heart {
+        transform: scale(1.1);
+    }
+
+    .favorite-button.in-wishlist .fa-heart {
+        color: #ff6b00;
+    }
     .action-buttons {
         display: flex;
         margin-top: 39px;
