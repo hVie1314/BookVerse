@@ -17,13 +17,19 @@ export default {
     },
     
     // Lấy thông tin người dùng theo ID
-    getUserById(id) {
-        return Api().get(`user/${id}`);
+    getUserById(userId) {
+        const token = localStorage.getItem('token');
+        return Api().get(`user/${userId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Cập nhật thông tin người dùng
     updateUserInfo(id, userData) {
-        return Api().put(`user/${id}`, userData);
+        const token = localStorage.getItem('token');
+        return Api().put(`user/${id}`, userData, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Xóa người dùng (chỉ admin)

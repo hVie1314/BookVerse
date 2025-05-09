@@ -21,7 +21,7 @@ export default {
     },
     methods: {
         handleClick() {
-        this.$emit('category-selected', this.categoryId);
+          this.$emit('category-selected', this.categoryId);
         }
     }
 };

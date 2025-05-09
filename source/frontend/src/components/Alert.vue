@@ -30,6 +30,17 @@
                 {{ message }}
               </div>
 
+              <div v-if="showInput" class="alert-input-container">
+                <input 
+                    ref="alertInput"
+                    v-model="inputValue" 
+                    :placeholder="inputPlaceholder || 'Nhập thông tin...'"
+                    class="alert-input"
+                    :required="inputRequired"
+                    @keyup.enter="handleConfirm"
+                />
+            </div>
+
               <!-- Thêm vùng hiển thị nút tùy chọn -->
               
             </div>
@@ -84,9 +95,18 @@
       },
       showChoices: { type: Boolean, default: false },
       confirmText: { type: String, default: 'Đồng ý' },
-      cancelText: { type: String, default: 'Hủy bỏ' }
+      cancelText: { type: String, default: 'Hủy bỏ' },
+      showInput: { type: Boolean, default: false },
+      inputPlaceholder: { type: String, default: 'Nhập thông tin...' },
+      inputRequired: { type: Boolean, default: false },
+      choices: { type: Array, default: () => [] }
     },
     emits: ['update:show', 'confirm', 'cancel'],
+    data() {
+      return {
+        inputValue: '' // Thêm data property
+      };
+    },
     computed: {
       shouldAutoClose() {
         if (this.showChoices) return false;
@@ -123,8 +143,21 @@
         this.$router.push('/login');
       },
       handleConfirm() {
-        this.$emit('confirm');
-        this.closeAlert();
+        // Kiểm tra input required
+        if (this.inputRequired && this.showInput && (!this.inputValue || this.inputValue.trim() === '')) {
+          // Không cho phép xác nhận nếu input là bắt buộc mà rỗng
+          return;
+        }
+        
+        // Kiểm tra nếu có choice onClick callback
+        const confirmChoice = this.choices && this.choices.find(choice => choice.text === this.confirmText);
+        if (confirmChoice && typeof confirmChoice.onClick === 'function') {
+          confirmChoice.onClick(this.inputValue);
+        } else {
+          // Nếu không, gửi event confirm với inputValue
+          this.$emit('confirm', this.inputValue);
+          this.closeAlert();
+        }
       },
       handleCancel() {
         this.$emit('cancel');
@@ -140,6 +173,25 @@
   </script>
   
 <style scoped>
+
+.alert-input-container {
+  margin: 15px 0;
+  width: 100%;
+}
+
+.alert-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  outline: none;
+}
+
+.alert-input:focus {
+  border-color: #4d2900;
+  box-shadow: 0 0 3px rgba(77, 41, 0, 0.3);
+}
 .alert-overlay {
   position: fixed;
   top: 0;

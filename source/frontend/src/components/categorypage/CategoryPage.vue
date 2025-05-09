@@ -2,7 +2,7 @@
     <div class="category-page">
       <Nav />
       <main class="category-content">
-        <div class="container">
+        <div class="category-container">
           <div class="page-header">
               <h1 class="page-title">
               {{ $route.query.search ? 'Kết quả tìm kiếm' : 'Danh mục sản phẩm' }}
@@ -66,7 +66,11 @@
         this.$refs.bookCatalog.applyFilters(this.filters);
       },
       applyRatingFilter(ratingFilter) {
-        this.filters = { ...this.filters, minRating: ratingFilter.rating };
+        if (ratingFilter.rating === null) {
+          delete this.filters.minRating;
+        } else {
+          this.filters = { ...this.filters, minRating: ratingFilter.rating };
+        }
         this.$refs.bookCatalog.applyFilters(this.filters);
       }
     }
@@ -79,16 +83,17 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        background-color: #fffaf5;
+        background-color: rgb(244, 235, 225);
     }
 
     .category-content {
         width: 100%;
         flex: 1;
         padding: 30px 0;
+        margin-top: 100px;
     }
 
-    .container {
+    .category-container {
         width: 85%;
         margin: 0 auto;
         padding: 0 15px;

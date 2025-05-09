@@ -2,17 +2,11 @@ const express = require('express');
 const router = express.Router();
 
 const orderController = require('../app/controllers/orderController');
+const authMiddleware = require('../app/middlewares/authMiddleware');
 
-// Create a new order
-router.post('/create', orderController.createOrder);
-
-// Update the order status and payment status
-router.put('/update/:id', orderController.updateOrderStatus);
-
-// Get all orders for a specific user
-router.get('/history/:userId', orderController.getAllOrders);
-
-// Get order details by order ID
-router.get('/details/:id', orderController.getOrderById);
+router.post('/create', authMiddleware.verifyToken, authMiddleware.verifyUser, orderController.createOrder);
+router.get('/history/:userId', authMiddleware.verifyToken, authMiddleware.verifyUserOrAdmin, orderController.getAllOrdersOfUser);
+router.get('/details/:id', authMiddleware.verifyToken, authMiddleware.verifyUserOrAdmin, orderController.getOrderById);
+router.post('/cancel/:id', authMiddleware.verifyToken, authMiddleware.verifyUserOrAdmin, orderController.cancelOrder);     
 
 module.exports = router;

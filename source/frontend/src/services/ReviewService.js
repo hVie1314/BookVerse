@@ -1,19 +1,48 @@
 import Api from '@/services/Api';
+import AuthenticationService from '@/services/AuthenticationService';
 
 export default {
     // Thêm đánh giá cho sách
     addReview(bookId, reviewData) {
-        return Api().post(`review/${bookId}`, reviewData);
+        const userId = AuthenticationService.getCurrentUser().id;
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            console.error('Token không tồn tại - Người dùng chưa đăng nhập');
+            return Promise.reject(new Error('Authentication token not found'));
+        }
+        
+        // Thêm userId vào request body
+        return Api().post(`review/${bookId}`, {
+            ...reviewData,
+            userId
+        }, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Cập nhật đánh giá
-    updateReview(reviewId, reviewData) {
-        return Api().put(`review/${reviewId}`, reviewData);
+    updateReview(reviewId, updatedReview) {
+        const userId = AuthenticationService.getCurrentUser().id;
+        const token = localStorage.getItem('token');
+        
+        return Api().put(`review/${reviewId}`, {
+            ...updatedReview,
+            userId
+        }, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Xóa đánh giá (chỉ staff)
     deleteReview(reviewId) {
-        return Api().delete(`review/${reviewId}`);
+        const userId = AuthenticationService.getCurrentUser().id;
+        const token = localStorage.getItem('token');
+        
+        return Api().delete(`review/${reviewId}`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            data: { userId }
+        });
     },
     
     // Lấy tất cả đánh giá của một sách

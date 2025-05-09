@@ -192,6 +192,7 @@ export default {
 
 <style scoped>
     .profile-container {
+        margin-top: 100px;
         width: 100%;
         box-sizing: border-box;
         background-color: transparent;

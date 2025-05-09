@@ -1,233 +1,330 @@
 <template>
-    <section class="carousel-container">
-      <!-- Navigation Arrow Left -->
-      <NavigationArrow 
-        v-if="!loading && !error"
-        direction="left" 
-        @click="previousPage" 
-        :disabled="currentPage === 1"
-        class="nav-arrow-left"
-      />
-      
-      <div class="new-books-container">
-        <h2 class="carousel-title">SÁCH MỚI NHẬP VỀ</h2>
-        
-        <!-- Loading indicator -->
-        <div v-if="loading" class="loading-container">
-          <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
+    <section class="recommended-section">
+        <div v-if="loading" class="loading-message">
+            <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
         </div>
         
-        <!-- Error message -->
         <div v-else-if="error" class="error-message">
-          {{ error }}
+            {{ error }}
         </div>
         
-        <!-- Books display -->
-        <div v-else class="book-grid">
-          <BookCard
-            v-for="book in currentPageBooks"
-            :key="book.id"
-            :bookId="book.id"
-            :image="book.image"
-            :price="`${book.price.toLocaleString('vi-VN')} đ`"
-            :originalPrice="book.originalPrice ? `${book.originalPrice.toLocaleString('vi-VN')} đ` : ''"
-            :title="book.title"
-            :author="book.author"
-            :cartText="'Thêm vào giỏ'"
-            :sold="String(book.sold)"
-          />
+        <div v-else class="recommended-container">
+            <!-- Navigation Arrow Left -->
+            <button 
+                v-if="books.length > booksPerPage && currentPage > 1"
+                @click="previousPage" 
+                class="carousel-control-prev"
+                type="button"
+            >
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            
+            <div class="recommended-products">
+                <h2 class="carousel-title">SÁCH MỚI NHẬP VỀ</h2>
+                
+                <div class="book-grid">
+                    <BookCard
+                        v-for="book in currentPageBooks"
+                        :key="book.id"
+                        :bookId="book.id"
+                        :image="book.image"
+                        :price="`${book.price.toLocaleString('vi-VN')} đ`"
+                        :originalPrice="book.originalPrice ? `${book.originalPrice.toLocaleString('vi-VN')} đ` : ''"
+                        :title="book.title"
+                        :author="book.author"
+                        :cartText="'Thêm vào giỏ'"
+                        :sold="String(book.sold)"
+                    />
+                </div>
+            </div>
+            
+            <!-- Navigation Arrow Right -->
+            <button 
+                v-if="books.length > booksPerPage && currentPage < totalPages"
+                @click="nextPage" 
+                class="carousel-control-next"
+                type="button"
+            >
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
         </div>
-      </div>
-      
-      <!-- Navigation Arrow Right -->
-        <NavigationArrow 
-        v-if="!loading && !error"
-        direction="right" 
-        @click="nextPage" 
-        :disabled="currentPage === totalPages"
-        class="nav-arrow-right"
-        />
+        
+        <!-- Pagination Indicators -->
+        <div v-if="books.length > 0" class="pagination-dots">
+            <span 
+                v-for="page in totalPages" 
+                :key="page"
+                :class="['pagination-dot', { active: currentPage === page }]"
+                @click="currentPage = page"
+            ></span>
+        </div>
     </section>
 </template>
   
 <script>
-import BookCard from "./bestsellers/BookCard.vue"; // Sử dụng lại BookCard từ bestsellers
+import BookCard from "./bestsellers/BookCard.vue";
 import BookService from '@/services/BookService';
 import CartService from '@/services/CartService';
-import NavigationArrow from "./bestsellers/NavigationArrow.vue"; // Sử dụng lại NavigationArrow
 
 export default {
-name: "NewBooks",
-components: {
-    BookCard,
-    NavigationArrow
-},
-data() {
-    return {
-    books: [],
-    loading: true,
-    error: null,
-    currentPage: 1,
-    booksPerPage: 5,
-    totalBooks: 20 // Giới hạn tổng số sách cần lấy
-    };
-},
-computed: {
-    // Tính số trang dựa trên số sách và số sách mỗi trang
-    totalPages() {
-    return Math.ceil(this.books.length / this.booksPerPage);
+    name: "NewBooks",
+    components: {
+        BookCard
     },
-    // Lấy sách cho trang hiện tại
-    currentPageBooks() {
-    const startIndex = (this.currentPage - 1) * this.booksPerPage;
-    const endIndex = startIndex + this.booksPerPage;
-    return this.books.slice(startIndex, endIndex);
-    }
-},
-methods: {
-    // Lấy danh sách sách mới nhập về từ API
-    async fetchRecentlyAddedBooks() {
-    this.loading = true;
-    try {
-        const response = await BookService.getRecentlyAddedBooks(this.totalBooks);
-        console.log("API response:", response);
-        
-        // Xử lý linh hoạt với nhiều cấu trúc có thể có từ response
-        if (response.data && response.data.success && response.data.data && response.data.data.books) {
-        // Cấu trúc từ responseFormatterMiddleware
-        this.books = response.data.data.books.map(book => this.formatBookData(book));
-        } else if (response.data && response.data.books) {
-        // Cấu trúc trả về trực tiếp từ controller
-        this.books = response.data.books.map(book => this.formatBookData(book));
-        } else if (Array.isArray(response.data)) {
-        // Mảng sách trực tiếp
-        this.books = response.data.map(book => this.formatBookData(book));
-        } else {
-        throw new Error("Định dạng dữ liệu không hợp lệ từ API");
+    data() {
+        return {
+            books: [],
+            loading: true,
+            error: null,
+            currentPage: 1,
+            booksPerPage: 5,
+            totalBooks: 20 // Giới hạn tổng số sách cần lấy
+        };
+    },
+    computed: {
+        // Tính số trang dựa trên số sách và số sách mỗi trang
+        totalPages() {
+            return Math.ceil(this.books.length / this.booksPerPage);
+        },
+        // Lấy sách cho trang hiện tại
+        currentPageBooks() {
+            const startIndex = (this.currentPage - 1) * this.booksPerPage;
+            const endIndex = startIndex + this.booksPerPage;
+            return this.books.slice(startIndex, endIndex);
         }
-        
-        this.loading = false;
-    } catch (error) {
-        console.error("Error fetching recently added books:", error);
-        this.error = "Không thể tải danh sách sách mới. Vui lòng thử lại sau.";
-        this.loading = false;
-    }
     },
+    methods: {
+        // Lấy danh sách sách mới nhập về từ API
+        async fetchRecentlyAddedBooks() {
+            this.loading = true;
+            try {
+                const response = await BookService.getRecentlyAddedBooks(this.totalBooks);
+                
+                // Xử lý linh hoạt với nhiều cấu trúc có thể có từ response
+                if (response.data && response.data.success && response.data.data && response.data.data.books) {
+                    // Cấu trúc từ responseFormatterMiddleware
+                    this.books = response.data.data.books.map(book => this.formatBookData(book));
+                } else if (response.data && response.data.books) {
+                    // Cấu trúc trả về trực tiếp từ controller
+                    this.books = response.data.books.map(book => this.formatBookData(book));
+                } else if (Array.isArray(response.data)) {
+                    // Mảng sách trực tiếp
+                    this.books = response.data.map(book => this.formatBookData(book));
+                } else {
+                    throw new Error("Định dạng dữ liệu không hợp lệ từ API");
+                }
+                
+                this.loading = false;
+            } catch (error) {
+                console.error("Error fetching recently added books:", error);
+                this.error = "Không thể tải danh sách sách mới. Vui lòng thử lại sau.";
+                this.loading = false;
+            }
+        },
 
-    // Hàm tiện ích để định dạng dữ liệu sách
-    formatBookData(book) {
-    return {
-        id: book.id || book._id,
-        image: book.image || book.coverImage || '/images/default-book-cover.jpg',
-        price: book.price,
-        originalPrice: book.originalPrice > book.price ? book.originalPrice : null,
-        title: book.title,
-        author: book.author,
-        sold: String(book.sold || 0)
-    };
+        // Hàm tiện ích để định dạng dữ liệu sách
+        formatBookData(book) {
+            // Xử lý ảnh từ chuỗi mảng thành URL đầu tiên
+            let imageUrl = '/images/default-book-cover.jpg';
+            
+            if (book.image) {
+                try {
+                // Kiểm tra nếu image là chuỗi mảng
+                if (book.image.startsWith('[') && book.image.endsWith(']')) {
+                    // Parse chuỗi thành mảng
+                    const imageArray = JSON.parse(book.image.replace(/'/g, '"'));
+                    // Lấy URL đầu tiên nếu có
+                    if (imageArray && imageArray.length > 0) {
+                    imageUrl = imageArray[0];
+                    }
+                } else {
+                    // Nếu image không phải chuỗi mảng, sử dụng trực tiếp
+                    imageUrl = book.image;
+                }
+                } catch (error) {
+                console.error("Lỗi xử lý URL hình ảnh:", error);
+                }
+            }
+            
+            return {
+                id: book._id,
+                image: imageUrl,
+                price: book.price,
+                originalPrice: book.originalPrice > book.price ? book.originalPrice : null,
+                title: book.title,
+                author: book.author,
+                sold: String(book.sold || 0)
+            };
+            },
+        
+        // Phương thức phân trang
+        nextPage() {
+            if (this.currentPage < this.totalPages) {
+                this.currentPage++;
+            }
+        },
+        previousPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+            }
+        },
+        
+        // Thêm sách vào giỏ hàng
+        async addToCart(bookId) {
+            try {
+                await CartService.addToCart({ bookId, quantity: 1 });
+                this.$toast.success("Đã thêm sách vào giỏ hàng");
+            } catch (error) {
+                console.error("Error adding book to cart:", error);
+                this.$toast.error("Không thể thêm sách vào giỏ hàng.");
+            }
+        }
     },
-    
-    // Phương thức phân trang
-    nextPage() {
-    if (this.currentPage < this.totalPages) {
-        this.currentPage++;
+    mounted() {
+        this.fetchRecentlyAddedBooks();
     }
-    },
-    previousPage() {
-    if (this.currentPage > 1) {
-        this.currentPage--;
-    }
-    },
-    
-    // Thêm sách vào giỏ hàng
-    async addToCart(bookId) {
-    try {
-        await CartService.addToCart({ bookId, quantity: 1 });
-        this.$toast.success("Đã thêm sách vào giỏ hàng");
-    } catch (error) {
-        console.error("Error adding book to cart:", error);
-        this.$toast.error("Không thể thêm sách vào giỏ hàng.");
-    }
-    }
-},
-mounted() {
-    this.fetchRecentlyAddedBooks();
-}
 };
 </script>
   
 <style scoped>
-.carousel-container {
-    width: 100%;
-    margin: 0 auto;
-    padding: 20px;
-    box-sizing: border-box;
-    position: relative;
-    margin-bottom: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.new-books-container {
-    width: 88%;
-}
-
-.carousel-title {
-    font-family: "Montserrat", sans-serif;
-    font-weight: 900;
-    font-size: 22px; /* Giảm từ 25px cho gọn hơn */
-    color: #4d2900;
-    margin-bottom: 15px;
-}
-
-.book-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: space-between;
-}
-
-.nav-arrow-left {
-    position: absolute;
-    left: 1.5%;
-    z-index: 5;
-    transform: scale(0.8);
-}
-
-.nav-arrow-right {
-    position: absolute;
-    right: 1.5%;
-    z-index: 5;
-    transform: scale(0.8);
-}
-
-.loading-container, .error-message {
-    width: 100%;
-    padding: 20px;
-    text-align: center;
-    font-family: "Montserrat", sans-serif;
-    font-size: 14px;
-}
-
-.error-message {
-    color: #ff3333; 
-}
-
-@media (max-width: 991px) {
-    .carousel-container {
-        padding: 10px;
+    .recommended-section {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative; /* Thêm position relative để định vị các nút control */
+        padding: 0 20px; /* Tạo không gian cho các nút control nằm một nửa bên ngoài */
+        margin-bottom: 40px;
     }
 
-    .book-grid {
-        justify-content: center;
-        gap: 10px;
+    .recommended-container {
+        width: 88%; /* Chiều rộng container */
+        display: flex;
+        align-items: center;
+        justify-content: center; /* Căn giữa nội dung */
+        position: relative;
+        padding: 0; /* Bỏ padding và để các nút nằm ngoài container */
+        margin: 30px 0; /* Thêm margin thay vì dùng padding */
     }
+    
+    .recommended-products {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
     }
-
-    @media (max-width: 640px) {
+    
     .carousel-title {
-        font-size: 18px;
+        font-family: "Montserrat", sans-serif;
+        font-weight: 900;
+        font-size: 22px;
+        color: #4d2900;
+        margin-bottom: 20px;
     }
-}
+    
+    .book-grid {
+        display: flex;
+        align-items: stretch;
+        gap: 0; /* Bỏ gap và dùng space-between để các card cách đều nhau */
+        width: 100%;
+        justify-content: space-between; /* Thay đổi từ center sang space-between */
+        flex-wrap: nowrap; /* Không cho phép xuống dòng để các card cách đều nhau */
+    }
+    
+    .pagination-dots {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        gap: 8px;
+    }
+    
+    .pagination-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #e0e0e0;
+        cursor: pointer;
+    }
+    
+    .pagination-dot.active {
+        background-color: #4d2900;
+    }
+    
+    .loading-message, .error-message {
+        width: 100%;
+        text-align: center;
+        padding: 20px 0;
+        font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+        color: #4d2900;
+    }
+    
+    .error-message {
+        color: #e74c3c;
+    }
+    
+    @media (max-width: 991px) {
+        .book-grid {
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .carousel-title {
+            font-size: 18px;
+        }
+    }
+
+    /* Style cho nút điều khiển */
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 35px;
+        height: 35px;
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0.8;
+        transition: all 0.3s ease;
+        position: absolute;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+    }
+
+    .carousel-control-prev {
+        left: 0;
+        transform: translateX(-50%) translateY(-50%);
+    }
+
+    .carousel-control-next {
+        right: 0;
+        transform: translateX(50%) translateY(-50%);
+    }
+
+    .carousel-control-prev:hover,
+    .carousel-control-next:hover {
+        background-color: rgba(255, 255, 255, 0.95);
+        opacity: 1;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .carousel-control-prev:hover {
+        transform: translateX(-50%) translateY(-50%) scale(1.15);
+    }
+
+    .carousel-control-next:hover {
+        transform: translateX(50%) translateY(-50%) scale(1.15);
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        background-color: #000;
+        width: 18px;
+        height: 18px;
+        filter: invert(1); /* Làm cho icon màu đen */
+        opacity: 0.7;
+    }
 </style>

@@ -7,9 +7,9 @@ const Register = () => import('../components/Register.vue')
 const Profile = () => import('../components/profile/ProfileUser.vue')
 const CategoryPage = () => import('../components/categorypage/CategoryPage.vue') 
 const ShoppingCart = () => import('../components/shoppingcart/ShoppingCart.vue')
-const Payment = () => import('../components/PaymentCallback.vue')
 const OrderHistory = () => import('../components/historyorder/OrderHistoryPage.vue')
-
+const ProductDetail = () => import('../components/ProductDetail/ProductDetailPage.vue')
+const PaymentCallback = () => import('../components/payment/PaymentCallback.vue')
 const routes = [
   {
     path: '/',
@@ -45,16 +45,23 @@ const routes = [
     component: ShoppingCart,
   },
   {
-    path: '/payment/callback',
-    name: 'PaymentCallback',
-    component: Payment,
-  },
-  {
     path: '/my-orders',
     name: 'my-orders',
     component: OrderHistory,
     meta: { requiresAuth: true }
   },
+  {
+    path: '/productdetail/:id',
+    name: 'product-detail', 
+    component: ProductDetail,
+    props: true
+  },
+  {
+    path: '/payment/callback',
+    name: 'payment-callback',
+    component: PaymentCallback,
+    meta: { requiresAuth: false }
+  }
 ]
 
 const router = createRouter({
