@@ -62,13 +62,42 @@ export default {
     },
     
     // Phương thức wrapper để tự động chọn loại wishlist phù hợp
+    // Phương thức wrapper để tự động chọn loại wishlist phù hợp
     addToWishlist(productId) {
         if (AuthenticationService.isLoggedIn()) {
             const userId = AuthenticationService.getCurrentUser().id;
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                // Hiển thị thông báo lỗi và chuyển hướng đến đăng nhập nếu cần
+                eventBus.emit('show-alert', {
+                    show: true,
+                    type: 'error',
+                    title: 'Lỗi xác thực',
+                    message: 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại',
+                    autoClose: true
+                });
+                
+                return Promise.reject(new Error('Authentication token not found'));
+            }
+            
             return this.addToUserWishlist(userId, productId)
                 .then(response => {
                     eventBus.emit('wishlist-updated');
                     return response;
+                })
+                .catch(error => {
+                    if (error.response && error.response.status === 401) {
+                        // Xử lý lỗi 401 Unauthorized
+                        eventBus.emit('show-alert', {
+                            show: true,
+                            type: 'error',
+                            title: 'Lỗi xác thực',
+                            message: 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại',
+                            autoClose: true
+                        });
+                    }
+                    return Promise.reject(error);
                 });
         } else {
             const wishlistId = this.ensureGuestWishlistId();
@@ -97,5 +126,40 @@ export default {
                     return response;
                 });
         }
-    }
+    },
+
+    checkProductInWishlist(productId) {
+        if (AuthenticationService.isLoggedIn()) {
+            const userId = AuthenticationService.getCurrentUser().id;
+            return this.getUserWishlist(userId)
+                .then(response => {
+                    if (response.data && response.data.success && response.data.data) {
+                        const wishlistItems = response.data.data.products || [];
+                        return wishlistItems.some(item => {
+                            if (typeof item.productId === 'string') {
+                                return item.productId === productId;
+                            }
+                            
+                            if (item.productId && item.productId._id) {
+                                return item.productId._id === productId;
+                            }
+                            
+                            if (item.productId && item.productId.toString) {
+                                return item.productId.toString() === productId.toString();
+                            }
+                            
+                            return false;
+                        });
+                    }
+                    return false;
+                })
+                .catch(error => {
+                    console.error('Lỗi khi kiểm tra sản phẩm trong wishlist:', error);
+                    return false;
+                });
+        } else {
+            // Kiểm tra trong wishlist khách nếu cần
+            return Promise.resolve(false);
+        }
+    },
 }
