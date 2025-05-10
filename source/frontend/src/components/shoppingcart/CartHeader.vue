@@ -25,10 +25,10 @@
     }
       
     .header-content {
-      width: 62%;
+      width: 100%; /* Thay đổi từ 62% thành 100% */
       display: flex;  
       flex-direction: column;
-      gap: 80px;
+      gap: 30px; /* Giảm xuống từ 80px */
     }
 
     .main-title{
@@ -41,6 +41,8 @@
     .information-container {
       display: flex;
       margin-top: 20px;
+      width: 100%;
+      align-items: center;
     }
 
     .product-label {
@@ -49,7 +51,7 @@
       font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
       font-weight: 800;
       text-align: left;
-      width: 47%;
+      width: 60%; /* Tương ứng với product-info trong ProductCard */
     }
       
       
@@ -59,7 +61,7 @@
       font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
       font-weight: 800;
       text-align: left;
-      width: 30%;
+      width: 20%; /* Tương ứng với quantity-controls trong ProductCard */
     }
 
       
@@ -68,7 +70,22 @@
       font-size: 24px;
       font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
       font-weight: 800;
-      text-align: center;
+      text-align: right;
+      width: 20%; /* Tương ứng với price-info trong ProductCard */
     }
 
+    @media (max-width: 991px) {
+      .information-container {
+        display: none; /* Ẩn tiêu đề cột trên mobile */
+      }
+      
+      .header-content {
+        gap: 20px;
+      }
+      
+      .main-title {
+        font-size: 28px;
+        text-align: center;
+      }
+    }
 </style>

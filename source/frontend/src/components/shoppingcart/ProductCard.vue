@@ -120,7 +120,6 @@ export default {
   padding: 20px;
   display: flex;
   align-items: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .product-card:hover {
@@ -129,9 +128,8 @@ export default {
 }
 
 .product-info {
-  width: 40%;
+  width: 60%; /* Tương ứng với product-label */
   display: flex;
-  gap: 20px;
   align-items: center;
 }
 
@@ -163,12 +161,10 @@ export default {
 }
 
 .quantity-controls {
-  width: 35%;
+  width: 20%; /* Tương ứng với quantity-label */
   display: flex;
-  gap: 20px;
   align-items: center;
-  justify-content: center;
-  font-family: Roboto, -apple-system, Roboto, Helvetica, sans-serif;
+  justify-content: flex-start; /* Căn trái */
 }
 
 .quantity-btn {
@@ -199,11 +195,10 @@ export default {
 }
 
 .price-info {
-  width: 30%;
+  width: 20%; /* Tương ứng với price-label */
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 20%;
+  justify-content: flex-end; /* Căn phải */
 }
 
 .price-value {
