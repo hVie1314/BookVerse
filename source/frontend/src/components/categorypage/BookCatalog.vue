@@ -1,6 +1,6 @@
 <template>
     <div class="book-catalog">
-        <div id="bannerCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+        <div id="bannerCarousel" v-if="!isWishlistPage" class="carousel slide mb-4" data-bs-ride="carousel">
             <!-- Indicators -->
             <div class="carousel-indicators">
                 <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
@@ -35,18 +35,22 @@
                 <span class="visually-hidden">Next</span>
             </button>
         </div>
-        <div class="catalog-header">
-      <div class="results-count">Hiển thị {{ totalBooks }} sản phẩm</div>
-      <div class="sorting-options">
-        <select v-model="sortOption" class="sort-select" @change="fetchBooks">
-          <option value="default">Sắp xếp theo</option>
-          <option value="price-asc">Giá: Thấp đến cao</option>
-          <option value="price-desc">Giá: Cao đến thấp</option>
-          <option value="bestseller">Bán chạy nhất</option>
-          <option value="newest">Mới nhất</option>
-        </select>
-      </div>
-    </div>
+        <div v-if="!isWishlistPage" class="catalog-header">
+            <div class="results-count">Hiển thị {{ totalBooks }} sản phẩm</div>
+            <div class="sorting-options">
+                <select v-model="sortOption" class="sort-select" @change="fetchBooks">
+                    <option value="default">Sắp xếp theo</option>
+                    <option value="price-asc">Giá: Thấp đến cao</option>
+                    <option value="price-desc">Giá: Cao đến thấp</option>
+                    <option value="bestseller">Bán chạy nhất</option>
+                    <option value="newest">Mới nhất</option>
+                </select>
+            </div>
+        </div>
+
+        <div v-if="isWishlistPage" class="wishlist-header">
+            <div class="results-count">{{ totalBooks }} sản phẩm yêu thích</div>
+        </div>
     
     <div v-if="loading" class="loading-indicator">
       <div class="spinner"></div>
@@ -62,7 +66,7 @@
         <router-link to="/category" class="browse-books-btn">Khám phá sách</router-link>
     </div>
     <div v-else>
-      <BookGrid :books="books" />
+      <BookGrid :books="books" :isWishlistPage="isWishlistPage"/>
     
       <Pagination
         :currentPage="currentPage"
@@ -92,16 +96,22 @@
                 totalPages: 1,
                 totalBooks: 0,
                 booksPerPage: 16,
+                wishlistBooksPerPage: 25,
                 loading: false,
                 error: null,
                 sortOption: 'default',
                 filters: {},
                 searchQuery: '',    
-                isWishlistPage: false
+                isWishlistPage: false,
+                wishlistAllBooks: []
             };
         },
+        
         mounted() {
-            this.initCarousel();
+            // Chỉ khởi tạo carousel khi không phải trang wishlist
+            if (!this.isWishlistPage) {
+                this.initCarousel();
+            }
         },
         beforeUnmount() {
             if (this.carouselInterval) {
@@ -264,8 +274,14 @@
                 this.currentPage = page;
                 // Cuộn lên đầu danh sách sản phẩm
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                // Gọi fetchBooks để tải dữ liệu mới cho trang được chọn
-                this.fetchBooks();
+                
+                // Logic phân trang riêng cho danh sách yêu thích
+                if (this.isWishlistPage) {
+                    this.paginateWishlistBooks();
+                } else {
+                    // Gọi fetchBooks để tải dữ liệu mới cho trang category thông thường
+                    this.fetchBooks();
+                }
             },
             applyFilters(newFilters) {
                 this.filters = { ...newFilters };
@@ -301,7 +317,7 @@
                         console.log('Số sản phẩm yêu thích tìm thấy:', products.length);
                         
                         // Trực tiếp chuyển đổi dữ liệu từ response không cần fetch lại
-                        this.books = products.map(item => {
+                        this.wishlistAllBooks = products.map(item => {
                             if (item.productId && typeof item.productId === 'object') {
                                 // Xử lý hình ảnh sách
                                 let image = item.productId.image;
@@ -328,12 +344,16 @@
                             return null;
                         }).filter(book => book !== null);
                         
-                        // Cập nhật thông tin phân trang
-                        this.totalBooks = this.books.length;
-                        this.totalPages = Math.ceil(this.totalBooks / this.booksPerPage);
+                        // Cập nhật thông tin phân trang dựa trên danh sách yêu thích hoàn chỉnh
+                        this.totalBooks = this.wishlistAllBooks.length;
+                        this.totalPages = Math.ceil(this.totalBooks / this.wishlistBooksPerPage);
+                        
+                        // Thực hiện phân trang thủ công
+                        this.paginateWishlistBooks();
+                        
                         this.isWishlistPage = true;
                         
-                        console.log('Đã xử lý xong:', this.books.length, 'sách');
+                        console.log('Đã xử lý xong:', this.wishlistAllBooks.length, 'sách, hiển thị:', this.books.length);
                     } else {
                         this.error = 'Không thể tải danh sách yêu thích';
                         this.books = [];
@@ -346,6 +366,16 @@
                     this.loading = false;
                 }
             },
+
+            paginateWishlistBooks() {
+                const startIndex = (this.currentPage - 1) * this.wishlistBooksPerPage;
+                const endIndex = startIndex + this.wishlistBooksPerPage;
+                
+                // Lấy phần dữ liệu cần hiển thị cho trang hiện tại
+                this.books = this.wishlistAllBooks.slice(startIndex, endIndex);
+                
+                console.log(`Phân trang wishlist: ${startIndex}-${endIndex} / ${this.wishlistAllBooks.length}`);
+            }
         },
         created() {
             this.isWishlistPage = this.$route.query.wishlist === 'true';
@@ -399,6 +429,21 @@
 </script>
   
 <style scoped>
+.wishlist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.wishlist-header .results-count {
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    color: #4d2900;
+    font-weight: 600;
+}
 .empty-wishlist {
   text-align: center;
   padding: 40px;

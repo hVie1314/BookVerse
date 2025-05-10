@@ -1,5 +1,5 @@
 <template>
-    <div class="book-grid">
+    <div class="book-grid" :class="{ 'wishlist-grid': isWishlistPage }">
         <BookCard
             v-for="book in books" 
             :key="book._id || book.id"
@@ -28,6 +28,10 @@
             books: {
                 type: Array,
                 required: true
+            },
+            isWishlistPage: {
+                type: Boolean,
+                default: false
             }
         },
         methods: {
@@ -67,7 +71,7 @@
     .book-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
+        gap: 20px;  
         margin-bottom: 30px;
     }
 
@@ -77,6 +81,33 @@
         margin-bottom: 10px;
     }
 
+    .wishlist-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    @media (max-width: 1200px) {
+    .wishlist-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .wishlist-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .wishlist-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .wishlist-grid {
+        grid-template-columns: 1fr;
+    }
+}
     /* Media queries để responsive */
     @media (max-width: 1200px) {
         .book-grid {
