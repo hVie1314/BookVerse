@@ -11,6 +11,8 @@
             :originalPrice="book.originalPrice ? formatPrice(book.originalPrice) : ''"
             :sold="book.sold || 0"
             cartText="Thêm vào giỏ"
+            :isWishlistPage="isWishlistPage"
+            @remove-from-wishlist="handleRemoveFromWishlist"
         />
     </div>
 </template>
@@ -62,6 +64,10 @@
                     console.error('Lỗi khi xử lý chuỗi hình ảnh:', error);
                     return 'https://picsum.photos/seed/error/300/400'; // Ảnh dự phòng khi lỗi
                 }
+            },
+            handleRemoveFromWishlist(bookId) {
+                // Phát sự kiện lên component cha (BookCatalog) để xử lý logic xóa
+                this.$emit('remove-from-wishlist', bookId);
             }
         }
     };

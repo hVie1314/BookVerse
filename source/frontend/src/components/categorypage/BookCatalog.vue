@@ -66,7 +66,7 @@
         <router-link to="/category" class="browse-books-btn">Khám phá sách</router-link>
     </div>
     <div v-else>
-      <BookGrid :books="books" :isWishlistPage="isWishlistPage"/>
+      <BookGrid :books="books" :isWishlistPage="isWishlistPage"  @remove-from-wishlist="handleRemoveFromWishlist"/>
     
       <Pagination
         :currentPage="currentPage"
@@ -289,74 +289,74 @@
                 this.fetchBooks();
             },
             async fetchWishlistBooks() {
-    this.loading = true;
-    this.error = null;
-    
-    try {
-        // Sử dụng phương thức getWishlist() mới
-        const response = await WishlistService.getWishlist();
-        console.log('Wishlist response:', response.data);
-        
-        if (response.data && response.data.success && response.data.data) {
-            // Xử lý đúng cấu trúc dữ liệu API
-            const wishlistData = response.data.data.wishlist || response.data.data;
-            let products = [];
-            
-            // Lấy mảng products từ đúng đường dẫn
-            if (wishlistData && wishlistData.products && Array.isArray(wishlistData.products)) {
-                products = wishlistData.products;
-            }
-            
-            console.log('Số sản phẩm yêu thích tìm thấy:', products.length);
-            
-            // Chuyển đổi dữ liệu cho hiển thị
-            this.wishlistAllBooks = products.map(item => {
-                if (item.productId && typeof item.productId === 'object') {
-                    // Xử lý hình ảnh sách
-                    let image = item.productId.image;
-                    if (typeof image === 'string' && image.startsWith('[') && image.endsWith(']')) {
-                        try {
-                            const images = JSON.parse(image.replace(/'/g, '"'));
-                            image = images[0];
-                        } catch (e) {
-                            console.error('Lỗi xử lý ảnh:', e);
-                        }
-                    }
+                this.loading = true;
+                this.error = null;
+                
+                try {
+                    // Sử dụng phương thức getWishlist() mới
+                    const response = await WishlistService.getWishlist();
+                    console.log('Wishlist response:', response.data);
                     
-                    // Trả về đối tượng book đã định dạng
-                    return {
-                        _id: item.productId._id,
-                        id: item.productId._id,
-                        title: item.productId.title,
-                        author: item.productId.author,
-                        price: item.productId.price,
-                        image: image,
-                    };
+                    if (response.data && response.data.success && response.data.data) {
+                        // Xử lý đúng cấu trúc dữ liệu API
+                        const wishlistData = response.data.data.wishlist || response.data.data;
+                        let products = [];
+                        
+                        // Lấy mảng products từ đúng đường dẫn
+                        if (wishlistData && wishlistData.products && Array.isArray(wishlistData.products)) {
+                            products = wishlistData.products;
+                        }
+                        
+                        console.log('Số sản phẩm yêu thích tìm thấy:', products.length);
+                        
+                        // Chuyển đổi dữ liệu cho hiển thị
+                        this.wishlistAllBooks = products.map(item => {
+                            if (item.productId && typeof item.productId === 'object') {
+                                // Xử lý hình ảnh sách
+                                let image = item.productId.image;
+                                if (typeof image === 'string' && image.startsWith('[') && image.endsWith(']')) {
+                                    try {
+                                        const images = JSON.parse(image.replace(/'/g, '"'));
+                                        image = images[0];
+                                    } catch (e) {
+                                        console.error('Lỗi xử lý ảnh:', e);
+                                    }
+                                }
+                                
+                                // Trả về đối tượng book đã định dạng
+                                return {
+                                    _id: item.productId._id,
+                                    id: item.productId._id,
+                                    title: item.productId.title,
+                                    author: item.productId.author,
+                                    price: item.productId.price,
+                                    image: image,
+                                };
+                            }
+                            return null;
+                        }).filter(book => book !== null);
+                        
+                        // Cập nhật thông tin phân trang
+                        this.totalBooks = this.wishlistAllBooks.length;
+                        this.totalPages = Math.ceil(this.totalBooks / this.wishlistBooksPerPage);
+                        
+                        // Thực hiện phân trang thủ công
+                        this.paginateWishlistBooks();
+                        
+                        this.isWishlistPage = true;
+                        
+                    } else {
+                        this.error = 'Không thể tải danh sách yêu thích';
+                        this.books = [];
+                    }
+                } catch (error) {
+                    console.error('Error fetching wishlist:', error);
+                    this.error = 'Đã xảy ra lỗi khi tải danh sách yêu thích';
+                    this.books = [];
+                } finally {
+                    this.loading = false;
                 }
-                return null;
-            }).filter(book => book !== null);
-            
-            // Cập nhật thông tin phân trang
-            this.totalBooks = this.wishlistAllBooks.length;
-            this.totalPages = Math.ceil(this.totalBooks / this.wishlistBooksPerPage);
-            
-            // Thực hiện phân trang thủ công
-            this.paginateWishlistBooks();
-            
-            this.isWishlistPage = true;
-            
-        } else {
-            this.error = 'Không thể tải danh sách yêu thích';
-            this.books = [];
-        }
-    } catch (error) {
-        console.error('Error fetching wishlist:', error);
-        this.error = 'Đã xảy ra lỗi khi tải danh sách yêu thích';
-        this.books = [];
-    } finally {
-        this.loading = false;
-    }
-},
+            },
 
             paginateWishlistBooks() {
                 const startIndex = (this.currentPage - 1) * this.wishlistBooksPerPage;
@@ -366,6 +366,26 @@
                 this.books = this.wishlistAllBooks.slice(startIndex, endIndex);
                 
                 console.log(`Phân trang wishlist: ${startIndex}-${endIndex} / ${this.wishlistAllBooks.length}`);
+            },
+
+            handleRemoveFromWishlist(bookId) {
+                // Xóa sách từ danh sách hiển thị trên giao diện
+                this.books = this.books.filter(book => (book.id || book._id) !== bookId);
+                
+                // Nếu đang hiển thị danh sách yêu thích, cập nhật lại wishlistAllBooks
+                if (this.isWishlistPage) { 
+                    this.wishlistAllBooks = this.wishlistAllBooks.filter(book => (book.id || book._id) !== bookId);
+                    
+                    // Cập nhật lại thông tin phân trang
+                    this.totalBooks = this.wishlistAllBooks.length;
+                    this.totalPages = Math.ceil(this.totalBooks / this.wishlistBooksPerPage);
+                    
+                    // Kiểm tra nếu trang hiện tại không còn sách thì quay lại trang trước
+                    if (this.books.length === 0 && this.currentPage > 1) {
+                        this.currentPage--;
+                        this.paginateWishlistBooks();
+                    }
+                }
             }
         },
         created() {
