@@ -1,5 +1,13 @@
 <template>
     <article class="book-card" @click="navigateToDetail">
+        <button 
+            v-if="isWishlistPage" 
+            class="remove-wishlist-button" 
+            @click.stop="removeFromFavorites"
+            title="Xóa khỏi danh sách yêu thích"
+        >
+            <i class="fa-solid fa-trash"></i>
+        </button>
         <img 
             :src="image" 
             :alt="title" 
@@ -76,6 +84,10 @@ export default {
                 return (typeof value === 'number' || typeof value === 'string');
             }
         },
+        isWishlistPage: {
+            type: Boolean,
+            default: false
+        }
     },
     data() {
         return {
@@ -126,45 +138,104 @@ export default {
             }
         },
         async addToFavorites() {
-    try {
-        if (this.isInWishlist) {
-            // Nếu đã có trong wishlist, xóa khỏi wishlist
-            await WishlistService.removeFromWishlist(this.bookId);
-            this.isInWishlist = false;
-            if (this.$toast) {
-                this.$toast.success("Đã xóa sách khỏi danh sách yêu thích");
+            try {
+                if (this.isInWishlist) {
+                    // Nếu đã có trong wishlist, xóa khỏi wishlist
+                    await WishlistService.removeFromWishlist(this.bookId);
+                    this.isInWishlist = false;
+                    if (this.$toast) {
+                        this.$toast.success("Đã xóa sách khỏi danh sách yêu thích");
+                    }
+                } else {
+                    // Nếu chưa có, thêm vào wishlist
+                    await WishlistService.addToWishlist(this.bookId);
+                    this.isInWishlist = true;
+                    if (this.$toast) {
+                        this.$toast.success("Đã thêm sách vào danh sách yêu thích");
+                    }
+                }
+                // Phát sự kiện để cập nhật UI wishlist
+                eventBus.emit('wishlist-updated');
+            } catch (error) {
+                console.error("Lỗi khi thao tác với danh sách yêu thích:", error);
+                
+                // Xử lý lỗi với thông báo cụ thể
+                let errorMessage = 'Không thể thực hiện thao tác. Vui lòng thử lại sau.';
+                if (error.response) {
+                    if (error.response.status === 401) {
+                        errorMessage = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
+                    }
+                }
+                
+                if (this.$toast) {
+                    this.$toast.error(errorMessage);
+                }
             }
-        } else {
-            // Nếu chưa có, thêm vào wishlist
-            await WishlistService.addToWishlist(this.bookId);
-            this.isInWishlist = true;
-            if (this.$toast) {
-                this.$toast.success("Đã thêm sách vào danh sách yêu thích");
+        },
+        async removeFromFavorites() {
+            try {
+                await WishlistService.removeFromWishlist(this.bookId);
+                this.isInWishlist = false;
+                
+                if (this.$toast) {
+                    this.$toast.success("Đã xóa sách khỏi danh sách yêu thích");
+                }
+                
+                // Phát sự kiện để cập nhật UI wishlist và thông báo component cha rằng sách đã bị xóa
+                eventBus.emit('wishlist-updated');
+                this.$emit('remove-from-wishlist', this.bookId);
+            } catch (error) {
+                console.error("Lỗi khi xóa sách khỏi danh sách yêu thích:", error);
+                
+                let errorMessage = 'Không thể xóa sách khỏi danh sách yêu thích. Vui lòng thử lại sau.';
+                if (error.response && error.response.status === 401) {
+                    errorMessage = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
+                }
+                
+                if (this.$toast) {
+                    this.$toast.error(errorMessage);
+                }
             }
         }
-        // Phát sự kiện để cập nhật UI wishlist
-        eventBus.emit('wishlist-updated');
-    } catch (error) {
-        console.error("Lỗi khi thao tác với danh sách yêu thích:", error);
-        
-        // Xử lý lỗi với thông báo cụ thể
-        let errorMessage = 'Không thể thực hiện thao tác. Vui lòng thử lại sau.';
-        if (error.response) {
-            if (error.response.status === 401) {
-                errorMessage = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
-            }
-        }
-        
-        if (this.$toast) {
-            this.$toast.error(errorMessage);
-        }
-    }
-}
     },
 };
 </script>
   
 <style scoped>
+.remove-wishlist-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    opacity: 1; /* Thay đổi từ 0 thành 1 để luôn hiển thị */
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+
+.remove-wishlist-button:hover {
+    background-color: #ff3333;
+    transform: scale(1.1);
+}
+
+.remove-wishlist-button i {
+    font-size: 14px;
+    color: #4d2900;
+    transition: color 0.3s ease; /* Thêm transition cho màu */
+}
+
+.remove-wishlist-button:hover i {
+    color: white; /* Màu chữ trắng khi hover */
+}
 .fa-heart.liked {
     color: #e74c3c; /* Màu đỏ khi đã yêu thích */
     opacity: 1;
