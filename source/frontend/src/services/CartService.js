@@ -37,7 +37,11 @@ export default {
     
     // Cập nhật sản phẩm trong giỏ hàng người dùng
     updateUserCart(userId, productId, quantity) {
-        return Api().put('cart/', { userId, productId, quantity });
+        const token = localStorage.getItem('token');
+        return Api().put('cart/', 
+            { userId, productId, quantity }, 
+            { headers: { 'Authorization': `Bearer ${token}` }}
+        );
     },
     
     // Xóa giỏ hàng người dùng

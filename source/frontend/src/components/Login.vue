@@ -68,7 +68,8 @@
 import AuthenticationService from '@/services/AuthenticationService';
 import Alert from '@/components/Alert.vue';
 import CartService from '@/services/CartService';
-// import eventBus from '@/eventBus.js';
+import WishlistService from '@/services/WishlistService';
+import eventBus from '@/eventBus.js';
 
 export default {
   name: 'LoginForm',
@@ -154,18 +155,27 @@ async handleSubmit() {
                 localStorage.removeItem('guestCartId');
               }
             }
+
+            try {
+              await WishlistService.mergeWishlistAfterLogin(String(tokenUserId));
+              console.log('Đã merge danh sách yêu thích của khách vào tài khoản');
+            } catch (wishlistMergeError) {
+              console.error('Lỗi khi merge danh sách yêu thích:', wishlistMergeError);
+              // Tiếp tục quá trình đăng nhập ngay cả khi merge wishlist thất bại
+            }
           }
         } catch (tokenError) {
           console.error('Lỗi khi giải mã token:', tokenError);
         }
         
         // Hiển thị thông báo thành công và chuyển hướng
-        this.alert = {
+        eventBus.emit('show-alert', {
           show: true,
           type: 'success',
           title: 'Đăng nhập thành công',
-          message: 'Chào mừng bạn quay trở lại BookVerse!'
-        };
+          message: `Chào mừng ${userData.username} quay trở lại!`,
+          autoClose: true
+        });
         
         setTimeout(() => {
           const redirectPath = this.$route.query.redirect || '/';
