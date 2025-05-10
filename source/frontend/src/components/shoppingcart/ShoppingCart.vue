@@ -11,10 +11,12 @@
               @update-quantity="updateQuantity"
               @remove-item="removeItem"
             />
-            <CheckoutSummary
-              :totalPrice="calculatedTotalPrice " 
-              @checkout="proceedToCheckout" 
-            />
+            <div class="checkout-summary-container">
+              <CheckoutSummary
+                :totalPrice="calculatedTotalPrice" 
+                @checkout="proceedToCheckout" 
+              />
+            </div>
           </section>
           <div v-else class="loading-container">
             <p>Đang tải giỏ hàng...</p>
@@ -52,6 +54,11 @@
         loading: true,
         error: null
       };
+    },
+    mounted() {
+      this.$nextTick(() => {
+        this.setupStickyObserver();
+      });
     },
     computed: {
       calculatedTotalPrice() {
@@ -447,12 +454,38 @@
           confirmText: 'Thanh toán ngay',
           cancelText: 'Thanh toán sau'
         });
+      },
+
+      setupStickyObserver() {
+        // Tạo Intersection Observer để theo dõi khi checkout summary trở thành sticky
+        const observer = new IntersectionObserver(
+          ([entry]) => {
+            const summaryContainer = document.querySelector('.checkout-summary-container');
+            if (summaryContainer) {
+              if (!entry.isIntersecting) {
+                summaryContainer.classList.add('is-sticky');
+              } else {
+                summaryContainer.classList.remove('is-sticky');
+              }
+            }
+          },
+          { threshold: 0 }
+        );
+        
+        // Quan sát một element "ghost" phía trên checkout summary
+        const ghostElement = document.createElement('div');
+        ghostElement.style.height = '1px';
+        const summaryContainer = document.querySelector('.checkout-summary-container');
+        if (summaryContainer && summaryContainer.parentNode) {
+          summaryContainer.parentNode.insertBefore(ghostElement, summaryContainer);
+          observer.observe(ghostElement);
+        }
       }
     },
   };
   </script>
     
-  <style scoped>
+<style scoped>
   .page-container {
     width: 100%;
     display: flex;
@@ -460,7 +493,7 @@
     align-items: center;
     background-color: rgb(244, 235, 225);
     min-height: 100vh;
-    justify-content: space-between; /* Thêm để phân bố không gian */
+    justify-content: space-between;
   }
   
   .shopping-cart {
@@ -478,12 +511,24 @@
   
   .cart-content {
     display: flex;
-    justify-content: flex-start;
-    gap: 30px;
-    margin-top: 20px;
+    flex-direction: column; /* Thay đổi từ row thành column */
     width: 100%;
+    margin-top: 20px;
   }
   
+  .checkout-summary-container {
+    width: 100%;
+    position: sticky; /* Giữ nguyên tính năng sticky */
+    bottom: 0; /* Thay đổi từ 20px thành 0px để đảm bảo không có khoảng trống */
+    z-index: 10; 
+    margin-top: 30px; /* Giữ nguyên margin phía trên */
+    background-color: rgb(244, 235, 225); /* Thêm màu nền để che phần content phía dưới */
+    padding-bottom: 20px; /* Thêm padding dưới để có không gian thở */
+  }
+
+  .checkout-summary-container.is-sticky {
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+  }
   @media (max-width: 991px) {
     .container {
       width: 95%;
