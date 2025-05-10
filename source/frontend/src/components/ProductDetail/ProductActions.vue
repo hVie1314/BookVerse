@@ -137,53 +137,49 @@
             try {
                 const bookId = this.book._id || this.book.id;
                 
-                // Kiểm tra đăng nhập trước khi thêm vào yêu thích
-                if (!AuthenticationService.isLoggedIn()) {
+                // Xử lý thay đổi trạng thái yêu thích
+                if (this.isInWishlist) {
+                    // Nếu đã có trong wishlist, xóa khỏi wishlist
+                    await WishlistService.removeFromWishlist(bookId);
+                    this.isInWishlist = false;
+                    
                     eventBus.emit('show-alert', {
                         show: true,
-                        type: 'warning',
-                        title: 'Yêu cầu đăng nhập',
-                        message: 'Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích',
+                        type: 'success',
+                        title: 'Thành công',
+                        message: 'Đã xóa sản phẩm khỏi danh sách yêu thích',
                         autoClose: true,
-                        duration: 3000,
-                        showChoices: true,
-                        confirmText: 'Đăng nhập',
-                        cancelText: 'Hủy',
-                        choices: [
-                            {
-                                text: 'Đăng nhập',
-                                onClick: () => this.$router.push('/login')
-                            },
-                            {
-                                text: 'Hủy',
-                                onClick: () => {}
-                            }
-                        ]
+                        duration: 3000
                     });
-                    return;
+                } else {
+                    // Nếu chưa có, thêm vào wishlist
+                    const response = await WishlistService.addToWishlist(bookId);
+                    
+                    // Kiểm tra phản hồi từ API 
+                    if (!response.data || !response.data.success) {
+                        throw new Error('Thêm vào yêu thích không thành công');
+                    }
+                    
+                    this.isInWishlist = true;
+                    
+                    eventBus.emit('show-alert', {
+                        show: true,
+                        type: 'success',
+                        title: 'Thành công',
+                        message: 'Đã thêm sản phẩm vào danh sách yêu thích',
+                        autoClose: true,
+                        duration: 3000
+                    });
                 }
                 
-                const response = await WishlistService.addToWishlist(bookId);
+                // Phát sự kiện để cập nhật UI wishlist
+                eventBus.emit('wishlist-updated');
                 
-                // Kiểm tra phản hồi từ API trước khi hiển thị thông báo thành công
-                if (!response.data || !response.data.success) {
-                    throw new Error('Thêm vào yêu thích không thành công');
-                }
-                
-                eventBus.emit('show-alert', {
-                    show: true,
-                    type: 'success',
-                    title: 'Thành công',
-                    message: 'Đã thêm sản phẩm vào danh sách yêu thích',
-                    autoClose: true,
-                    duration: 3000
-                });
-                this.isInWishlist = true; // Cập nhật trạng thái yêu thích
             } catch (error) {
-                console.error('Lỗi khi thêm vào danh sách yêu thích:', error);
+                console.error('Lỗi khi thao tác với danh sách yêu thích:', error);
                 
-                // Thông báo lỗi cụ thể hơn dựa trên mã lỗi
-                let errorMessage = 'Không thể thêm sản phẩm vào danh sách yêu thích';
+                // Xử lý lỗi với thông báo cụ thể
+                let errorMessage = 'Không thể thực hiện thao tác. Vui lòng thử lại sau.';
                 if (error.response) {
                     if (error.response.status === 401) {
                         errorMessage = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
