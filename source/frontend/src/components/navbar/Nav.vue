@@ -158,26 +158,10 @@ export default {
   },
   methods: {
       navigateToWishlist() {
-        // Kiểm tra trạng thái đăng nhập trước
-        this.checkLoginStatus();
-        
-        if (this.isLoggedIn) {
-          // Nếu đã đăng nhập, chuyển đến trang danh mục với filter hiển thị sản phẩm yêu thích
           this.$router.push({
-            name: 'category',
-            query: { wishlist: 'true' }
+              name: 'category',
+              query: { wishlist: 'true' }
           });
-        } else {
-          // Nếu chưa đăng nhập, hiển thị thông báo yêu cầu đăng nhập
-          eventBus.emit('show-alert', {
-            show: true,
-            type: 'warning',
-            title: 'Yêu cầu đăng nhập',
-            message: 'category',
-            autoClose: true,
-            duration: 3000
-          });
-        }
       },
       checkLoginStatus() {
         // Kiểm tra trạng thái đăng nhập

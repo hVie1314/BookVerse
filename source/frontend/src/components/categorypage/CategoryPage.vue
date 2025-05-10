@@ -122,6 +122,7 @@
 }
     .category-page {
         width: 100%;
+        min-height: 100vh;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -201,4 +202,6 @@
       font-weight: 700;
       color: #4d2900;
     }
+
+    
 </style>
