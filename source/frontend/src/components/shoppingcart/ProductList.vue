@@ -48,7 +48,7 @@ export default {
 
 <style scoped>
 .product-list {
-  width: 62%;
+  width: 100%; /* Thay đổi từ 62% thành 100% */
 }
 
 .cart-divider {

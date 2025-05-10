@@ -2,19 +2,18 @@
   <aside class="checkout-summary">
     <div class="summary-content">
       <div class="summary-details">
-        <div class="summary-row">
-          <div class="labels">
-            <p class="summary-label">Tổng tiền hàng</p>
-            <p class="summary-label">Phí vận chuyển</p>
-          </div>
-          <div class="values">
-            <p class="summary-value">{{ formatPrice(totalPrice) }}</p>
-            <p class="summary-value">{{ formatPrice(shippingFee) }}</p>
-          </div>
+        <!-- Cấu trúc đơn giản hơn, dễ căn chỉnh -->
+        <div class="summary-item">
+          <span class="summary-label">Tổng tiền hàng: </span>
+          <span class="summary-value">{{ formatPrice(totalPrice) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Phí vận chuyển: </span>
+          <span class="summary-value">{{ formatPrice(shippingFee) }}</span>
         </div>
         <div class="summary-divider"></div>
         <div class="total-row">
-          <h3 class="total-label">Tổng thanh toán</h3>
+          <h3 class="total-label">Tổng thanh toán: </h3>
           <p class="total-value">{{ formatPrice(totalPrice + shippingFee) }}</p>
         </div>
       </div>
@@ -44,9 +43,11 @@ export default {
       
       return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
-        currency: 'VND'
+        currency: 'VND',
+        minimumFractionDigits: 0, // Không hiển thị phần thập phân
+        maximumFractionDigits: 0
       }).format(validPrice);
-    },
+    }, 
     checkout() {
       this.$emit('checkout');
     }
@@ -56,33 +57,59 @@ export default {
 
 <style scoped>
 .checkout-summary {
-  width: 38%;
-  align-self: flex-start;
+  width: 100%;
+  margin: 0; /* Bỏ margin auto */
 }
 
 .summary-content {
-  border-radius: 10px;
+  border-radius: 8px;
   background-color: rgba(255, 255, 255, 1);
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  margin-top: 124px;
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.15); /* Giảm shadow */
   width: 100%;
-  padding: 32px 22px;
+  padding: 16px 14px; /* Giảm padding */
   color: rgba(0, 0, 0, 1);
 }
 
 .summary-details {
-  margin: 0 9px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin: 0;
 }
 
 .summary-row {
+  width: 100%;
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: nowrap;
+}
+
+.summary-label {
+  font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+  margin-top: 10px;
+}
+
+.summary-value {
+  font-family: "Darker Grotesque", -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 14px;
   font-weight: 500;
+  text-align: right;
 }
 
 .labels {
   font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .summary-label + .summary-label {
@@ -91,29 +118,72 @@ export default {
 
 .values {
   font-family: "Darker Grotesque", -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 20px;
+  font-size: 16px;
   text-align: right;
 }
 
+.labels, .values {
+  width: auto;
+  min-width: 30%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 10px;
+}
+
 .summary-value + .summary-value {
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .summary-divider {
   border-color: rgba(208, 207, 207, 1);
   border-style: solid;
-  border-width: 2px;
-  margin: 20px 0;
+  border-width: 1px;
+  margin: 10px 0;
   width: 100%;
-  height: 2px;
+  height: 1px;
 }
-
+@media (min-width: 1200px) {
+  /* Bỏ hoàn toàn layout flex row */
+  .summary-row {
+    display: flex;
+    flex-direction: column; /* Thay đổi thành column để giữ nguyên trật tự */
+    width: 100%;
+  }
+  
+  .labels, .values {
+    display: flex;
+    flex-direction: column; /* Hiển thị theo cột */
+    width: 100%;
+  }
+  
+  /* Tạo layout có 2 cột bằng cách đặt label và giá trị trên cùng một hàng */
+  .summary-label, .summary-value {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin: 8px 0 !important;
+  }
+  
+  /* Đặt tổng thanh toán ở cuối */
+  .total-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+  }
+  
+  /* Nút đặt hàng vẫn giữ nguyên chiều rộng */
+  .checkout-button {
+    width: 100%;
+    padding: 12px;
+  }
+}
 .total-row {
   display: flex;
   justify-content: space-between;
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 700;
-  margin: 15px 0;
+  margin: 8px 0;
 }
 
 .total-label {
@@ -125,21 +195,22 @@ export default {
 }
 
 .checkout-button {
-  border-radius: 10px;
-  margin-top: 30px;
-  padding: 15px;
+  border-radius: 6px; /* Giảm bo góc */
+  margin-top: 12px; /* Giảm margin */
+  padding: 8px; /* Giảm padding */
   font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 22px;
+  font-size: 14px; /* Giảm font size */
   color: rgba(255, 255, 255, 1);
   font-weight: 600;
   text-align: center;
-  letter-spacing: 2px;
+  letter-spacing: 0.5px; /* Giảm letter spacing */
   background-color: #4d2900;
   border: none;
   cursor: pointer;
   width: 100%;
   transition: background-color 0.3s ease;
-}
+  height: 36px;
+} 
 
 .checkout-button:hover {
   background-color: #724e4e;
@@ -151,8 +222,8 @@ export default {
   }
 
   .summary-content {
-    margin-top: 20px;
-    padding: 25px 20px;
+    margin-top: 15px; /* Giảm margin */
+    padding: 15px; /* Giảm padding */
   }
 }
 </style>

@@ -61,7 +61,7 @@
       </div>
   
       <nav class="menu-section">
-        <div class="icon-container">
+        <div class="icon-container" @click="navigateToWishlist">
           <i class="fa-regular fa-heart fa-xl"></i>
           <span class="icon-label">Yêu thích</span>
         </div>
@@ -157,169 +157,175 @@ export default {
     this.checkLoginStatus();
   },
   methods: {
-    checkLoginStatus() {
-      // Kiểm tra trạng thái đăng nhập
-      this.isLoggedIn = AuthenticationService.isLoggedIn();
-    },
-    handleMouseOver() {
-      clearTimeout(this.menuTimeout);
-      this.checkLoginStatus(); // Kiểm tra trạng thái đăng nhập khi hover
-      this.showAuthMenu = true;
-    },
-    handleMouseLeave() {
-      // Trì hoãn ẩn menu để người dùng có thời gian click
-      this.menuTimeout = setTimeout(() => {
-        this.showAuthMenu = false;
-      }, 300);
-    },
-    goToLogin() {
-      console.log("Nút đăng nhập được nhấn");
-      try {
-        this.$router.push('/login');
-      } catch (error) {
-        console.error("Lỗi khi chuyển hướng:", error);
-      }
-    },
-    goToRegister() {
-      this.$router.push('/register'); // Chuyển hướng đến trang đăng ký
-    },
-    goToProfile() {
-      this.$router.push('/profile'); // Chuyển hướng đến trang thông tin cá nhân
-    },
-    handleLogoutEvent() {
-      console.log("Nhận sự kiện logout từ EventBus");
-      this.isLoggedIn = false;
-      this.showAuthMenu = false;
-      this.showUserMenu = false;
-    },
-    async handleLogout() {
-      try {
-        await AuthenticationService.logout();
+      navigateToWishlist() {
+          this.$router.push({
+              name: 'category',
+              query: { wishlist: 'true' }
+          });
+      },
+      checkLoginStatus() {
+        // Kiểm tra trạng thái đăng nhập
+        this.isLoggedIn = AuthenticationService.isLoggedIn();
+      },
+      handleMouseOver() {
+        clearTimeout(this.menuTimeout);
+        this.checkLoginStatus(); // Kiểm tra trạng thái đăng nhập khi hover
+        this.showAuthMenu = true;
+      },
+      handleMouseLeave() {
+        // Trì hoãn ẩn menu để người dùng có thời gian click
+        this.menuTimeout = setTimeout(() => {
+          this.showAuthMenu = false;
+        }, 300);
+      },
+      goToLogin() {
+        console.log("Nút đăng nhập được nhấn");
+        try {
+          this.$router.push('/login');
+        } catch (error) {
+          console.error("Lỗi khi chuyển hướng:", error);
+        }
+      },
+      goToRegister() {
+        this.$router.push('/register'); // Chuyển hướng đến trang đăng ký
+      },
+      goToProfile() {
+        this.$router.push('/profile'); // Chuyển hướng đến trang thông tin cá nhân
+      },
+      handleLogoutEvent() {
+        console.log("Nhận sự kiện logout từ EventBus");
         this.isLoggedIn = false;
-        setTimeout(() => {
-          window.location.reload();
-        }, 100);
-      } catch (error) {
-        console.error("Lỗi khi đăng xuất:", error);
-        localStorage.removeItem('userToken');
-        localStorage.removeItem('userData');
-        window.location.reload();
-      }
-    },
-    getUserName() {
-      // Lấy tên người dùng từ AuthenticationService
-      const userData = AuthenticationService.getCurrentUser();
-      return userData ? userData.username : 'Tài khoản';
-    },
-    handleUserIconClick() {
-    // Kiểm tra trạng thái đăng nhập hiện tại
-      this.checkLoginStatus();
-      
-      // Chuyển hướng dựa trên trạng thái đăng nhập
-      if (this.isLoggedIn) {
-        // Nếu đã đăng nhập, chuyển đến trang profile
-        console.log("Chuyển hướng đến trang profile");
-        this.$router.push('/profile');
-      } else {
-        // Nếu chưa đăng nhập, chuyển đến trang đăng nhập
-        console.log("Chuyển hướng đến trang đăng nhập");
-        this.$router.push('/login');
-      }
-    },
-    handleBarsClick() {
-      // Kiểm tra trạng thái đăng nhập
-      this.checkLoginStatus();
-      
-      // Kiểm tra nếu đã đăng nhập và có quyền user
-      if (this.isLoggedIn) {
-        const userData = AuthenticationService.getCurrentUser();
-        if (userData && userData.role === 'user') {
-          // Hiển thị hoặc ẩn UserMenu
-          this.showUserMenu = !this.showUserMenu;
-        } else {
-          // Nếu không phải user, có thể hiển thị menu khác hoặc thông báo
-          console.log("Bạn không có quyền truy cập menu này");
-        }
-      } else {
-        // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
-        this.$router.push('/login');
-      }
-    },
-    handleSearch() {
-      if (this.searchQuery.trim()) {
-        // Chuyển hướng đến trang category với query tìm kiếm
-        const searchIcon = document.querySelector('.search-icon-left');
-        if (searchIcon) {
-          searchIcon.classList.add('searching');
-          
-          // Xóa class sau khi animation hoàn thành
+        this.showAuthMenu = false;
+        this.showUserMenu = false;
+      },
+      async handleLogout() {
+        try {
+          await AuthenticationService.logout();
+          this.isLoggedIn = false;
           setTimeout(() => {
-            searchIcon.classList.remove('searching');
-          }, 500);
+            window.location.reload();
+          }, 100);
+        } catch (error) {
+          console.error("Lỗi khi đăng xuất:", error);
+          localStorage.removeItem('userToken');
+          localStorage.removeItem('userData');
+          window.location.reload();
         }
-        this.$router.push({
-          name: 'category',
-          query: { search: this.searchQuery.trim() }
-        });
+      },
+      getUserName() {
+        // Lấy tên người dùng từ AuthenticationService
+        const userData = AuthenticationService.getCurrentUser();
+        return userData ? userData.username : 'Tài khoản';
+      },
+      handleUserIconClick() {
+      // Kiểm tra trạng thái đăng nhập hiện tại
+        this.checkLoginStatus();
         
-        // Reset searchQuery sau khi tìm kiếm
-        this.searchQuery = '';
-      }else {
-        // Focus vào input nếu không có query
+        // Chuyển hướng dựa trên trạng thái đăng nhập
+        if (this.isLoggedIn) {
+          // Nếu đã đăng nhập, chuyển đến trang profile
+          console.log("Chuyển hướng đến trang profile");
+          this.$router.push('/profile');
+        } else {
+          // Nếu chưa đăng nhập, chuyển đến trang đăng nhập
+          console.log("Chuyển hướng đến trang đăng nhập");
+          this.$router.push('/login');
+        }
+      },
+      handleBarsClick() {
+        // Kiểm tra trạng thái đăng nhập
+        this.checkLoginStatus();
+        
+        // Kiểm tra nếu đã đăng nhập và có quyền user
+        if (this.isLoggedIn) {
+          const userData = AuthenticationService.getCurrentUser();
+          if (userData && userData.role === 'user') {
+            // Hiển thị hoặc ẩn UserMenu
+            this.showUserMenu = !this.showUserMenu;
+          } else {
+            // Nếu không phải user, có thể hiển thị menu khác hoặc thông báo
+            console.log("Bạn không có quyền truy cập menu này");
+          }
+        } else {
+          // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
+          this.$router.push('/login');
+        }
+      },
+      handleSearch() {
+        if (this.searchQuery.trim()) {
+          // Chuyển hướng đến trang category với query tìm kiếm
+          const searchIcon = document.querySelector('.search-icon-left');
+          if (searchIcon) {
+            searchIcon.classList.add('searching');
+            
+            // Xóa class sau khi animation hoàn thành
+            setTimeout(() => {
+              searchIcon.classList.remove('searching');
+            }, 500);
+          }
+          this.$router.push({
+            name: 'category',
+            query: { search: this.searchQuery.trim() }
+          });
+          
+          // Reset searchQuery sau khi tìm kiếm
+          this.searchQuery = '';
+        }else {
+          // Focus vào input nếu không có query
+          this.$nextTick(() => {
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) searchInput.focus();
+          });
+        }
+      },
+      clearSearch() {
+        this.searchQuery = ''; // Xóa nội dung tìm kiếm
+        // Focus lại vào ô input sau khi xóa
         this.$nextTick(() => {
           const searchInput = document.querySelector('.search-input');
           if (searchInput) searchInput.focus();
         });
-      }
-    },
-    clearSearch() {
-      this.searchQuery = ''; // Xóa nội dung tìm kiếm
-      // Focus lại vào ô input sau khi xóa
-      this.$nextTick(() => {
-        const searchInput = document.querySelector('.search-input');
-        if (searchInput) searchInput.focus();
-      });
-    },
-    async getCartItemCount() {
-      try {
-        let cartData;
-        if (this.isLoggedIn) {
-          const userData = AuthenticationService.getCurrentUser();
+      },
+      async getCartItemCount() {
+        try {
+          let cartData;
+          if (this.isLoggedIn) {
+            const userData = AuthenticationService.getCurrentUser();
+            
+            if (userData) {
+              const response = await CartService.getUserCart(userData.id);
+              cartData = response.data;
+            }
+          } else {
+            const guestCartId = localStorage.getItem('guestCartId');
+            if (guestCartId) {
+              const response = await CartService.getGuestCart(guestCartId);
+              cartData = response.data;
+            }
+          }
           
-          if (userData) {
-            const response = await CartService.getUserCart(userData.id);
-            cartData = response.data;
+          // Kiểm tra nhiều cấu trúc dữ liệu có thể có
+          if (cartData && cartData.items && Array.isArray(cartData.items)) {
+            this.cartItemCount = cartData.items.reduce((total, item) => total + item.quantity, 0);
+          } else if (cartData && cartData.products && Array.isArray(cartData.products)) {
+            this.cartItemCount = cartData.products.reduce((total, item) => total + item.quantity, 0);
+          } else if (cartData && cartData.cart && cartData.cart.items) {
+            this.cartItemCount = cartData.cart.items.reduce((total, item) => total + item.quantity, 0);
+          } else if (cartData && cartData.data && cartData.data.products && Array.isArray(cartData.data.products)) {
+          // Thêm điều kiện này để kiểm tra cấu trúc thực tế
+            this.cartItemCount = cartData.data.products.reduce((total, item) => total + item.quantity, 0);
+        }   else {
+            this.cartItemCount = 0;
+            console.log("No items in cart or invalid cart data structure:", cartData);
           }
-        } else {
-          const guestCartId = localStorage.getItem('guestCartId');
-          if (guestCartId) {
-            const response = await CartService.getGuestCart(guestCartId);
-            cartData = response.data;
-          }
-        }
-        
-         // Kiểm tra nhiều cấu trúc dữ liệu có thể có
-        if (cartData && cartData.items && Array.isArray(cartData.items)) {
-          this.cartItemCount = cartData.items.reduce((total, item) => total + item.quantity, 0);
-        } else if (cartData && cartData.products && Array.isArray(cartData.products)) {
-          this.cartItemCount = cartData.products.reduce((total, item) => total + item.quantity, 0);
-        } else if (cartData && cartData.cart && cartData.cart.items) {
-          this.cartItemCount = cartData.cart.items.reduce((total, item) => total + item.quantity, 0);
-        } else if (cartData && cartData.data && cartData.data.products && Array.isArray(cartData.data.products)) {
-        // Thêm điều kiện này để kiểm tra cấu trúc thực tế
-          this.cartItemCount = cartData.data.products.reduce((total, item) => total + item.quantity, 0);
-       }   else {
+        } catch (error) {
           this.cartItemCount = 0;
-          console.log("No items in cart or invalid cart data structure:", cartData);
         }
-      } catch (error) {
-        this.cartItemCount = 0;
+      },
+      // Method để chuyển đến trang giỏ hàng
+      navigateToCart() {
+        this.$router.push('/cart');
       }
-    },
-    // Method để chuyển đến trang giỏ hàng
-    navigateToCart() {
-      this.$router.push('/cart');
-    }
   },
   // Kiểm tra trạng thái đăng nhập khi route thay đổi
   watch: {
