@@ -4,22 +4,23 @@
       <main class="category-content">
         <div class="category-container">
           <div class="page-header">
-              <h1 class="page-title">
-              {{ $route.query.search ? 'Kết quả tìm kiếm' : 'Danh mục sản phẩm' }}
-              </h1>
+            <h1 class="page-title" :class="{ 'wishlist-title': $route.query.wishlist === 'true' }">
+              {{ pageTitle }}
+            </h1>
             <div v-if="$route.query.search" class="search-info">
               Kết quả tìm kiếm cho: <span class="search-term">"{{ $route.query.search }}"</span>
             </div>
-          </div>
+        </div>
           
-          <div class="category-layout">
-            <div class="filter-sidebar">
+          <div class="category-layout" :class="{ 'wishlist-layout': $route.query.wishlist === 'true' }">
+            <!-- Thêm v-if để ẩn filter sidebar khi ở chế độ wishlist -->
+            <div class="filter-sidebar" v-if="$route.query.wishlist !== 'true'">
               <CategoryFilter @filter-change="applyFilter" />
               <PriceFilter @price-filter-change="applyPriceFilter" />
               <RatingFilter @rating-filter-change="applyRatingFilter" />
             </div>
             
-            <div class="products-container">
+            <div class="products-container" :class="{ 'full-width': $route.query.wishlist === 'true' }">
               <BookCatalog ref="bookCatalog" />
             </div>
           </div>
@@ -52,6 +53,29 @@
         filters: {}
       };
     },
+    computed:{
+      pageTitle() {
+        if (this.$route.query.wishlist === 'true') {
+          return 'Danh sách yêu thích';
+        } else if (this.$route.query.search) {
+          return 'Kết quả tìm kiếm';
+        } else {
+          return 'Danh mục sản phẩm';
+        }
+      }
+    },
+    mounted() {
+      if (this.$route.query.wishlist === 'true') {
+          this.$refs.bookCatalog && this.$refs.bookCatalog.fetchWishlistBooks();
+      }
+    },
+    watch: {
+      '$route.query.wishlist'(newVal) {
+        if (newVal === 'true' && this.$refs.bookCatalog) {
+          this.$refs.bookCatalog.fetchWishlistBooks();
+        }
+      }
+    },
     methods: {
       applyFilter(filter) {
         this.filters = { ...this.filters, ...filter };
@@ -78,6 +102,24 @@
 </script>
 
 <style scoped>
+    .wishlist-layout {
+  /* Điều chỉnh layout khi ở chế độ wishlist */
+  flex-direction: column;
+}
+
+.products-container.full-width {
+  /* Chiếm toàn bộ chiều rộng khi không có filter sidebar */
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Tùy chọn: Thêm style riêng cho tiêu đề trang wishlist */
+.page-title.wishlist-title {
+  color: #724e4e;
+  border-bottom: 2px solid #4d2900;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
     .category-page {
         width: 100%;
         display: flex;
