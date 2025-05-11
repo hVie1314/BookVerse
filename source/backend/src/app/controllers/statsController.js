@@ -129,12 +129,11 @@ class StatsController {
                 return next(new AppError(400, 'BAD_REQUEST', 'Invalid query parameters'));
             }
 
-            // Tạo ngày bắt đầu: 00:00:00.000 của ngày đầu tiên trong tháng
-            const startDate = new Date(startYear, startMonth - 1, 1);
-            // Tạo ngày kết thúc: 23:59:59.999 của ngày cuối cùng trong tháng
-            const endDate = new Date(endYear, endMonth, 0, 23, 59, 59, 999);
+            const startDate = new Date(Date.UTC(startYear, startMonth - 1, 1, 0, 0, 0, 0)); // bắt đầu từ 00:00:00
+            const endDate = new Date(Date.UTC(endYear, endMonth, 0, 23, 59, 59, 999)); // đến cuối ngày
 
-            const dailyStats = await Order.aggregate([
+            // Lấy doanh thu theo ngày có đơn hàng
+            const revenueByDate = await Order.aggregate([
                 {
                     $match: {
                         createdAt: { $gte: startDate, $lte: endDate }
@@ -162,13 +161,31 @@ class StatsController {
                         },
                         revenue: 1
                     }
-                },
-                {
-                    $sort: { date: 1 }
                 }
             ]);
 
-            return res.status(200).json(dailyStats);
+            // Đưa vào map để dễ tra cứu
+            const revenueMap = new Map();
+            for (const entry of revenueByDate) {
+                const key = new Date(entry.date).toISOString().slice(0, 10); // YYYY-MM-DD
+                revenueMap.set(key, entry.revenue);
+            }
+
+            // Tạo mảng kết quả: mỗi ngày một entry
+            const results = [];
+            for (
+                let d = new Date(startDate);
+                d <= endDate;
+                d.setDate(d.getDate() + 1)
+            ) {
+                const dateStr = d.toISOString().slice(0, 10); // clone lại trước khi lấy ISO
+                results.push({
+                    date: dateStr,
+                    revenue: revenueMap.get(dateStr) || 0
+                });
+            }
+
+            return res.status(200).json(results);
         } catch (error) {
             return next(new AppError(500, 'INTERNAL_SERVER_ERROR', error.message));
         }
