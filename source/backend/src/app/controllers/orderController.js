@@ -9,6 +9,15 @@ class OrderController {
         try {
             const { userId, items, totalAmount, paymentMethod } = req.body;
 
+            // Check if the user exists
+            const user = await User.findById(userId);
+            if (!user)
+                return next(new AppError(404, 'USER_NOT_FOUND', 'User not found'));
+
+            // If the user has no address, prevent the order and ask for an address update
+            if (!user.address)
+                return next(new AppError(400, 'MISSING_ADDRESS', 'Please update your address before placing an order'));
+            
             // Create a new order 
             const newOrder = new Order({
                 userId: userId,
@@ -50,7 +59,21 @@ class OrderController {
                 )
             );
 
-            res.status(200).json({ orders : ordersWithDetails });
+            // get 1 image
+            const ordersWithDetailsFinal = ordersWithDetails.map(order => {
+                const orderObj = order.toObject();
+                orderObj.items = orderObj.items.map(item => {
+                    if (item.bookId && typeof item.bookId.image === 'string') {
+                        const imageArray = JSON.parse(item.bookId.image.replace(/'/g, '"'));
+                        item.bookId.image = imageArray?.[0] || null;
+                        delete item.bookId.images;
+                    }
+                    return item;
+                });
+                return orderObj;
+            });
+
+            res.status(200).json({ orders :  ordersWithDetailsFinal });
 
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching orders'));
@@ -60,10 +83,6 @@ class OrderController {
     // Get order details by order ID
     async getOrderById(req, res, next) {
         try {
-            const order = await Order.findById(req.params.id);
-            if (!order)
-                return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found'));
-
             // Join with Book and User collections to get book details and user details
             const OrderInfo = await Order.findById(req.params.id).populate([
                 { 
@@ -73,7 +92,21 @@ class OrderController {
                 }
             ]);
             
-            res.status(200).json(OrderInfo);
+            if (!OrderInfo)
+                return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found'));
+
+            // get 1 image
+            const OrderInfoFinal = OrderInfo.toObject();
+            OrderInfoFinal.items = OrderInfoFinal.items.map(item => {
+                if (item.bookId && typeof item.bookId.image === 'string') {
+                    const imageArray = JSON.parse(item.bookId.image.replace(/'/g, '"'));
+                    item.bookId.image = imageArray?.[0] || null;
+                    delete item.bookId.images; // Xóa mảng images nếu không cần
+                }
+                return item;
+            });
+
+            res.status(200).json(OrderInfoFinal);
 
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching order'));
