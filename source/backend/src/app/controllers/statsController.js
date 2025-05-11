@@ -129,28 +129,46 @@ class StatsController {
                 return next(new AppError(400, 'BAD_REQUEST', 'Invalid query parameters'));
             }
 
-            const results = [];
+            // Tạo ngày bắt đầu: 00:00:00.000 của ngày đầu tiên trong tháng
+            const startDate = new Date(startYear, startMonth - 1, 1);
+            // Tạo ngày kết thúc: 23:59:59.999 của ngày cuối cùng trong tháng
+            const endDate = new Date(endYear, endMonth, 0, 23, 59, 59, 999);
 
-            let currentMonth = startMonth;
-            let currentYear = startYear;
-
-            while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
-                const stat = await StatsController.getMonthlyStats(currentMonth, currentYear, next);
-                results.push({
-                    month: currentMonth,
-                    year: currentYear,
-                    revenue: stat.revenue
-                });
-
-                // Tăng tháng
-                currentMonth++;
-                if (currentMonth > 12) {
-                    currentMonth = 1;
-                    currentYear++;
+            const dailyStats = await Order.aggregate([
+                {
+                    $match: {
+                        createdAt: { $gte: startDate, $lte: endDate }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            year: { $year: "$createdAt" },
+                            month: { $month: "$createdAt" },
+                            day: { $dayOfMonth: "$createdAt" }
+                        },
+                        revenue: { $sum: "$totalAmount" }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        date: {
+                            $dateFromParts: {
+                                year: "$_id.year",
+                                month: "$_id.month",
+                                day: "$_id.day"
+                            }
+                        },
+                        revenue: 1
+                    }
+                },
+                {
+                    $sort: { date: 1 }
                 }
-            }
+            ]);
 
-            return res.status(200).json(results);
+            return res.status(200).json(dailyStats);
         } catch (error) {
             return next(new AppError(500, 'INTERNAL_SERVER_ERROR', error.message));
         }

@@ -7,7 +7,7 @@ const OrderSchema = new mongoose.Schema({
         quantity: { type: Number, required: true, min: 1 }
     }],
     totalAmount: { type: Number, required: true },
-    paymentMethod: { type: String, enum: ['COD', 'MOMO'], default: 'MOMO' },
+    paymentMethod: { type: String, default: 'MOMO' },
     orderStatus: { type: String, enum: ['pending', 'success', 'cancelled'], default: 'pending' },
 }, {
     timestamps: true
