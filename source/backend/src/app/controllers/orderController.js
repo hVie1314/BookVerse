@@ -59,21 +59,7 @@ class OrderController {
                 )
             );
 
-            // get 1 image
-            const ordersWithDetailsFinal = ordersWithDetails.map(order => {
-                const orderObj = order.toObject();
-                orderObj.items = orderObj.items.map(item => {
-                    if (item.bookId && typeof item.bookId.image === 'string') {
-                        const imageArray = JSON.parse(item.bookId.image.replace(/'/g, '"'));
-                        item.bookId.image = imageArray?.[0] || null;
-                        delete item.bookId.images;
-                    }
-                    return item;
-                });
-                return orderObj;
-            });
-
-            res.status(200).json({ orders :  ordersWithDetailsFinal });
+            res.status(200).json({ orders :  ordersWithDetails });
 
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching orders'));
@@ -94,19 +80,7 @@ class OrderController {
             
             if (!OrderInfo)
                 return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found'));
-
-            // get 1 image
-            const OrderInfoFinal = OrderInfo.toObject();
-            OrderInfoFinal.items = OrderInfoFinal.items.map(item => {
-                if (item.bookId && typeof item.bookId.image === 'string') {
-                    const imageArray = JSON.parse(item.bookId.image.replace(/'/g, '"'));
-                    item.bookId.image = imageArray?.[0] || null;
-                    delete item.bookId.images; // Xóa mảng images nếu không cần
-                }
-                return item;
-            });
-
-            res.status(200).json(OrderInfoFinal);
+            res.status(200).json(OrderInfo);
 
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching order'));
