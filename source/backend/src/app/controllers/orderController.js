@@ -70,7 +70,7 @@ class OrderController {
     async getOrderById(req, res, next) {
         try {
             // Join with Book and User collections to get book details and user details
-            const OrderInfo = await Order.findById(req.params.id).populate([
+            const orderInfo = await Order.findById(req.params.id).populate([
                 { 
                     path: 'items.bookId', 
                     model: 'Book', 
@@ -78,9 +78,9 @@ class OrderController {
                 }
             ]);
             
-            if (!OrderInfo)
+            if (!orderInfo)
                 return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found'));
-            res.status(200).json(OrderInfo);
+            res.status(200).json(orderInfo);
 
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching order'));
