@@ -1,9 +1,9 @@
 <template>
   <nav class="sidebar">
-    <!-- Logo ở chính giữa -->
-    <div class="logo-container">
-      <h1 class="logo">BookVerse</h1>
-    </div>
+    <!-- Logo ở chính giữa với liên kết đến trang chủ -->
+    <router-link to="/" class="logo-link">
+      <SidebarLogo />
+    </router-link>
     
     <!-- Menu Items -->
     <div class="menu-items">
@@ -11,9 +11,9 @@
       <router-link to="/staff/overview" class="menu-item" active-class="active">
         <div class="menu-icon">
           <svg
-            width="24"
-            height="24"
-            viewBox="0 0 39 35"
+            width="22"
+            height="22"
+            viewBox="0 0 39 39"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             class="menu-svg"
@@ -31,7 +31,7 @@
       <!-- ProductionIcon - Liên kết đến ProductManagement -->
       <router-link to="/staff/products" class="menu-item" active-class="active">
         <div class="menu-icon">
-          <i class="fas fa-book menu-svg"></i>
+          <i class="fas fa-book"></i>
         </div>
         <span class="menu-text">Sản phẩm</span>
       </router-link>
@@ -58,9 +58,13 @@
 
 <script>
 import AuthenticationService from '@/services/AuthenticationService';
+import SidebarLogo from './SidebarLogo.vue';
 
 export default {
   name: 'NavStaffAdmin',
+  components: {
+    SidebarLogo
+  },
   data() {
     return {
       userName: "Admin"
@@ -104,18 +108,15 @@ export default {
   z-index: 1000;
 }
 
-.logo-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 30px 0;
+.logo-link {
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+  padding-top: 39px;
+  display: block;
 }
 
-.logo {
-  color: #4d2900;
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
+.logo-link:hover {
+  opacity: 0.9;
 }
 
 .menu-items {
@@ -131,7 +132,7 @@ export default {
   display: flex;
   align-items: center;
   width: 100%; 
-  height: 51px; /* Chiều cao cố định giống OverviewButton */
+  height: 51px;
   text-decoration: none;
   padding: 0 20px;
   transition: all 0.3s ease;
@@ -142,22 +143,29 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 40px;
-  margin-right: 40px; /* Khoảng cách giống OverviewButton */
+  width: 35px;
+  height: 35px;
+  margin-right: 20px; /* Giảm khoảng cách từ 40px xuống 20px */
+  flex-shrink: 0;
 }
 
-/* Style cho icon và text khi bình thường */
-.menu-svg, .menu-icon i {
+/* Style cho SVG icon */
+.menu-svg {
   fill: #897B7B;
+  width: 22px;
+  height: 22px;
+}
+
+/* Style cho Font Awesome icon */
+.menu-icon i {
   color: #897B7B;
-  width: 24px;
-  height: 24px;
+  font-size: 22px; /* Đặt kích thước cụ thể cho font icon */
 }
 
 .menu-text {
   color: #897B7B;
   font-size: 20px;
-  font-weight: normal;
+  font-weight: bold;
 }
 
 /* Style khi hover */
@@ -180,15 +188,17 @@ export default {
   background-color: #4d2900;
 }
 
-.menu-item.active .menu-svg,
-.menu-item.active .menu-icon i {
+.menu-item.active .menu-svg {
   fill: #4d2900;
+}
+
+.menu-item.active .menu-icon i {
   color: #4d2900;
 }
 
 .menu-item.active .menu-text {
   color: #4d2900;
-  font-weight: normal;
+  font-weight: bold;
 }
 
 .user-section {

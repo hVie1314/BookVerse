@@ -39,7 +39,7 @@
   
   .logo-text {
     color: #4d2900;
-    margin-top: 39px;
+    margin-top: 15px;
     font-size: 30px;
     font-weight: 900;
   }
