@@ -1,0 +1,229 @@
+<template>
+  <nav class="sidebar">
+    <!-- Logo ở chính giữa -->
+    <div class="logo-container">
+      <h1 class="logo">BookVerse</h1>
+    </div>
+    
+    <!-- Menu Items -->
+    <div class="menu-items">
+      <!-- Overview Button - Liên kết đến Overview -->
+      <router-link to="/staff/overview" class="menu-item" active-class="active">
+        <div class="menu-icon">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 39 35"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            class="menu-svg"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M19.5 0L0 13.125V17.5H2.4375V32.8125H9.75V21.875H17.0625V32.8125H36.5625V17.5H39V13.125L34.125 9.84375V2.1875H26.8125V4.92188L19.5 0ZM21.9375 21.875H29.25V28.4375H21.9375V21.875Z"
+            ></path>
+          </svg>
+        </div>
+        <span class="menu-text">Trang tổng quan</span>
+      </router-link>
+      
+      <!-- ProductionIcon - Liên kết đến ProductManagement -->
+      <router-link to="/staff/products" class="menu-item" active-class="active">
+        <div class="menu-icon">
+          <i class="fas fa-book menu-svg"></i>
+        </div>
+        <span class="menu-text">Sản phẩm</span>
+      </router-link>
+      
+      <!-- Thêm các menu item khác ở đây nếu cần -->
+    </div>
+    
+    <!-- User và Logout ở cuối -->
+    <div class="user-section">
+      <!-- Thông tin người dùng -->
+      <div class="user-info">
+        <i class="fas fa-user"></i>
+        <span>{{ userName }}</span>
+      </div>
+      
+      <!-- Nút logout -->
+      <div class="logout-button" @click="logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Đăng xuất</span>
+      </div>
+    </div>
+  </nav>
+</template>
+
+<script>
+import AuthenticationService from '@/services/AuthenticationService';
+
+export default {
+  name: 'NavStaffAdmin',
+  data() {
+    return {
+      userName: "Admin"
+    };
+  },
+  created() {
+    // Lấy thông tin người dùng hiện tại từ Authentication Service
+    const currentUser = AuthenticationService.getCurrentUser();
+    if (currentUser) {
+      this.userName = currentUser.username || "Admin";
+    }
+  },
+  methods: {
+    logout() {
+      // Gọi hàm đăng xuất từ Authentication Service
+      AuthenticationService.logout()
+        .then(() => {
+          // Chuyển hướng về trang login
+          this.$router.push('/login');
+        })
+        .catch(error => {
+          console.error('Lỗi khi đăng xuất:', error);
+        });
+    }
+  }
+}
+</script>
+
+<style scoped>
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 280px;
+  background-color: #fffaf5;
+  display: flex;
+  flex-direction: column;
+  border-right: 2px solid rgba(77, 41, 0, 0.31);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 0;
+}
+
+.logo {
+  color: #4d2900;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.menu-items {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  align-items: center;
+}
+
+/* Styling của các menu item */
+.menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%; 
+  height: 51px; /* Chiều cao cố định giống OverviewButton */
+  text-decoration: none;
+  padding: 0 20px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.menu-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  margin-right: 40px; /* Khoảng cách giống OverviewButton */
+}
+
+/* Style cho icon và text khi bình thường */
+.menu-svg, .menu-icon i {
+  fill: #897B7B;
+  color: #897B7B;
+  width: 24px;
+  height: 24px;
+}
+
+.menu-text {
+  color: #897B7B;
+  font-family: Montserrat;
+  font-size: 20px;
+  font-weight: normal;
+}
+
+/* Style khi hover */
+.menu-item:hover {
+  background-color: #f5f0e8;
+}
+
+/* Active state styling */
+.menu-item.active {
+  background-color: #fff;
+}
+
+.menu-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 7px;
+  background-color: #4d2900;
+}
+
+.menu-item.active .menu-svg,
+.menu-item.active .menu-icon i {
+  fill: #4d2900;
+  color: #4d2900;
+}
+
+.menu-item.active .menu-text {
+  color: #4d2900;
+  font-weight: normal;
+}
+
+.user-section {
+  margin-top: auto;
+  padding: 30px 20px;
+  border-top: 1px solid rgba(77, 41, 0, 0.2);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  color: #4d2900;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.user-info i {
+  margin-right: 10px;
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  color: #4d2900;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-button i {
+  margin-right: 10px;
+}
+
+.logout-button:hover {
+  opacity: 0.8;
+}
+</style>
