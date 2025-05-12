@@ -167,9 +167,9 @@ class CartService {
    async getCart(userId, cartId) {
       try {
          let cart = await this.findCart(userId, cartId);
-         if (!cart) {
-            throw new AppError(404, 'EMPTY_CART');
-         }
+          if (!cart) {
+            return [];
+          }
 
          cart = await cart.populate({
             path: 'products.productId', // join with Book model
