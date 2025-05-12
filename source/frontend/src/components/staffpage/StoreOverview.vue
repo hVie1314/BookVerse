@@ -41,138 +41,135 @@
       </div>
     </section>
   </template>
+
   
-  <style scoped>
-  .store-overview {
-    width: 100%;
-    min-height: screen;
-    background-color: #f4ebe1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 34px 24px;
-  }
-  
+<style scoped>
+.store-overview {
+  width: 100%;
+  min-height: screen;
+  background-color: #f4ebe1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 34px 24px;
+}
+
+.store-title {
+  color: #fff;
+  text-align: center;
+  font-size: 25px;
+  font-weight: 800;
+  width: 100%;
+  max-width: 1239px;
+  border-radius: 15px;
+  background-color: #4d2900;
+  padding: 15px 24px;
+}
+
+.statistics-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 50px;
+}
+
+.statistics-card {
+  width: 561px;
+  padding: 27px;
+  border-radius: 20px;
+  border: 5px solid #000;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+
+.customer-card {
+  background-color: #fff;
+}
+
+.product-card {
+  background-color: #f9f9f9;
+}
+
+.card-content {
+  width: 100%;
+  border-radius: 10px;
+  border: 4px solid #a18585;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  padding: 20px;
+  position: relative;
+}
+
+.product-card .card-content {
+  margin-bottom: 31px;
+  padding-bottom: 49px;
+}
+
+.stat-number {
+  position: absolute;
+  right: 20px;
+  top: 13px;
+  color: #000;
+  font-size: 50px;
+  font-weight: 800;
+}
+
+.card-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-image {
+  width: 316px;
+  height: 316px;
+  object-fit: contain;
+}
+
+.product-image {
+  width: 325px;
+  height: 325px;
+  margin-right: -5px;
+}
+
+.stat-title {
+  color: #000;
+  text-align: center;
+  font-size: 30px;
+  font-weight: 700;
+  margin-top: 30px;
+}
+
+.stat-description {
+  color: #4d2900;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 30px;
+}
+
+@media (max-width: 991px) {
   .store-title {
-    color: #fff;
-    text-align: center;
-    font-family: Montserrat;
-    font-size: 25px;
-    font-weight: 900;
-    width: 100%;
-    max-width: 1239px;
-    border-radius: 15px;
-    background-color: #4d2900;
-    padding: 15px 24px;
+    font-size: 22px;
   }
-  
+
   .statistics-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 30px;
-    margin-top: 50px;
-  }
-  
-  .statistics-card {
-    width: 561px;
-    padding: 27px;
-    border-radius: 20px;
-    border: 5px solid #000;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-  }
-  
-  .customer-card {
-    background-color: #fff;
-  }
-  
-  .product-card {
-    background-color: #f9f9f9;
-  }
-  
-  .card-content {
-    width: 100%;
-    border-radius: 10px;
-    border: 4px solid #a18585;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-    padding: 20px;
-    position: relative;
-  }
-  
-  .product-card .card-content {
-    margin-bottom: 31px;
-    padding-bottom: 49px;
-  }
-  
-  .stat-number {
-    position: absolute;
-    right: 20px;
-    top: 13px;
-    color: #000;
-    font-family: Montserrat;
-    font-size: 50px;
-    font-weight: 900;
-  }
-  
-  .card-details {
-    display: flex;
     flex-direction: column;
     align-items: center;
   }
-  
-  .stat-image {
-    width: 316px;
-    height: 316px;
-    object-fit: contain;
-  }
-  
-  .product-image {
-    width: 325px;
-    height: 325px;
-    margin-right: -5px;
-  }
-  
-  .stat-title {
-    color: #000;
-    text-align: center;
-    font-family: Montserrat;
-    font-size: 30px;
-    font-weight: 900;
-    margin-top: 30px;
-  }
-  
+
   .stat-description {
-    color: #4d2900;
-    font-family: Montserrat;
-    font-size: 25px;
-    font-weight: 900;
-    text-align: center;
-    margin-top: 30px;
+    font-size: 22px;
   }
-  
-  @media (max-width: 991px) {
-    .store-title {
-      font-size: 22px;
-    }
-  
-    .statistics-container {
-      flex-direction: column;
-      align-items: center;
-    }
-  
-    .stat-description {
-      font-size: 22px;
-    }
+}
+
+@media (max-width: 640px) {
+  .store-title {
+    font-size: 18px;
   }
-  
-  @media (max-width: 640px) {
-    .store-title {
-      font-size: 18px;
-    }
-  
-    .stat-description {
-      font-size: 18px;
-    }
+
+  .stat-description {
+    font-size: 18px;
   }
-  </style>
+}
+</style>
   

@@ -48,7 +48,6 @@
     margin-top: auto;
     margin-bottom: auto;
     flex-basis: auto;
-    font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
     font-size: 20px;
     color: rgba(137, 123, 123, 1);
     font-weight: 900;
