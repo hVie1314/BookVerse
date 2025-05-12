@@ -100,7 +100,7 @@ export default {
   left: 0;
   height: 100vh;
   width: 280px;
-  background-color: #fffaf5;
+  background-color: #F4EBE1;
   display: flex;
   flex-direction: column;
   border-right: 2px solid rgba(77, 41, 0, 0.31);

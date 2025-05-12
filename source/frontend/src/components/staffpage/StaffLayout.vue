@@ -30,7 +30,7 @@ body {
   display: flex;
   width: 100%;
   min-height: 100vh;
-  background-color: rgb(244, 235, 225);
+  background-color: #F4EBE1;
 }
 
 .staff-content {
