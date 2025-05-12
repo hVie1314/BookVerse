@@ -156,7 +156,6 @@ export default {
 
 .menu-text {
   color: #897B7B;
-  font-family: Montserrat;
   font-size: 20px;
   font-weight: normal;
 }
