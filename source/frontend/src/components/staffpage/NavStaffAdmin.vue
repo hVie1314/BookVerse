@@ -41,11 +41,11 @@
     
     <!-- User và Logout ở cuối -->
     <div class="user-section">
-      <!-- Thông tin người dùng -->
-      <div class="user-info">
+      <!-- Thông tin người dùng - Thêm router-link -->
+      <router-link to="/staff/info" class="user-info">
         <i class="fas fa-user"></i>
         <span>{{ userName }}</span>
-      </div>
+      </router-link>
       
       <!-- Nút logout -->
       <div class="logout-button" @click="logout">
@@ -213,6 +213,14 @@ export default {
   color: #4d2900;
   font-weight: 600;
   margin-bottom: 20px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.user-info:hover {
+  opacity: 0.8;
+  color: #6e3d00;
 }
 
 .user-info i {
