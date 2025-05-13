@@ -1,9 +1,10 @@
 <template>
   <section class="store-overview">
     <header class="store-title">
-      <h1>TRANG TỔNG QUÁT CỦA CỬA HÀNG BOOKVERSE</h1>
+      <h1>TRANG TỔNG QUAN CỦA CỬA HÀNG BOOKVERSE</h1>
     </header>
     <div class="statistics-container">
+      <!--Thống kê số khách hàng-->
       <article class="statistics-card customer-card">
         <div class="card-content">
           <span class="stat-number">12</span>
@@ -21,9 +22,13 @@
           </div>
         </div>
       </article>
+      <!--Thống kê số sản phẩm-->
       <article class="statistics-card product-card">
         <div class="card-content">
-          <span class="stat-number">1599</span>
+          <span class="stat-number" v-if="loading">
+            <i class="fas fa-spinner fa-spin"></i>
+          </span>
+          <span class="stat-number" v-else>{{ totalBooks }}</span>
           <div class="card-details">
             <img
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/b5fe9eb9e3cadcb59f21c63153ace24125df3414"
@@ -42,6 +47,44 @@
   </section>
 </template>
 
+<script>
+import BookService from '@/services/BookService';
+
+export default {
+  name: 'StoreOverview',
+  data() {
+    return {
+      totalBooks: 0,
+      loading: true
+    };
+  },
+  created() {
+    this.fetchTotalBooks();
+  },
+  methods: {
+    async fetchTotalBooks() {
+      try {
+        this.loading = true;
+        // Gọi API để lấy danh sách sách với limit=1 (chỉ cần lấy thông tin tổng số)
+        const response = await BookService.getAllBooks(1, 1);
+        
+        // Kiểm tra phản hồi và trích xuất totalBooks từ phần pagination
+        if (response.data && response.data.data && response.data.data.pagination) {
+          this.totalBooks = response.data.data.pagination.totalBooks || 0;
+        } else {
+          console.error('Không tìm thấy thông tin pagination trong phản hồi', response.data);
+          this.totalBooks = 0;
+        }
+      } catch (error) {
+        console.error('Lỗi khi lấy tổng số sách:', error);
+        this.totalBooks = 0;
+      } finally {
+        this.loading = false;
+      }
+    }
+  }
+};
+</script>
   
 <style scoped>
 .store-overview {
