@@ -99,8 +99,7 @@ class WishlistService {
       try {
          let wishlist = await this.findWishlist(userId, wishlistId);
          if (!wishlist) {
-            return { products: [] };
-            // throw new AppError(404, 'EMPTY_WISHLIST');
+            throw new AppError(404, 'EMPTY_WISHLIST');
          }
 
          wishlist = await wishlist.populate({
