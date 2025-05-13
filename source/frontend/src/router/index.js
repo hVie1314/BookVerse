@@ -13,6 +13,7 @@ const PaymentCallback = () => import('../components/payment/PaymentCallback.vue'
 const StaffPage = () => import('../components/staffpage/StaffLayout.vue')
 const ProductManagement = () => import('../components/staffpage/ProductManagement.vue')
 const StoreOverview = () => import('../components/staffpage/StoreOverview.vue')
+const StaffInfo = () => import('../components/staffpage/StaffInfo.vue')
 
 const routes = [
   {
@@ -84,6 +85,11 @@ const routes = [
         path: 'products',
         name: 'staff-products',
         component: ProductManagement
+      },
+      {
+        path: 'info',
+        name: 'staff-info',
+        component: StaffInfo
       }
     ]
   }
