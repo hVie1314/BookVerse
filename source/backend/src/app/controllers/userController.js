@@ -68,7 +68,7 @@ class UserController {
         try {
             const userId = req.params.userId;
             // Only allow specific fields to be updated
-            const allowedFields = ['password', 'address', 'avatar'];
+            const allowedFields = ['username', 'password', 'address', 'avatar'];
             const updatedData = {};
             
             // Filter and include only allowed fields from the request body
@@ -78,12 +78,39 @@ class UserController {
                 }
             });
             
+            // Check if username is being updated
+            if (updatedData.username) {
+                const existingUser = await user.findOne({ $and: [{username: updatedData.username}, {_id: { $ne: userId } }]});
+                if (existingUser) {
+                    return next(new AppError(400, 'USER_ALREADY_EXISTS', 'Username is already in use'));
+                }
+            }
+
             // If the password is being updated, hash it before saving
             if (updatedData.password) {
                 // check if password < 8 characters
                 if (updatedData.password.length < 8) {
                     return next(new AppError(400, 'INVALID_PASSWORD', 'Password must be at least 8 characters long'));
                 }
+                
+                // Get user from database including password
+                const userDoc = await user.findById(userId).select('+password');
+                if (!userDoc) {
+                    return next(new AppError(404, 'NOT_FOUND', 'User not found'));
+                }
+                
+                // Get old password from request body
+                const { oldPassword } = req.body;
+                if (!oldPassword) {
+                    return next(new AppError(400, 'OLD_PASSWORD_REQUIRED', 'Old password is required'));
+                }
+                
+                // Compare old password with current hashed password
+                const isMatch = bcrypt.compareSync(oldPassword, userDoc.password);
+                if (!isMatch) {
+                    return next(new AppError(401, 'INVALID_OLD_PASSWORD', 'Old password is incorrect'));
+                }
+
                 const salt = bcrypt.genSaltSync(10);
                 updatedData.password = bcrypt.hashSync(updatedData.password, salt);
             }
@@ -153,6 +180,9 @@ class UserController {
                 new: true,             
                 runValidators: true  
             });
+
+            // eliminate password field from the response
+            updatedUser.password = null;
 
             return res.status(200).json(updatedUser);
 
