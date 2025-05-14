@@ -1,13 +1,17 @@
-const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+
+const User = require('../models/User');
 const { redisClient } = require('../../configs/db/redis');
 const AppError = require('../../utils/appError');
+const emailSender = require('../../utils/emailSender');
+
 
 class AuthController {
 
    // [POST] /auth/register
-   register(req, res, next) {
+   async register(req, res, next) {
       // get data from request
       const { username, email, password, role } = req.body;
 
@@ -19,6 +23,11 @@ class AuthController {
             return next(new AppError(400, "USER_ALREADY_EXISTS"));
          }
 
+         // check if password < 8 characters
+         if (password.length < 8) {
+            return next(new AppError(400, "INVALID_PASSWORD"));
+         }
+
          // gen hash password
          const salt = bcrypt.genSaltSync(10);
          const hashPassword = bcrypt.hashSync(password, salt);
@@ -28,7 +37,7 @@ class AuthController {
             username: username,
             email: email,
             password: hashPassword,
-            role: role
+            role: role,
          });
 
          // save user to database
@@ -39,17 +48,18 @@ class AuthController {
                   username: user.username,
                   email: user.email,
                   role: user.role,
-                  avatar: user.avatar
+                  address: user.address,
+                  avatar: user.avatar,
                })
             })
       })
       .catch(err => {
-         return next(new AppError());
+         return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
       });
    }
 
    // [POST] /auth/login
-   login(req, res, next) {
+   async login(req, res, next) {
 
       // get data from request
       const { username, password } = req.body;
@@ -81,7 +91,7 @@ class AuthController {
             // save token to redis
             // automatically expire after 3 days
             // 3 day is refresh token expiration time
-            redisClient.set(user._id.toString(), accessToken, 'EX', 3 * 24 * 60 * 60); 
+            redisClient.set(user._id.toString(), accessToken, { EX: 3 * 24 * 60 * 60 }); 
 
             // return user data and token
             res.status(200).json({
@@ -89,76 +99,82 @@ class AuthController {
               username: user.username,
               email: user.email,
               role: user.role,
+              address: user.address,
               avatar: user.avatar,
               accessToken: accessToken,
             });
          })
          .catch(err => {
-            return next(new AppError());
+            return next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
          });
    }
 
    // [POST] /auth/refresh-token
-   refreshToken(req, res, next) {
-
-      // get token 
-      const { token } = req.body;
-
-      // check if token is valid
-      if (!token) {
-         return next(new AppError(401, "UNAUTHORIZED"));
-      }
-
-      // verify token
-      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
-         if (err) {
+   async refreshToken(req, res, next) {
+      try {
+         // get info from request
+         const token = req.headers["authorization"].split(" ")[1];
+         
+         // verify token
+         const decoded = jwt.decode(token, { complete: true });
+         if (!decoded) {
             return next(new AppError(401, "UNAUTHORIZED"));
          }
+
+         // check if token is blacklisted
+         await redisClient.get(`blacklist:${token}`, (err, reply) => {
+            if (err) {
+               return next(new AppError(500, "INTERNAL_SERVER_ERROR"));
+            }
+            if (reply) {
+               return next(new AppError(401, "UNAUTHORIZED"));
+            }
+         });
+
+         // retrieve userId and role from decoded token
+         var { id: userId, role: userRole } = decoded.payload;
+         userId = userId.toString();
 
          // get cached token from redis
-         const redisToken = await redisClient.get(user.id.toString());
-         
+         const redisToken = await redisClient.get(userId);
+
          // if token not found (refreshable duration expired)
-         if (! redisToken || redisToken != token) {
+         if (!redisToken || redisToken != token) {
             return next(new AppError(401, "UNAUTHORIZED"));
          }
+
 
          // after passing all checks
 
          // create new access token
          const newAccessToken = jwt.sign({
-            id: user.id,
-            role: user.role,
+            id: userId,
+            role: userRole,
          }, 
             process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '10m'
          });
 
          // save new token to redis
-         redisClient.set(user.id.toString(), newAccessToken, 'EX', 3 * 24 * 60 * 60);
+         redisClient.set(userId, newAccessToken, { EX: 3 * 24 * 60 * 60 });
 
          // return new token
          res.status(200).json({
             accessToken: newAccessToken,
          });
-      });
+      } catch (err) {
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+      }
    };
 
    // [POST] /auth/logout
-   logout(req, res) {
+   async logout(req, res) {
 
-      const { token } = req.body;
-      // check if token is valid
-      if (!token) {
-         return next(new AppError(401, "UNAUTHORIZED"));
-      }
-      
-      // get user id from token
-      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-      const userId = decoded.id;
+      const token = req.headers["authorization"].split(" ")[1];
+      const userId = req.userInfo.id.toString();
 
       // delete token from redis
-      redisClient.del(userId.toString(), (err, reply) => {
+      redisClient.del(userId, (err, reply) => {
          if (err) {
             return next(new AppError(500, "INTERNAL_SERVER_ERROR"));
          }
@@ -166,10 +182,93 @@ class AuthController {
 
       // add access token to blacklist
       // automatically expire after 10 minutes
-      redisClient.set(`blacklist:${token}`, "blacklisted", 'EX', 10 * 60);
+      redisClient.set(`blacklist:${token}`, "blacklisted", { EX: 10 * 60 });
 
       // return success message
       res.status(200).json({});
+   }
+
+   // [POST] /auth/forgot-password
+   async forgotPassword(req, res, next) {
+      try {
+         const { email } = req.body;
+
+         const user = await User.findOne({ email: email });
+         if (!user) {
+            return next(new AppError(404, "USER_NOT_FOUND"));
+         }
+
+         // generate OTP
+         const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+         // hash OTP and save to redis
+         const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+         await redisClient.set(`otp:${email}`, hashedOtp, { EX: 10 * 60 });
+          
+         // send OTP to user's email
+         await emailSender.sendOtpEmail(email, otp);
+
+         res.status(200).json();
+
+      } catch (err) {
+         if (err instanceof AppError) {
+            return next(err);
+         }  
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+      }
+   }   
+
+   // [POST] /auth/verify-otp-and-change-password
+   async verifyOtpAndChangePassword(req, res, next) {                              
+      try {
+         const { email, otp, newPassword } = req.body;
+
+         // get hashed OTP from redis
+         const hashedOtp = await redisClient.get(`otp:${email}`);
+         if (!hashedOtp) {
+            return next(new AppError(400, "OTP_EXPIRED"));
+         }
+
+         // hash the provided OTP and compare with the one in redis
+         const hashedProvidedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+         if (hashedProvidedOtp !== hashedOtp) {
+            return next(new AppError(400, "INVALID_OTP"));
+         }
+
+         // delete OTP from redis
+         await redisClient.del(`otp:${email}`);
+
+         // reset password
+         // find user by email
+         const user = await User.findOne({ email: email });
+         if (!user) {
+            throw new AppError(404, "USER_NOT_FOUND");
+         }
+
+         // check if new password < 8 characters
+         if (newPassword.length < 8) {
+            throw new AppError(400, "INVALID_PASSWORD");
+         }
+
+         // hash new password
+         const salt = bcrypt.genSaltSync(10);
+         const hashPassword = bcrypt.hashSync(newPassword, salt);
+         
+         // update password in db
+         user.password = hashPassword;
+         await user.save();
+
+         // delete access token from redis
+         await redisClient.del(user._id.toString());
+
+         res.status(200).json();
+
+      } catch (err) {
+         if (err instanceof AppError) {
+            return next(err);
+         }
+         return next(new AppError(500, "INTERNAL_SERVER_ERROR", err.message));
+      }
    }
 
 }

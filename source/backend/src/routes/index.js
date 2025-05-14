@@ -1,13 +1,23 @@
-const testRouter = require('./testRouter');
 const authRouter = require('./authRouter');
-const productRouter = require('./productRouter');
+const userRouter = require('./userRouter');
+const bookRouter = require('./bookRouter');
+const cartRouter = require('./cartRouter');
+const wishlistRouter = require('./wishlistRouter');
+const reviewRouter = require('./reviewRouter');
+const orderRouter = require('./orderRouter');
+const paymentRouter = require('./paymentRouter');
+const statsRouter = require('./statsRouter')
 
 function route(app) {
-   app.use('/test', testRouter);
    app.use('/auth', authRouter);
-   //  app.use('/book', bookRouter);
-   //  app.use('/me', meRouter);
-   app.use('/products', productRouter);
+   app.use('/user', userRouter);
+   app.use('/book', bookRouter);
+   app.use('/cart', cartRouter);
+   app.use('/wishlist', wishlistRouter);
+   app.use('/review', reviewRouter);
+   app.use('/order', orderRouter);
+   app.use('/payment', paymentRouter);
+   app.use('/stats', statsRouter);
 }
 
 module.exports = route;
