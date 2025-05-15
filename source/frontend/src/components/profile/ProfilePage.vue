@@ -5,7 +5,7 @@
             <img :src="userAvatar" alt="avatar" class="profile-avatar" />
         </header>
       
-        <!-- Đổi vị trí: Hiển thị Email trước -->
+        <!-- Hiển thị Email trước -->
         <section class="profile-field">
             <label class="field-label">
                 Email <span class="required-star">*</span>
@@ -16,7 +16,7 @@
             </div>
         </section>
       
-        <!-- Đặt Username sau Email và loại bỏ disabled để cho phép chỉnh sửa -->
+        <!-- Username sau Email và cho phép chỉnh sửa -->
         <section class="profile-field">
             <label class="field-label">
                 Tên đăng nhập
@@ -51,6 +51,7 @@
             <div class="input-container">
                 <input :type="isOldPasswordVisible ? 'text' : 'password'" v-model="userForm.oldPassword" 
                        placeholder="Nhập mật khẩu hiện tại" class="field-input"
+                       :class="{ 'error': oldPasswordError }"
                        @focus="oldPasswordFocused = true" @blur="oldPasswordFocused = false">
                 <div class="icon-container password-toggle" @click="toggleOldPasswordVisibility">
                     <transition name="fade" mode="out-in">
@@ -59,6 +60,7 @@
                     </transition>
                 </div>
             </div>
+            <div v-if="oldPasswordError" class="field-error">{{ oldPasswordError }}</div>
         </section>
       
         <!-- Phần địa chỉ -->
@@ -145,7 +147,8 @@ export default {
       avatarFocused: false,
       isPasswordVisible: false,
       isOldPasswordVisible: false,
-      validationError: ''
+      validationError: '',
+      oldPasswordError: ''
     }
   },
   computed: {
@@ -174,6 +177,17 @@ export default {
           this.isEditing = true;
         }
       }
+    },
+    // Đặt lại lỗi mật khẩu cũ khi người dùng thay đổi input
+    'userForm.oldPassword'() {
+      this.oldPasswordError = '';
+    },
+    // Theo dõi mật khẩu mới, nếu xóa trắng thì cũng xóa trường mật khẩu cũ
+    'userForm.password'(newVal) {
+      if (!newVal) {
+        this.userForm.oldPassword = '';
+        this.oldPasswordError = '';
+      }
     }
   },
   methods: {
@@ -187,6 +201,7 @@ export default {
         avatarUrl: this.user.avatar || this.user.avatarUrl || ''
       };
       this.validationError = '';
+      this.oldPasswordError = '';
     },
     startEditing() {
       this.isEditing = true;
@@ -205,10 +220,11 @@ export default {
     },
     validateForm() {
       this.validationError = '';
+      this.oldPasswordError = '';
 
       // Kiểm tra nếu có mật khẩu mới nhưng không có mật khẩu cũ
       if (this.userForm.password && !this.userForm.oldPassword) {
-        this.validationError = 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu';
+        this.oldPasswordError = 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu';
         return false;
       }
 
@@ -244,6 +260,10 @@ export default {
       
       // Phát sự kiện cập nhật thông tin
       this.$emit('update-profile', updatedData);
+    },
+    // Phương thức được gọi từ ProfileUser khi mật khẩu cũ không đúng
+    setOldPasswordError(message) {
+      this.oldPasswordError = message;
     }
   }
 }
@@ -644,7 +664,21 @@ export default {
     cursor: not-allowed;
     }
 
-    .validation-error {
+    /* Giữ nguyên các style hiện tại */
+
+    /* Thêm style cho hiển thị lỗi trường mật khẩu cũ */
+    .field-error {
+  color: #e74c3c;
+  margin-top: 5px;
+  font-size: 14px;
+  font-family: "Montserrat", sans-serif;
+}
+
+.input-container .error {
+  border-color: #e74c3c;
+}
+
+.validation-error {
   color: #e74c3c;
   margin: 15px 0;
   text-align: center;
