@@ -3,77 +3,86 @@
     <h1 class="page-title">Quản lý sản phẩm</h1>
     
     <div class="toolbar">
-      <div class="filter-section">
-        <!-- Dropdown lọc theo danh mục - cải tiến giống CategoryFilter -->
-        <div class="filter-card category-filter">
-          <div class="dropdown-container">
-            <button class="dropdown-button" @click="toggleDropdown">
-              <span>Danh mục: {{ selectedCategory === null ? 'Tất cả' : selectedCategory }}</span>
-              <i class="fas fa-chevron-down"></i>
-            </button>
-            <div class="dropdown-content" v-if="showDropdown">
-              <div class="category-item" @click="selectCategory(null)">
-                <div class="checkbox">
-                  <i v-if="selectedCategory === null" class="fa-solid fa-check"></i>
+      <!-- HÀNG 1: Bộ lọc, thanh tìm kiếm và nút thêm sản phẩm -->
+      <div class="top-row">
+        <div class="filter-group">
+          <!-- Dropdown lọc theo danh mục -->
+          <div class="filter-card category-filter">
+            <div class="dropdown-container">
+              <button class="dropdown-button" @click="toggleDropdown">
+                <span>Danh mục: {{ selectedCategory === null ? 'Tất cả' : selectedCategory }}</span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              <div class="dropdown-content" v-if="showDropdown">
+                <div class="category-item" @click="selectCategory(null)">
+                  <div class="checkbox">
+                    <i v-if="selectedCategory === null" class="fa-solid fa-check"></i>
+                  </div>
+                  <p class="category-name">Tất cả</p>
                 </div>
-                <p class="category-name">Tất cả</p>
-              </div>
-              <div 
-                v-for="category in categories" 
-                :key="category"
-                class="category-item"
-                :class="{ active: selectedCategory === category }"
-                @click="selectCategory(category)"
-              >
-                <div class="checkbox">
-                  <i v-if="selectedCategory === category" class="fa-solid fa-check"></i>
+                <div 
+                  v-for="category in categories" 
+                  :key="category"
+                  class="category-item"
+                  :class="{ active: selectedCategory === category }"
+                  @click="selectCategory(category)"
+                >
+                  <div class="checkbox">
+                    <i v-if="selectedCategory === category" class="fa-solid fa-check"></i>
+                  </div>
+                  <p class="category-name">{{ category }}</p>
                 </div>
-                <p class="category-name">{{ category }}</p>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Dropdown lọc theo thứ tự (mới thêm) -->
-        <div class="filter-card sort-filter">
-          <div class="dropdown-container">
-            <button class="dropdown-button" @click="toggleSortDropdown">
-              <span>Sắp xếp: {{ getSortLabel() }}</span>
-              <i class="fas fa-chevron-down"></i>
-            </button>
-            <div class="dropdown-content" v-if="showSortDropdown">
-              <div 
-                v-for="option in sortOptions" 
-                :key="option.value"
-                class="sort-item"
-                :class="{ active: sortOption === option.value }"
-                @click="selectSortOption(option.value)"
-              >
-                <div class="checkbox">
-                  <i v-if="sortOption === option.value" class="fa-solid fa-check"></i>
+          <!-- Dropdown lọc theo thứ tự -->
+          <div class="filter-card sort-filter">
+            <div class="dropdown-container">
+              <button class="dropdown-button" @click="toggleSortDropdown">
+                <span>Sắp xếp: {{ getSortLabel() }}</span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              <div class="dropdown-content" v-if="showSortDropdown">
+                <div 
+                  v-for="option in sortOptions" 
+                  :key="option.value"
+                  class="sort-item"
+                  :class="{ active: sortOption === option.value }"
+                  @click="selectSortOption(option.value)"
+                >
+                  <div class="checkbox">
+                    <i v-if="sortOption === option.value" class="fa-solid fa-check"></i>
+                  </div>
+                  <p class="sort-name">{{ option.label }}</p>
                 </div>
-                <p class="sort-name">{{ option.label }}</p>
               </div>
             </div>
           </div>
         </div>
         
-        <!-- Box tìm kiếm - cải tiến giao diện -->
+        <!-- Box tìm kiếm -->
         <div class="search-container">
           <input 
             type="text" 
             placeholder="Tìm kiếm theo tên sách hoặc tên tác giả..." 
             v-model="searchQuery" 
-            @keyup.enter="searchBooks" 
+            @input="debouncedSearch"
           />
-          <button class="search-btn" @click="searchBooks">
+          <button class="search-btn">
             <i class="fas fa-search"></i>
           </button>
         </div>
+        
+        <!-- Nút thêm sách mới -->
+        <button class="add-product-btn" @click="openAddBookForm">
+          <i class="fas fa-plus"></i> Thêm sách mới
+        </button>
       </div>
 
-      <div class="action-buttons">
-        <!-- Nút lọc sản phẩm mới nhập (mới thêm) -->
+      <!-- HÀNG 2: Các nút còn lại -->
+      <div class="bottom-row">
+        <!-- Nút lọc sản phẩm mới nhập -->
         <button 
           class="filter-btn" 
           :class="{ active: showRecentlyAdded }"
@@ -82,17 +91,14 @@
           <i class="fas fa-calendar-alt"></i> Sản phẩm mới nhập
         </button>
         
+        <!-- Nút làm mới bộ lọc -->
         <button class="refresh-btn" @click="resetFilters">
           <i class="fas fa-sync-alt"></i> Làm mới bộ lọc
-        </button>
-        
-        <button class="add-product-btn" @click="openAddBookForm">
-          <i class="fas fa-plus"></i> Thêm sách mới
         </button>
       </div>
     </div>
     
-    <!-- Hiển thị các bộ lọc đang áp dụng -->
+    <!-- Phần còn lại giữ nguyên -->
     <div class="active-filters" v-if="hasActiveFilters">
       <span class="filter-label">Bộ lọc đang áp dụng:</span>
       <div class="filter-tags">
@@ -185,6 +191,7 @@ export default {
   data() {
     return {
       searchQuery: "",
+      searchTimeout: null,
       books: [],
       loading: true,
       error: null,
@@ -233,6 +240,17 @@ export default {
     document.removeEventListener('click', this.closeDropdownOutside);
   },
   methods: {
+    debouncedSearch() {
+      // Xóa timeout cũ nếu người dùng tiếp tục gõ
+      if (this.searchTimeout) {
+        clearTimeout(this.searchTimeout);
+      }
+      
+      // Thiết lập timeout mới để trì hoãn tìm kiếm
+      this.searchTimeout = setTimeout(() => {
+        this.searchBooks();
+      }, 500); // Đợi 500ms sau khi người dùng ngừng gõ
+    },
     // Lấy tên hiển thị của tùy chọn sắp xếp
     getSortLabel() {
       const option = this.sortOptions.find(opt => opt.value === this.sortOption);
@@ -612,19 +630,39 @@ export default {
 
 .toolbar {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+/* Hàng đầu tiên - chứa bộ lọc, thanh tìm kiếm và nút thêm */
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+/* Hàng thứ hai - chứa các nút còn lại */
+.bottom-row {
+  display: flex;
+  gap: 15px;
+  width: 100%;
 }
 
 .filter-section {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 15px;
-  flex-grow: 1;
-  max-width: 800px;
   flex-wrap: wrap;
 }
 
@@ -648,7 +686,7 @@ export default {
 .dropdown-button {
   background-color: transparent;
   border: none;
-  padding: 8px 0;
+  padding: 3px 0;
   cursor: pointer;
   width: 100%;
   text-align: left;
@@ -752,6 +790,7 @@ export default {
   font-family: "Montserrat", sans-serif;
   font-size: 14px;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .add-product-btn {

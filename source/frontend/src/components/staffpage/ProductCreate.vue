@@ -33,7 +33,7 @@
       
       <div class="right-column">
         <div class="form-group">
-          <label>Tên sách <span class="required">*</span></label>
+          <label class="label_input_create_product">Tên sách <span class="required">*</span></label>
           <input 
             type="text" 
             v-model="book.title" 
@@ -45,7 +45,7 @@
         </div>
         
         <div class="form-group">
-          <label>Tác giả <span class="required">*</span></label>
+          <label class="label_input_create_product">Tác giả <span class="required">*</span></label>
           <input 
             type="text" 
             v-model="book.author" 
@@ -57,11 +57,11 @@
         </div>
         
         <div class="form-group">
-          <label>Thể loại <span class="required">*</span></label>
+          <label class="label_input_create_product">Thể loại <span class="required">*</span></label>
           <div class="category-select">
             <select 
               v-model="selectedCategory" 
-              class="form-input"
+              class="form-input form_category"
               :class="{ 'error': errors.category }"
             >
               <option value="" disabled>Chọn thể loại</option>
@@ -75,7 +75,7 @@
         </div>
         
         <div class="form-group">
-          <label>Giá (VNĐ) <span class="required">*</span></label>
+          <label class="label_input_create_product">Giá (VNĐ) <span class="required">*</span></label>
           <input 
             type="number" 
             v-model="book.price" 
@@ -88,11 +88,11 @@
         </div>
         
         <div class="form-group">
-          <label>Mô tả <span class="required">*</span></label>
+          <label class="label_input_create_product">Mô tả <span class="required">*</span></label>
           <textarea 
             v-model="book.description" 
             placeholder="Nhập mô tả sách" 
-            class="form-textarea"
+            class="form-textarea form_category"
             :class="{ 'error': errors.description }"
             rows="5"
           ></textarea>
@@ -332,6 +332,31 @@ export default {
 </script>
 
 <style scoped>
+/* Thêm vào CSS để ẩn icon mặc định của select */
+.form_category.form-input {
+  /* Các thuộc tính CSS hiện tại */
+  padding-right: 40px;
+  background-color: #CCC9C9;
+  color: #4D2900;
+  
+  /* Thêm thuộc tính này để ẩn icon mặc định */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.form_category.form-textarea{
+  padding-right: 40px; /* Thêm khoảng cách bên phải cho textarea */
+  background-color: #CCC9C9;
+  color: #4D2900;
+}
+
+.label_input_create_product {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
 .product-create-container {
   background-color: #f5f5f5;
   border-radius: 10px;
