@@ -9,29 +9,65 @@
     
     <div class="product-create-content">
       <div class="left-column">
+        <!-- Hiển thị ảnh chính -->
         <div class="image-preview-container">
           <img 
-            :src="previewImage || 'https://via.placeholder.com/350x450?text=Thêm+ảnh+sản+phẩm'" 
+            :src="currentMainImage || 'https://via.placeholder.com/350x450?text=Thêm+ảnh+sản+phẩm'" 
             alt="Ảnh sản phẩm" 
             class="image-preview"
           />
         </div>
         
+        <!-- Phần hiển thị thumbnail các ảnh -->
+        <div class="image-thumbnails" v-if="imageUrls.length > 0">
+          <div 
+            v-for="(url, index) in imageUrls" 
+            :key="index" 
+            class="thumbnail-item"
+            :class="{ active: currentMainImageIndex === index }"
+            @click="setMainImage(index)"
+          >
+            <img :src="url" alt="Thumbnail" class="thumbnail-img" />
+            <button class="remove-image-btn" @click.stop="removeImage(index)">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Phần tải lên hình ảnh -->
         <div class="upload-section">
           <input 
             type="file" 
             ref="fileInput" 
             accept="image/*" 
             style="display:none" 
-            @change="handleFileSelected" 
+            @change="handleFileSelected"
+            multiple
           />
           <button class="upload-button" @click="$refs.fileInput.click()">
             <i class="fas fa-cloud-upload-alt"></i> Tải lên hình ảnh
           </button>
         </div>
+        
+        <!-- Phần thêm URL hình ảnh -->
+        <div class="image-url-input">
+          <div class="url-input-wrapper">
+            <input 
+              type="text" 
+              v-model="newImageUrl" 
+              placeholder="Nhập URL hình ảnh" 
+              class="form-input"
+              @keyup.enter="addImageUrl"
+            />
+            <button class="add-url-button" @click="addImageUrl">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
       </div>
       
       <div class="right-column">
+        <!-- Các trường nhập liệu khác giữ nguyên -->
         <div class="form-group">
           <label class="label_input_create_product">Tên sách <span class="required">*</span></label>
           <input 
@@ -135,15 +171,29 @@ export default {
       categories: [],
       previewImage: null,
       imageFile: null,
+      uploadedFiles: [],       // Mảng chứa các file đã upload
+      imageUrls: [],           // Mảng chứa các URL của hình ảnh
+      newImageUrl: '',         // URL hình ảnh mới nhập
+      currentMainImageIndex: 0, 
       errors: {
         title: '',
         author: '',
         price: '',
         description: '',
-        category: ''
+        category: '',
+        image: ''
       },
       loading: false
     };
+  },
+  computed: {
+    // Lấy ảnh chính hiển thị (ảnh đầu tiên hoặc ảnh được chọn)
+    currentMainImage() {
+      if (this.imageUrls.length > 0) {
+        return this.imageUrls[this.currentMainImageIndex];
+      }
+      return this.previewImage;
+    }
   },
   created() {
     this.fetchCategories();
@@ -183,30 +233,103 @@ export default {
       }
     },
     
-    handleFileSelected(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      
-      // Kiểm tra file có phải ảnh không
-      if (!file.type.match('image.*')) {
-        eventBus.emit('show-alert', {
-          show: true,
-          type: 'error',
-          title: 'Lỗi file',
-          message: 'Vui lòng chọn file hình ảnh',
-          autoClose: true
-        });
+    // Đặt ảnh chính hiển thị theo index
+    setMainImage(index) {
+      this.currentMainImageIndex = index;
+    },
+    
+    // Xóa ảnh khỏi danh sách
+    removeImage(index) {
+      this.imageUrls.splice(index, 1);
+      if (this.currentMainImageIndex >= this.imageUrls.length) {
+        this.currentMainImageIndex = Math.max(0, this.imageUrls.length - 1);
+      }
+    },
+    
+    // Thêm URL ảnh mới vào danh sách
+    addImageUrl() {
+      if (!this.newImageUrl.trim()) {
         return;
       }
       
-      this.imageFile = file;
+      // Thêm log để debug
+      console.log('Thêm URL hình ảnh:', this.newImageUrl);
       
-      // Tạo preview ảnh
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.previewImage = e.target.result;
-      };
-      reader.readAsDataURL(file);
+      // Kiểm tra URL hợp lệ
+      let url = this.newImageUrl.trim();
+      
+      // Thêm protocol nếu URL không có
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+      }
+      
+      try {
+        new URL(url);
+        
+        // Thêm vào danh sách nếu chưa có
+        if (!this.imageUrls.includes(url)) {
+          this.imageUrls.push(url);
+          console.log('Đã thêm URL vào danh sách, total:', this.imageUrls.length);
+        }
+        
+        // Xóa trường nhập liệu
+        this.newImageUrl = '';
+      } catch (e) {
+        console.error('URL không hợp lệ:', e);
+        eventBus.emit('show-alert', {
+          show: true,
+          type: 'error',
+          title: 'URL không hợp lệ',
+          message: 'Vui lòng nhập URL hình ảnh hợp lệ',
+          autoClose: true
+        });
+      }
+    },
+    
+    handleFileSelected(event) {
+      const files = event.target.files;
+      console.log('Số file đã chọn:', files?.length || 0);
+      
+      if (!files || files.length === 0) return;
+      
+      // Xử lý từng file được chọn
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        console.log('Xử lý file:', file.name, file.type);
+        
+        // Kiểm tra file có phải ảnh không
+        if (!file.type.match('image.*')) {
+          eventBus.emit('show-alert', {
+            show: true,
+            type: 'error',
+            title: 'Lỗi file',
+            message: 'Vui lòng chỉ chọn file hình ảnh',
+            autoClose: true
+          });
+          continue;
+        }
+        
+        // Thêm file vào danh sách để upload
+        this.uploadedFiles.push(file);
+        
+        // Tạo preview ảnh
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const imageUrl = e.target.result;
+          this.imageUrls.push(imageUrl);
+          console.log('Đã thêm file preview vào danh sách, total:', this.imageUrls.length);
+          
+          // Nếu đây là ảnh đầu tiên, đặt làm previewImage để tương thích với code cũ
+          if (this.uploadedFiles.length === 1 && !this.previewImage) {
+            this.previewImage = imageUrl;
+            this.imageFile = file;
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+      
+      // Reset input file để có thể chọn cùng một file nhiều lần
+      event.target.value = '';
     },
     
     validateForm() {
@@ -216,7 +339,8 @@ export default {
         author: '',
         price: '',
         description: '',
-        category: ''
+        category: '',
+        image: ''
       };
       
       if (!this.book.title.trim()) {
@@ -244,28 +368,54 @@ export default {
         isValid = false;
       }
       
+      if (this.imageUrls.length === 0 && !this.uploadedFiles.length) {
+        this.errors.image = 'Vui lòng thêm ít nhất một hình ảnh';
+        
+        eventBus.emit('show-alert', {
+          show: true,
+          type: 'error',
+          title: 'Thiếu hình ảnh',
+          message: 'Vui lòng thêm ít nhất một hình ảnh cho sản phẩm',
+          autoClose: true
+        });
+      }
+      
       return isValid;
     },
     
-    async uploadImage() {
-      if (!this.imageFile) {
-        return null;
+    async uploadImages() {
+      if (this.uploadedFiles.length === 0) {
+        return [];
       }
       
       try {
-        // Tạo formData để upload file
-        const formData = new FormData();
-        formData.append('image', this.imageFile);
+        // Upload từng file một và thu thập URL
+        const uploadedUrls = [];
         
-        // Gọi API upload ảnh
-        const response = await BookService.uploadImage(formData);
+        for (const file of this.uploadedFiles) {
+          // Tạo formData để upload file
+          const formData = new FormData();
+          formData.append('image', file);
+          
+          // Gọi API upload ảnh
+          const response = await BookService.uploadImage(formData);
+          const imageUrl = response.data.imageUrl || response.data.imageUrls[0];
+          
+          if (imageUrl) {
+            uploadedUrls.push(imageUrl);
+          }
+        }
         
-        // Trả về URL của ảnh hoặc mảng URL nếu nhiều ảnh
-        return response.data.imageUrl || response.data.imageUrls[0];
+        return uploadedUrls;
       } catch (error) {
         console.error('Lỗi khi upload ảnh:', error);
-        throw new Error('Không thể upload ảnh');
+        throw new Error('Không thể upload một số hình ảnh');
       }
+    },
+    
+    // Lọc các URL base64 ra khỏi mảng imageUrls
+    getExternalUrls() {
+      return this.imageUrls.filter(url => !url.startsWith('data:'));
     },
     
     async submitForm() {
@@ -276,33 +426,36 @@ export default {
       this.loading = true;
       
       try {
-        let imageUrl = null;
+        // 1. Upload các file ảnh đã chọn
+        const uploadedUrls = await this.uploadImages();
         
-        // Upload ảnh nếu có
-        if (this.imageFile) {
-          imageUrl = await this.uploadImage();
-        }
+        // 2. Kết hợp URL đã upload và URL bên ngoài
+        const externalUrls = this.getExternalUrls();
+        console.log('External URLs:', externalUrls);
+        const allImageUrls = [...uploadedUrls, ...externalUrls];
+        console.log('Tất cả URLs:', allImageUrls);
         
-        // Chuẩn bị dữ liệu sách
+        // 3. Chuẩn bị dữ liệu sách
         const bookData = {
           title: this.book.title,
           author: this.book.author,
           category: this.selectedCategory,
           description: this.book.description,
           price: parseFloat(this.book.price),
-          stock: 'Còn hàng', // Giá trị mặc định
-          sold: 0,   // Giá trị mặc định
-          image: imageUrl ? `['${imageUrl}']` : "" // Định dạng image theo yêu cầu API
+          stock: 'Còn hàng',
+          sold: 0,  
+          image: allImageUrls.length > 0 ? `[${allImageUrls.map(url => `'${url}'`).join(', ')}]` : ""
         };
         
+        console.log('Chuỗi image cuối cùng:', bookData.image);
         console.log('Gửi dữ liệu sách mới:', bookData);
         
-        // Gọi API tạo sách mới với access token
+        // 4. Gọi API tạo sách mới với access token
         const response = await BookService.createBook(bookData);
         
         console.log('Kết quả API tạo sách:', response.data);
         
-        // Thông báo tạo sách thành công
+        // 5. Thông báo tạo sách thành công
         eventBus.emit('show-alert', {
           show: true,
           type: 'success',
@@ -311,7 +464,7 @@ export default {
           autoClose: true
         });
         
-        // Thông báo cho component cha về việc tạo sách thành công
+        // 6. Thông báo cho component cha về việc tạo sách thành công
         this.$emit('book-created');
       } catch (error) {
         console.error('Lỗi khi tạo sách mới:', error);
@@ -349,6 +502,84 @@ export default {
   padding-right: 40px; /* Thêm khoảng cách bên phải cho textarea */
   background-color: #CCC9C9;
   color: #4D2900;
+}
+
+.image-thumbnails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.thumbnail-item {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.thumbnail-item.active {
+  border-color: #4d2900;
+  transform: scale(1.05);
+}
+
+.thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.thumbnail-item:hover .remove-image-btn {
+  opacity: 1;
+}
+
+.image-url-input {
+  margin-top: 15px;
+}
+
+.url-input-wrapper {
+  display: flex;
+  gap: 10px;
+}
+
+.add-url-button {
+  background-color: #4d2900;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-url-button:hover {
+  background-color: #6e3d00;
 }
 
 .label_input_create_product {

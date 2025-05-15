@@ -58,7 +58,7 @@ export default {
   methods: {
     // Xử lý hiển thị ảnh sách
     getImageSrc(book) {
-      if (!book.image) return '/images/default-book-cover.jpg';
+      if (!book.image) return '/images/top-week.jpeg';
       
       // Xử lý trường hợp image là chuỗi JSON
       if (typeof book.image === 'string' && book.image.startsWith('[') && book.image.endsWith(']')) {
@@ -68,7 +68,7 @@ export default {
           const images = JSON.parse(jsonStr);
           return Array.isArray(images) && images.length > 0 
             ? images[0] 
-            : '/images/default-book-cover.jpg';
+            : '/images/top-week.jpeg';
         } catch (e) {
           console.error('Lỗi xử lý chuỗi hình ảnh:', e);
           return book.image; // Vẫn trả về chuỗi gốc nếu không parse được
@@ -81,7 +81,7 @@ export default {
     // Xử lý lỗi khi tải hình ảnh
     handleImageError(event) {
       // Sử dụng ảnh dự phòng local giống BookCard
-      event.target.src = '/images/default-book-cover.jpg';
+      event.target.src = '/images/top-week.jpeg';
     },
     
     // Giới hạn độ dài văn bản
