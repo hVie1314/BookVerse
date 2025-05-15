@@ -25,7 +25,7 @@
             ></path>
           </svg>
         </div>
-        <span class="menu-text">Trang tổng quan</span>
+        <span class="menu-text">Tổng quan</span>
       </router-link>
       
       <!-- ProductionIcon - Liên kết đến ProductManagement -->
