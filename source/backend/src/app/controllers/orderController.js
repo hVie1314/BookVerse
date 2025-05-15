@@ -9,6 +9,15 @@ class OrderController {
         try {
             const { userId, items, totalAmount, paymentMethod } = req.body;
 
+            // Check if the user exists
+            const user = await User.findById(userId);
+            if (!user)
+                return next(new AppError(404, 'USER_NOT_FOUND', 'User not found'));
+
+            // If the user has no address, prevent the order and ask for an address update
+            if (!user.address)
+                return next(new AppError(400, 'MISSING_ADDRESS', 'Please update your address before placing an order'));
+            
             // Create a new order 
             const newOrder = new Order({
                 userId: userId,
@@ -50,7 +59,7 @@ class OrderController {
                 )
             );
 
-            res.status(200).json({ orders : ordersWithDetails });
+            res.status(200).json({ orders :  ordersWithDetails });
 
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching orders'));
@@ -60,12 +69,8 @@ class OrderController {
     // Get order details by order ID
     async getOrderById(req, res, next) {
         try {
-            const order = await Order.findById(req.params.id);
-            if (!order)
-                return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found'));
-
             // Join with Book and User collections to get book details and user details
-            const OrderInfo = await Order.findById(req.params.id).populate([
+            const orderInfo = await Order.findById(req.params.id).populate([
                 { 
                     path: 'items.bookId', 
                     model: 'Book', 
@@ -73,7 +78,9 @@ class OrderController {
                 }
             ]);
             
-            res.status(200).json(OrderInfo);
+            if (!orderInfo)
+                return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found'));
+            res.status(200).json(orderInfo);
 
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching order'));
