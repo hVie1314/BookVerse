@@ -5,8 +5,8 @@ export default {
     getAllBooks(page = 1, limit = 10, filters = {}, sortOption = 'default') {
         // Kiểm tra tham số đầu vào
         if (isNaN(page) || page <= 0) {
-            console.error('Page không hợp lệ:', page);
-            page = 1;
+        console.error('Page không hợp lệ:', page);
+        page = 1;
         }
         
         if (isNaN(limit) || limit <= 0) {
@@ -46,6 +46,15 @@ export default {
         
         if (filters.searchQuery) {
             params.search = filters.searchQuery;
+        }
+        
+        // Thêm hỗ trợ lọc sản phẩm mới nhập
+        if (filters.recentlyAdded) {
+            params.recentlyAdded = true;
+        }
+        
+        if (filters.startDate) {
+            params.startDate = filters.startDate;
         }
         
         console.log(`Gọi API lấy danh sách sách với params:`, params);

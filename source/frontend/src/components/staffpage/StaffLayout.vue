@@ -31,12 +31,14 @@ body {
   width: 100%;
   min-height: 100vh;
   background-color: #F4EBE1;
+  font-family: "Montserrat", sans-serif;
 }
 
 .staff-content {
   flex: 1;
   padding: 30px;
   margin-left: 280px; /* Khoảng cách cho sidebar */
+  font-family: "Montserrat", sans-serif;
 }
 
 .welcome-banner {
@@ -46,16 +48,19 @@ body {
   margin-bottom: 30px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   text-align: center;
+  font-family: "Montserrat", sans-serif;
 }
 
 .welcome-banner h1 {
   color: #4d2900;
   font-size: 28px;
   margin-bottom: 15px;
+  font-family: "Montserrat", sans-serif;
 }
 
 .welcome-banner p {
   color: #666;
   font-size: 16px;
+  font-family: "Montserrat", sans-serif;
 }
 </style>

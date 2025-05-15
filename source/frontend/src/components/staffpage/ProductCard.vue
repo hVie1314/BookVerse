@@ -58,15 +58,20 @@ export default {
   methods: {
     // Xử lý hiển thị ảnh sách
     getImageSrc(book) {
-      if (!book.image) return 'https://via.placeholder.com/150x200?text=No+Image';
+      if (!book.image) return '/images/default-book-cover.jpg';
       
       // Xử lý trường hợp image là chuỗi JSON
       if (typeof book.image === 'string' && book.image.startsWith('[') && book.image.endsWith(']')) {
         try {
-          const images = JSON.parse(book.image);
-          return Array.isArray(images) && images.length > 0 ? images[0] : 'https://via.placeholder.com/150x200?text=No+Image';
+          // Thay thế dấu nháy đơn bằng nháy kép trước khi parse
+          const jsonStr = book.image.replace(/'/g, '"');
+          const images = JSON.parse(jsonStr);
+          return Array.isArray(images) && images.length > 0 
+            ? images[0] 
+            : '/images/default-book-cover.jpg';
         } catch (e) {
-          return book.image;
+          console.error('Lỗi xử lý chuỗi hình ảnh:', e);
+          return book.image; // Vẫn trả về chuỗi gốc nếu không parse được
         }
       }
       
@@ -75,7 +80,8 @@ export default {
     
     // Xử lý lỗi khi tải hình ảnh
     handleImageError(event) {
-      event.target.src = `https://via.placeholder.com/150x200?text=${encodeURIComponent(this.book.title || 'Book')}`;
+      // Sử dụng ảnh dự phòng local giống BookCard
+      event.target.src = '/images/default-book-cover.jpg';
     },
     
     // Giới hạn độ dài văn bản
@@ -147,9 +153,9 @@ export default {
 .book-title {
   width: 100%;
   color: #000;
-  font-family: Montserrat, sans-serif;
+  font-family: "Montserrat", sans-serif; /* Thay thế Montserrat không có dấu ngoặc kép */
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 700;
   margin: 0 0 8px 0;
   line-height: 1.3;
 }
@@ -157,7 +163,7 @@ export default {
 .book-description {
   width: 100%;
   color: #333;
-  font-family: "Hind Siliguri", sans-serif;
+  font-family: "Montserrat", sans-serif; /* Thay thế "Hind Siliguri" */
   font-size: 14px;
   font-weight: 400;
   margin: 0 0 10px 0;
@@ -167,7 +173,7 @@ export default {
 .book-author {
   width: 100%;
   color: #4d2900;
-  font-family: Montserrat, sans-serif;
+  font-family: "Montserrat", sans-serif; /* Thay thế Montserrat không có dấu ngoặc kép */
   font-size: 14px;
   font-weight: 700;
   font-style: italic;
@@ -184,7 +190,7 @@ export default {
 
 .book-price {
   color: #4d2900;
-  font-family: Montserrat, sans-serif;
+  font-family: "Montserrat", sans-serif; /* Thay thế Montserrat không có dấu ngoặc kép */
   font-size: 18px;
   font-weight: 700;
   margin: 0;

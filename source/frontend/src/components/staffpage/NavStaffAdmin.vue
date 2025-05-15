@@ -166,6 +166,7 @@ export default {
   color: #897B7B;
   font-size: 20px;
   font-weight: bold;
+  font-family: "Montserrat", sans-serif;
 }
 
 /* Style khi hover */
@@ -216,6 +217,7 @@ export default {
   cursor: pointer;
   text-decoration: none;
   transition: all 0.3s ease;
+  font-family: "Montserrat", sans-serif; /* Thêm font-family */
 }
 
 .user-info:hover {
@@ -234,6 +236,7 @@ export default {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-family: "Montserrat", sans-serif; /* Thêm font-family */
 }
 
 .logout-button i {

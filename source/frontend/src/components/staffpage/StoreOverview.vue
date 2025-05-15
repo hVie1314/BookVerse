@@ -100,6 +100,7 @@ export default {
 .store-title {
   color: #fff;
   text-align: center;
+  font-family: "Montserrat", sans-serif; /* Thêm font-family */
   font-size: 25px;
   font-weight: 900;
   width: 100%;
@@ -147,6 +148,7 @@ export default {
   right: 12px;
   top: 0px;
   color: #000;
+  font-family: "Montserrat", sans-serif; /* Thêm font-family */
   font-size: 42px;
   font-weight: 800;
 }
@@ -172,6 +174,7 @@ export default {
 .stat-title {
   color: #000;
   text-align: center;
+  font-family: "Montserrat", sans-serif; /* Thêm font-family */
   font-size: 28px;
   font-weight: 700;
   margin-top: 5px;
@@ -179,11 +182,11 @@ export default {
 
 .stat-description {
   color: #4d2900;
+  font-family: "Montserrat", sans-serif; /* Thêm font-family rõ ràng */
   font-size: 18px;
   font-weight: 700;
   text-align: center;
   margin-top: 20px;
-
 }
 
 @media (max-width: 991px) {
