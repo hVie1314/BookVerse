@@ -338,6 +338,7 @@ export default {
   padding: 25px;
   width: 100%;
   box-sizing: border-box;
+  font-family: "Montserrat", sans-serif; /* Thêm font-family chung */
 }
 
 .product-create-header {
@@ -354,6 +355,7 @@ export default {
   font-size: 24px;
   font-weight: 900;
   margin: 0;
+  font-family: "Montserrat", sans-serif;
 }
 
 .close-button {
@@ -537,6 +539,10 @@ export default {
 
 .cancel-button:hover {
   background-color: #e5e5e5;
+}
+
+.form-input, .form-textarea {
+  font-family: "Montserrat", sans-serif; /* Thêm font-family cho form */
 }
 
 @media (max-width: 991px) {

@@ -42,6 +42,7 @@
     margin-top: 15px;
     font-size: 30px;
     font-weight: 900;
+    font-family: "Montserrat", sans-serif;
   }
-  </style>
+</style>
   

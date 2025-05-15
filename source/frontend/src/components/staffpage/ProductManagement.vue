@@ -4,22 +4,68 @@
     
     <div class="toolbar">
       <div class="filter-section">
-        <div class="dropdown-container">
-          <button class="dropdown-button" @click="toggleDropdown">
-            {{ selectedCategory === null ? 'Tất cả' : selectedCategory }}
-            <i class="fas fa-chevron-down"></i>
-          </button>
-          <div class="dropdown-content" v-if="showDropdown">
-            <a @click="selectCategory(null)">Tất cả</a>
-            <a v-for="category in categories" :key="category" 
-               @click="selectCategory(category)">
-              {{ category }}
-            </a>
+        <!-- Dropdown lọc theo danh mục - cải tiến giống CategoryFilter -->
+        <div class="filter-card category-filter">
+          <div class="dropdown-container">
+            <button class="dropdown-button" @click="toggleDropdown">
+              <span>Danh mục: {{ selectedCategory === null ? 'Tất cả' : selectedCategory }}</span>
+              <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="dropdown-content" v-if="showDropdown">
+              <div class="category-item" @click="selectCategory(null)">
+                <div class="checkbox">
+                  <i v-if="selectedCategory === null" class="fa-solid fa-check"></i>
+                </div>
+                <p class="category-name">Tất cả</p>
+              </div>
+              <div 
+                v-for="category in categories" 
+                :key="category"
+                class="category-item"
+                :class="{ active: selectedCategory === category }"
+                @click="selectCategory(category)"
+              >
+                <div class="checkbox">
+                  <i v-if="selectedCategory === category" class="fa-solid fa-check"></i>
+                </div>
+                <p class="category-name">{{ category }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dropdown lọc theo thứ tự (mới thêm) -->
+        <div class="filter-card sort-filter">
+          <div class="dropdown-container">
+            <button class="dropdown-button" @click="toggleSortDropdown">
+              <span>Sắp xếp: {{ getSortLabel() }}</span>
+              <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="dropdown-content" v-if="showSortDropdown">
+              <div 
+                v-for="option in sortOptions" 
+                :key="option.value"
+                class="sort-item"
+                :class="{ active: sortOption === option.value }"
+                @click="selectSortOption(option.value)"
+              >
+                <div class="checkbox">
+                  <i v-if="sortOption === option.value" class="fa-solid fa-check"></i>
+                </div>
+                <p class="sort-name">{{ option.label }}</p>
+              </div>
+            </div>
           </div>
         </div>
         
+        <!-- Box tìm kiếm - cải tiến giao diện -->
         <div class="search-container">
-          <input type="text" placeholder="Tìm kiếm theo tên sách hoặc tên tác giả..." v-model="searchQuery" @keyup.enter="searchBooks" />
+          <input 
+            type="text" 
+            placeholder="Tìm kiếm theo tên sách hoặc tên tác giả..." 
+            v-model="searchQuery" 
+            @keyup.enter="searchBooks" 
+          />
           <button class="search-btn" @click="searchBooks">
             <i class="fas fa-search"></i>
           </button>
@@ -27,12 +73,45 @@
       </div>
 
       <div class="action-buttons">
-        <button class="refresh-btn" @click="fetchBooks">
-          <i class="fas fa-sync-alt"></i> Làm mới
+        <!-- Nút lọc sản phẩm mới nhập (mới thêm) -->
+        <button 
+          class="filter-btn" 
+          :class="{ active: showRecentlyAdded }"
+          @click="toggleRecentlyAdded"
+        >
+          <i class="fas fa-calendar-alt"></i> Sản phẩm mới nhập
         </button>
+        
+        <button class="refresh-btn" @click="resetFilters">
+          <i class="fas fa-sync-alt"></i> Làm mới bộ lọc
+        </button>
+        
         <button class="add-product-btn" @click="openAddBookForm">
           <i class="fas fa-plus"></i> Thêm sách mới
         </button>
+      </div>
+    </div>
+    
+    <!-- Hiển thị các bộ lọc đang áp dụng -->
+    <div class="active-filters" v-if="hasActiveFilters">
+      <span class="filter-label">Bộ lọc đang áp dụng:</span>
+      <div class="filter-tags">
+        <div class="filter-tag" v-if="selectedCategory">
+          Danh mục: {{ selectedCategory }}
+          <i class="fas fa-times" @click="selectCategory(null)"></i>
+        </div>
+        <div class="filter-tag" v-if="sortOption !== 'default'">
+          Sắp xếp: {{ getSortLabel() }}
+          <i class="fas fa-times" @click="selectSortOption('default')"></i>
+        </div>
+        <div class="filter-tag" v-if="searchQuery">
+          Tìm kiếm: {{ searchQuery }}
+          <i class="fas fa-times" @click="clearSearch"></i>
+        </div>
+        <div class="filter-tag" v-if="showRecentlyAdded">
+          Sản phẩm mới nhập
+          <i class="fas fa-times" @click="toggleRecentlyAdded"></i>
+        </div>
       </div>
     </div>
     
@@ -66,7 +145,7 @@
       @page-change="changePage" 
     />
 
-    <!-- Overlay cho form thêm sách mới -->
+    <!-- Modal đã có giữ nguyên -->
     <div v-if="showProductForm" class="modal-overlay" @click.self="closeProductForm">
       <div class="create-modal">
         <ProductCreate 
@@ -76,7 +155,6 @@
       </div>
     </div>
     
-    <!-- Modal xác nhận xóa -->
     <div v-if="showDeleteConfirm" class="modal-overlay" @click.self="cancelDelete">
       <div class="modal-container confirm-delete">
         <h2>Xác nhận xóa</h2>
@@ -117,12 +195,31 @@ export default {
       categories: [],
       selectedCategory: null,
       showDropdown: false,
+      showSortDropdown: false,
+      sortOption: 'default',
+      sortOptions: [
+        { value: 'default', label: 'Mặc định' },
+        { value: 'price-asc', label: 'Giá: Thấp đến cao' },
+        { value: 'price-desc', label: 'Giá: Cao đến thấp' },
+        { value: 'bestseller', label: 'Bán chạy nhất' },
+        { value: 'newest', label: 'Mới nhất' }
+      ],
+      showRecentlyAdded: false, // Trạng thái lọc sản phẩm mới nhập
+      recentDaysThreshold: 7, // Số ngày để xác định sản phẩm mới (7 ngày)
       showProductForm: false,
       editMode: false,
       currentBook: null,
       showDeleteConfirm: false,
-      bookToDelete: null
+      bookToDelete: null,
     };
+  },
+  computed: {
+    hasActiveFilters() {
+      return this.selectedCategory !== null || 
+             this.sortOption !== 'default' || 
+             this.searchQuery.trim() !== '' || 
+             this.showRecentlyAdded;
+    }
   },
   created() {
     this.fetchCategories();
@@ -136,7 +233,13 @@ export default {
     document.removeEventListener('click', this.closeDropdownOutside);
   },
   methods: {
-    // Lấy danh mục từ API
+    // Lấy tên hiển thị của tùy chọn sắp xếp
+    getSortLabel() {
+      const option = this.sortOptions.find(opt => opt.value === this.sortOption);
+      return option ? option.label : 'Mặc định';
+    },
+    
+    // Lấy danh mục từ API - giữ nguyên
     async fetchCategories() {
       try {
         const response = await BookService.getCategories();
@@ -144,13 +247,10 @@ export default {
         if (response.data && response.data.success) {
           // Kiểm tra cấu trúc dữ liệu và trích xuất danh mục
           if (Array.isArray(response.data.data)) {
-            // Trường hợp API trả về mảng danh mục trực tiếp
             this.categories = response.data.data;
           } else if (response.data.data && Array.isArray(response.data.data.categories)) {
-            // Trường hợp API trả về đối tượng có thuộc tính categories là mảng
             this.categories = response.data.data.categories;
           } else {
-            // Thử trích xuất từ các cấu trúc dữ liệu khác nhau
             this.categories = response.data.categories || 
                              (response.data.data && response.data.data.categories) || 
                              [];
@@ -161,8 +261,6 @@ export default {
             if (typeof cat === 'string') return cat;
             return cat.categoryName || cat.name || 'Danh mục không xác định';
           });
-          
-          console.log('Danh sách danh mục:', this.categories);
         } else {
           console.error('API không trả về dữ liệu danh mục hợp lệ');
           this.categories = [];
@@ -173,54 +271,125 @@ export default {
       }
     },
     
-    // Lấy sách từ API với các bộ lọc
-    async fetchBooks() {
+    async fetchRecentlyAddedBooks() {
+      this.loading = true;
+      try {
+        // Giống như trong NewBooks.vue - sử dụng getRecentlyAddedBooks
+        const response = await BookService.getRecentlyAddedBooks(this.itemsPerPage * 5); // Lấy đủ số sách để phân trang
+        
+        // Xử lý linh hoạt với nhiều cấu trúc có thể có từ response
+        let books = [];
+        
+        if (response.data && response.data.success && response.data.data && response.data.data.books) {
+          // Cấu trúc từ responseFormatterMiddleware
+          books = response.data.data.books;
+        } else if (response.data && response.data.books) {
+          // Cấu trúc trả về trực tiếp từ controller
+          books = response.data.books;
+        } else if (Array.isArray(response.data)) {
+          // Mảng sách trực tiếp
+          books = response.data;
+        } else {
+          throw new Error("Định dạng dữ liệu không hợp lệ từ API");
+        }
+        
+        console.log('Sách mới nhập:', books);
+        
+        // Cập nhật danh sách sách
+        this.books = books;
+        
+        // Cập nhật thông tin phân trang
+        this.totalBooks = books.length;
+        this.totalPages = Math.ceil(this.totalBooks / this.itemsPerPage);
+        
+        // Thực hiện phân trang ngay nếu có nhiều sách
+        if (this.totalBooks > this.itemsPerPage) {
+          const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+          const endIndex = startIndex + this.itemsPerPage;
+          this.books = books.slice(startIndex, endIndex);
+        }
+        
+      } catch (error) {
+        console.error('Lỗi khi lấy sách mới nhập:', error);
+        this.error = 'Không thể tải danh sách sách mới. Vui lòng thử lại sau.';
+        this.books = [];
+        this.totalBooks = 0;
+        this.totalPages = 0;
+      } finally {
+        this.loading = false;
+      }
+    },
+    // Lấy sách từ API - cập nhật để hỗ trợ các tùy chọn lọc mới
+     async fetchBooks() {
+      // Nếu đang lọc sản phẩm mới nhập, gọi phương thức riêng
+      if (this.showRecentlyAdded) {
+        await this.fetchRecentlyAddedBooks();
+        return;
+      }
+      
       this.loading = true;
       
       try {
-        // Xây dựng bộ lọc từ selectedCategory và searchQuery
-        const filters = {};
-        
-        // Thêm bộ lọc danh mục nếu đã chọn
-        if (this.selectedCategory) {
-          filters.categories = [this.selectedCategory];
-        }
+        // Chuẩn bị các tham số tìm kiếm
+        const searchParams = {
+          page: this.currentPage,
+          limit: this.itemsPerPage
+        };
         
         // Thêm bộ lọc tìm kiếm nếu có từ khóa
         if (this.searchQuery && this.searchQuery.trim()) {
-          filters.searchQuery = this.searchQuery.trim();
+          searchParams.keyword = this.searchQuery.trim();
         }
         
-        console.log('Đang tìm sách với bộ lọc:', filters);
+        // Thêm bộ lọc danh mục nếu đã chọn
+        if (this.selectedCategory) {
+          searchParams.categories = this.selectedCategory;
+        }
         
-        // Gọi API với tham số trang và bộ lọc
-        const response = await BookService.getAllBooks(
-          this.currentPage,
-          this.itemsPerPage,
-          filters
-        );
+        // Chuyển đổi sortOption sang định dạng backend yêu cầu
+        switch (this.sortOption) {
+          case 'price-asc':
+            searchParams.sortBy = 'price_asc';
+            break;
+          case 'price-desc':
+            searchParams.sortBy = 'price_desc';
+            break;
+          case 'bestseller':
+            searchParams.sortBy = 'bestseller';
+            break;
+          case 'newest':
+            searchParams.sortBy = 'newest';
+            break;
+          default:
+            searchParams.sortBy = 'default';
+        }
         
-        // Xử lý dữ liệu phản hồi
-        if (response.data && response.data.data) {
-          const data = response.data.data;
+        console.log('Tìm kiếm sách với tham số:', searchParams);
+        
+        // Gọi API searchBooks
+        const response = await BookService.searchBooks(searchParams);
+        
+        if (response.data && response.data.success) {
+          // Cập nhật dữ liệu từ API response
+          const responseData = response.data.data;
           
           // Cập nhật danh sách sách
-          this.books = data.books || [];
+          this.books = responseData.books || [];
           
-          // Cập nhật thông tin phân trang
-          if (data.pagination) {
-            this.totalBooks = data.pagination.totalBooks || 0;
-            this.totalPages = data.pagination.totalPages || 0;
+          // Cập nhật thông tin phân trang từ API
+          if (responseData.pagination) {
+            const pagination = responseData.pagination;
+            this.totalPages = pagination.totalPages || 1;
+            this.totalBooks = pagination.totalBooks || 0;
+            this.currentPage = pagination.currentPage || 1;
           } else {
             this.totalBooks = this.books.length;
             this.totalPages = 1;
           }
-          
-          console.log(`Tìm thấy ${this.totalBooks} sách, ${this.totalPages} trang`);
         } else {
           console.error('Cấu trúc dữ liệu API không như mong đợi:', response.data);
           this.books = [];
-          this.totalBooks = 0;
+          this.totalBooks =.0;
           this.totalPages = 0;
         }
       } catch (error) {
@@ -233,86 +402,150 @@ export default {
         this.loading = false;
       }
     },
+
+    // Cập nhật phương thức applyFilters giống BookCatalog
+    applyFilters() {
+      this.currentPage = 1; // Reset về trang đầu tiên khi áp dụng bộ lọc
+      this.fetchBooks();
+    },
+    
+    // Reset tất cả bộ lọc
+    resetFilters() {
+      this.selectedCategory = null;
+      this.sortOption = 'default';
+      this.searchQuery = '';
+      this.showRecentlyAdded = false;
+      this.currentPage = 1;
+      this.fetchBooks();
+    },
+    
+    // Xóa tìm kiếm
+    clearSearch() {
+      this.searchQuery = '';
+      this.currentPage = 1;
+      this.fetchBooks();
+    },
     
     // Tìm kiếm sách theo từ khóa nhập vào
     searchBooks() {
-      // Đặt lại trang về 1 khi thực hiện tìm kiếm mới
       this.currentPage = 1;
+      this.fetchBooks();
+    },
+    
+    // Bật/tắt lọc sản phẩm mới nhập
+     toggleRecentlyAdded() {
+      this.showRecentlyAdded = !this.showRecentlyAdded;
+      this.currentPage = 1;
+      
+      // Nếu các bộ lọc khác đang được áp dụng, reset chúng khi bật lọc sản phẩm mới
+      if (this.showRecentlyAdded) {
+        // Giữ trạng thái showRecentlyAdded nhưng reset các bộ lọc khác
+        this.selectedCategory = null;
+        this.searchQuery = '';
+      }
+      
       this.fetchBooks();
     },
     
     // Xử lý khi chọn danh mục từ dropdown
-    selectCategory(category) {
-      // Nếu đang chọn danh mục hiện tại, không làm gì
-      if (this.selectedCategory === category) return;
-      
-      // Cập nhật danh mục đã chọn
+     selectCategory(category) {
       this.selectedCategory = category;
-      
-      // Đóng dropdown
       this.showDropdown = false;
-      
-      // Đặt lại trang về 1 và thực hiện tìm kiếm mới
       this.currentPage = 1;
       this.fetchBooks();
     },
     
-    // Mở/đóng dropdown
+    // Xử lý khi chọn tùy chọn sắp xếp
+    selectSortOption(option) {
+      if (this.sortOption === option) return;
+      
+      this.sortOption = option;
+      this.showSortDropdown = false;
+      this.currentPage = 1;
+      this.fetchBooks();
+    },
+    
+    // Mở/đóng dropdown danh mục
     toggleDropdown(event) {
       if (event) event.stopPropagation();
       this.showDropdown = !this.showDropdown;
+      if (this.showDropdown) this.showSortDropdown = false;
+    },
+    
+    // Mở/đóng dropdown sắp xếp
+    toggleSortDropdown(event) {
+      if (event) event.stopPropagation();
+      this.showSortDropdown = !this.showSortDropdown;
+      if (this.showSortDropdown) this.showDropdown = false;
     },
     
     // Đóng dropdown khi click bên ngoài
     closeDropdownOutside(event) {
-      const dropdown = document.querySelector('.dropdown-container');
-      if (dropdown && !dropdown.contains(event.target)) {
+      const categoryDropdown = document.querySelector('.category-filter .dropdown-container');
+      const sortDropdown = document.querySelector('.sort-filter .dropdown-container');
+      
+      if (categoryDropdown && !categoryDropdown.contains(event.target)) {
         this.showDropdown = false;
+      }
+      
+      if (sortDropdown && !sortDropdown.contains(event.target)) {
+        this.showSortDropdown = false;
       }
     },
     
-    // Xử lý khi chuyển trang
+    // Xử lý khi chuyển trang - giữ nguyên
     changePage(page) {
       if (this.currentPage !== page) {
         this.currentPage = page;
-        this.fetchBooks();
+        
+        // Nếu đang lọc sản phẩm mới nhập và đã có dữ liệu, chỉ cần phân trang lại
+        if (this.showRecentlyAdded && this.totalBooks > this.itemsPerPage) {
+          const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+          const endIndex = startIndex + this.itemsPerPage;
+          
+          // books đầy đủ được lưu trữ tạm thời trong biến allBooks
+          if (this._allNewBooks && this._allNewBooks.length > 0) {
+            this.books = this._allNewBooks.slice(startIndex, endIndex);
+          } else {
+            // Nếu chưa có dữ liệu lưu trữ, fetch lại
+            this.fetchBooks();
+          }
+        } else {
+          // Trường hợp bình thường, gọi API để lấy trang mới
+          this.fetchBooks();
+        }
       }
     },
     
-    // Mở form thêm sách mới
+    // Các phương thức khác giữ nguyên
     openAddBookForm() {
       this.editMode = false;
       this.currentBook = null;
       this.showProductForm = true;
     },
     
-    // Mở form sửa sách
     editBook(book) {
       this.editMode = true;
       this.currentBook = { ...book };
       this.showProductForm = true;
     },
     
-    // Đóng form thêm/sửa sách
     closeProductForm() {
       this.showProductForm = false;
       this.editMode = false;
       this.currentBook = null;
     },
     
-    // Xác nhận xóa sách
     confirmDeleteBook(book) {
       this.bookToDelete = book;
       this.showDeleteConfirm = true;
     },
     
-    // Hủy xóa sách
     cancelDelete() {
       this.showDeleteConfirm = false;
       this.bookToDelete = null;
     },
     
-    // Xóa sách
     async deleteBook() {
       if (!this.bookToDelete || !this.bookToDelete._id) return;
       
@@ -327,7 +560,6 @@ export default {
           autoClose: true
         });
         
-        // Cập nhật lại danh sách sách
         this.fetchBooks();
       } catch (error) {
         console.error('Lỗi khi xóa sách:', error);
@@ -345,43 +577,6 @@ export default {
       }
     },
     
-    // Lấy URL hình ảnh của sách
-    getImageSrc(book) {
-      if (!book.image) return 'https://via.placeholder.com/150x200?text=No+Image';
-      
-      // Xử lý trường hợp image là chuỗi JSON
-      if (typeof book.image === 'string' && book.image.startsWith('[') && book.image.endsWith(']')) {
-        try {
-          const images = JSON.parse(book.image);
-          return Array.isArray(images) && images.length > 0 ? images[0] : 'https://via.placeholder.com/150x200?text=No+Image';
-        } catch (e) {
-          return book.image;
-        }
-      }
-      
-      return book.image;
-    },
-    
-    // Xử lý lỗi khi tải hình ảnh
-    handleImageError(event, book) {
-      event.target.src = `https://via.placeholder.com/150x200?text=${encodeURIComponent(book.title)}`;
-    },
-    
-    // Giới hạn độ dài văn bản
-    limitText(text, length) {
-      if (!text) return '';
-      return text.length > length ? text.substring(0, length) + '...' : text;
-    },
-    
-    // Định dạng giá tiền
-    formatPrice(price) {
-      return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-      }).format(price).replace('₫', 'đ');
-    },
-    
-    // Xử lý khi sách được tạo mới thành công
     handleBookCreated() {
       eventBus.emit('show-alert', {
         show: true,
@@ -391,8 +586,9 @@ export default {
         autoClose: true
       });
       
-      // Đóng form và làm mới danh sách sách
+      // Đóng form và làm mới danh sách, tự động bật chế độ hiển thị sản phẩm mới nhập
       this.closeProductForm();
+      this.showRecentlyAdded = true;
       this.fetchBooks();
     }
   }
@@ -403,6 +599,7 @@ export default {
 .product-management {
   padding: 30px;
   width: 100%;
+  font-family: "Montserrat", sans-serif;
 }
 
 .page-title {
@@ -410,41 +607,58 @@ export default {
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 30px;
+  font-family: "Montserrat", sans-serif;
 }
 
 .toolbar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+  align-items: flex-start;
+  margin-bottom: 20px;
   flex-wrap: wrap;
   gap: 20px;
 }
 
 .filter-section {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 15px;
   flex-grow: 1;
   max-width: 800px;
+  flex-wrap: wrap;
+}
+
+/* Style cho filter card giống CategoryFilter */
+.filter-card {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px 15px;
+  min-width: 200px;
+  position: relative;
 }
 
 .dropdown-container {
   position: relative;
-  min-width: 120px;
+  width: 100%;
+  font-family: "Montserrat", sans-serif;
 }
 
 .dropdown-button {
-  background-color: #f4f4f4;
-  border: 1px solid #ddd;
-  padding: 10px 15px;
-  border-radius: 5px;
+  background-color: transparent;
+  border: none;
+  padding: 8px 0;
   cursor: pointer;
   width: 100%;
   text-align: left;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
 }
 
 .dropdown-content {
@@ -452,67 +666,101 @@ export default {
   top: 100%;
   left: 0;
   background-color: white;
-  min-width: 200px;
+  min-width: 220px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-  border-radius: 5px;
+  z-index: 10;
+  border-radius: 8px;
   max-height: 300px;
   overflow-y: auto;
+  margin-top: 5px;
 }
 
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
+.category-item, .sort-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-.dropdown-content a:hover {
-  background-color: #f1f1f1;
+.category-item:hover, .sort-item:hover {
+  background-color: #f5f5f5;
+}
+
+.category-item.active, .sort-item.active {
+  background-color: rgba(77, 41, 0, 0.1);
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #4d2900;
+  border-radius: 4px;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4d2900;
+}
+
+.category-name, .sort-name {
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  margin: 0;
 }
 
 .search-container {
   display: flex;
   flex-grow: 1;
+  min-width: 250px;
 }
 
 .search-container input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px 0 0 5px;
+  font-family: "Montserrat", sans-serif;
+  padding: 12px 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px 0 0 8px;
   flex-grow: 1;
   min-width: 200px;
+  font-size: 14px;
 }
 
 .search-btn {
   background-color: #4d2900;
   color: white;
   border: none;
-  padding: 10px 15px;
-  border-radius: 0 5px 5px 0;
+  padding: 0 20px;
+  border-radius: 0 8px 8px 0;
   cursor: pointer;
 }
 
 .action-buttons {
   display: flex;
   gap: 15px;
+  flex-wrap: wrap;
 }
 
-.add-product-btn, .refresh-btn {
+.add-product-btn, .refresh-btn, .filter-btn {
   border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
+  padding: 12px 20px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  transition: all 0.2s;
 }
 
 .add-product-btn {
   background-color: #4d2900;
   color: white;
+}
+
+.add-product-btn:hover {
+  background-color: #392000;
 }
 
 .refresh-btn {
@@ -521,24 +769,65 @@ export default {
   border: 1px solid #4d2900;
 }
 
-.product-count {
-  font-size: 16px;
+.refresh-btn:hover {
+  background-color: #e8e8e8;
+}
+
+.filter-btn {
+  background-color: #f5f5f5;
   color: #333;
+  border: 1px solid #ddd;
+}
+
+.filter-btn:hover, .filter-btn.active {
+  background-color: #4d2900;
+  color: white;
+  border-color: #4d2900;
+}
+
+.filter-tag {
+  background-color: #f0f0f0;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Montserrat", sans-serif;
+}
+
+.filter-tag i {
+  cursor: pointer;
+  color: #666;
+}
+
+.filter-tag i:hover {
+  color: #e53935;
+}
+
+.product-count {
+  font-size: 14px;
+  color: #666;
   margin: 0 0 20px 0;
+  font-family: "Montserrat", sans-serif;
 }
 
 .loading, .no-books {
   text-align: center;
   padding: 40px;
   color: #4d2900;
-  font-size: 18px;
+  font-size: 16px;
+  font-family: "Montserrat", sans-serif;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  margin-top: 20px;
 }
 
 .product-list {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  margin-top: 30px;
+  margin-top: 20px;
   width: 100%;
 }
 
