@@ -176,7 +176,17 @@ export default {
     },
     // Thêm sách mới (chỉ admin/staff)
     createBook(bookData) {
-        return Api().post('book/', bookData);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Token không hợp lệ hoặc không tồn tại');
+            return Promise.reject(new Error('Token không hợp lệ hoặc không tồn tại'));
+        }
+
+        console.log('Tạo sách mới với dữ liệu: ', bookData);
+
+        return Api().post('book/', bookData, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Cập nhật thông tin sách (chỉ admin/staff)
@@ -275,5 +285,18 @@ getRelatedBooks(bookId, limit = 20) {
                 
                 throw error;
             });
+    },
+    // Upload ảnh sách
+    uploadImage(formData) {
+        const token = localStorage.getItem('token');
+        const headers = {
+            'Content-Type': 'multipart/form-data'
+        };
+        
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        return Api().post('upload/image', formData, { headers });
     }
 }
