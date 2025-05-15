@@ -5,16 +5,7 @@
             <img :src="userAvatar" alt="avatar" class="profile-avatar" />
         </header>
       
-        <section class="profile-field">
-            <label class="field-label">
-                Tên đăng nhập <span class="required-star">*</span>
-            </label>
-            <div class="input-container">
-                <input type="text" v-model="userForm.username" disabled class="field-input">
-                <div class="icon-container"><i class="fa-regular fa-user eyes"></i></div>
-            </div>
-        </section>
-      
+        <!-- Đổi vị trí: Hiển thị Email trước -->
         <section class="profile-field">
             <label class="field-label">
                 Email <span class="required-star">*</span>
@@ -25,8 +16,21 @@
             </div>
         </section>
       
+        <!-- Đặt Username sau Email và loại bỏ disabled để cho phép chỉnh sửa -->
         <section class="profile-field">
-            <label class="field-label">Mật khẩu</label>
+            <label class="field-label">
+                Tên đăng nhập
+            </label>
+            <div class="input-container">
+                <input type="text" v-model="userForm.username" :disabled="!isEditing" class="field-input"
+                       @focus="usernameFocused = true" @blur="usernameFocused = false">
+                <div class="icon-container"><i class="fa-regular fa-user eyes"></i></div>
+            </div>
+        </section>
+      
+        <!-- Phần nhập mật khẩu mới -->
+        <section class="profile-field">
+            <label class="field-label">Mật khẩu mới</label>
             <div class="input-container">
                 <input :type="isPasswordVisible ? 'text' : 'password'" v-model="userForm.password" 
                        placeholder="••••••••" :disabled="!isEditing" class="field-input"
@@ -40,7 +44,24 @@
                 <div class="icon-container" v-else><i class="fa-solid fa-lock eyes"></i></div>
             </div>
         </section>
+
+        <!-- Phần mật khẩu hiện tại khi đổi mật khẩu -->
+        <section class="profile-field" v-if="isEditing && userForm.password">
+            <label class="field-label">Mật khẩu hiện tại <span class="required-star">*</span></label>
+            <div class="input-container">
+                <input :type="isOldPasswordVisible ? 'text' : 'password'" v-model="userForm.oldPassword" 
+                       placeholder="Nhập mật khẩu hiện tại" class="field-input"
+                       @focus="oldPasswordFocused = true" @blur="oldPasswordFocused = false">
+                <div class="icon-container password-toggle" @click="toggleOldPasswordVisibility">
+                    <transition name="fade" mode="out-in">
+                        <div v-if="isOldPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
+                        <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
+                    </transition>
+                </div>
+            </div>
+        </section>
       
+        <!-- Phần địa chỉ -->
         <section class="profile-field">
             <label class="field-label">Địa chỉ</label>
             <div class="input-container">
@@ -50,6 +71,7 @@
             </div>
         </section>
       
+        <!-- Phần URL ảnh đại diện -->
         <section class="profile-field" v-if="isEditing">
             <label class="field-label">Ảnh đại diện URL</label>
             <div class="input-container">
@@ -59,10 +81,20 @@
             </div>
         </section>
         
+        <!-- Thông báo lỗi -->
+        <div class="validation-error" v-if="validationError">
+            {{ validationError }}
+        </div>
+        
         <div class="field-note" v-if="isEditing">
             <span class="required-star">*</span> Những thông tin này không thể thay đổi
         </div>
+        
+        <div class="password-note" v-if="isEditing && userForm.password">
+            <span class="required-star">*</span> Lưu ý: Nếu bạn thay đổi mật khẩu, bạn sẽ cần đăng nhập lại
+        </div>
 
+        <!-- Các nút tương tác -->
         <div class="button-container">
             <button v-if="!isEditing" @click="startEditing" class="edit-button">
                 <span class="button-text">Chỉnh sửa thông tin</span>
@@ -101,15 +133,19 @@ export default {
         username: '',
         email: '',
         password: '',
+        oldPassword: '',
         address: '',
         avatarUrl: ''
       },
       usernameFocused: false,
       emailFocused: false,
       passwordFocused: false,
+      oldPasswordFocused: false,
       addressFocused: false,
       avatarFocused: false,
-      isPasswordVisible: false
+      isPasswordVisible: false,
+      isOldPasswordVisible: false,
+      validationError: ''
     }
   },
   computed: {
@@ -131,14 +167,13 @@ export default {
       },
       deep: true
     },
-    // Thêm watcher để phản ứng với prop maintainEditing
     maintainEditing: {
-        immediate: true, // Đảm bảo chạy ngay khi component được tạo
-        handler(newVal) {
-            if (newVal === true) {
-                this.isEditing = true;
-            }
+      immediate: true,
+      handler(newVal) {
+        if (newVal === true) {
+          this.isEditing = true;
         }
+      }
     }
   },
   methods: {
@@ -147,9 +182,11 @@ export default {
         username: this.user.username || '',
         email: this.user.email || '',
         password: '',
+        oldPassword: '',
         address: this.user.address || '',
         avatarUrl: this.user.avatar || this.user.avatarUrl || ''
       };
+      this.validationError = '';
     },
     startEditing() {
       this.isEditing = true;
@@ -158,12 +195,43 @@ export default {
       this.isEditing = false;
       this.initializeForm();
     },
+    togglePasswordVisibility() {
+      if (this.isEditing) {
+        this.isPasswordVisible = !this.isPasswordVisible;
+      }
+    },
+    toggleOldPasswordVisibility() {
+      this.isOldPasswordVisible = !this.isOldPasswordVisible;
+    },
+    validateForm() {
+      this.validationError = '';
+
+      // Kiểm tra nếu có mật khẩu mới nhưng không có mật khẩu cũ
+      if (this.userForm.password && !this.userForm.oldPassword) {
+        this.validationError = 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu';
+        return false;
+      }
+
+      return true;
+    },
     saveChanges() {
+      // Kiểm tra dữ liệu trước khi gửi
+      if (!this.validateForm()) {
+        return;
+      }
+
       // Tạo đối tượng chỉ chứa dữ liệu đã thay đổi
       const updatedData = {};
       
+      // Thêm username nếu đã thay đổi
+      if (this.userForm.username !== this.user.username) {
+        updatedData.username = this.userForm.username;
+      }
+      
+      // Thêm mật khẩu và mật khẩu cũ nếu có nhập mật khẩu mới
       if (this.userForm.password) {
         updatedData.password = this.userForm.password;
+        updatedData.oldPassword = this.userForm.oldPassword;
       }
       
       if (this.userForm.address !== this.user.address) {
@@ -174,17 +242,8 @@ export default {
         updatedData.avatar = this.userForm.avatarUrl;
       }
       
-    //   // Kiểm tra xem có dữ liệu thay đổi không
-    //   if (Object.keys(updatedData).length > 0) {
+      // Phát sự kiện cập nhật thông tin
       this.$emit('update-profile', updatedData);
-    //   }
-      
-    //   this.isEditing = false;
-    },
-    togglePasswordVisibility() {
-      if (this.isEditing) { // Chỉ toggle khi đang ở chế độ edit
-        this.isPasswordVisible = !this.isPasswordVisible;
-      }
     }
   }
 }
@@ -584,5 +643,27 @@ export default {
     color: #777;
     cursor: not-allowed;
     }
+
+    .validation-error {
+  color: #e74c3c;
+  margin: 15px 0;
+  text-align: center;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  padding: 10px;
+  background-color: rgba(231, 76, 60, 0.1);
+  border-left: 3px solid #e74c3c;
+  border-radius: 3px;
+  width: 80%;
+}
+
+.password-note {
+  color: #e67e22;
+  margin: 15px 0;
+  text-align: center;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  font-style: italic;
+  width: 80%;
+}
 </style>
-  
