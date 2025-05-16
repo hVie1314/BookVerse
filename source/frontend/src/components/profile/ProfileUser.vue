@@ -80,7 +80,7 @@ export default {
         
         // Lấy dữ liệu đầy đủ của người dùng từ API
         const response = await UserService.getUserById(currentUser.id);
-        console.log("User data response:", response);
+        console.log("response của fetch info:", response);
         
         if (response.data && response.data.success) {
           // Lấy thông tin người dùng từ response
@@ -118,18 +118,16 @@ export default {
         }
         
         this.loading = true;
-        
         console.log("Updating user with data:", updatedData);
         
-        // Gọi API để cập nhật thông tin người dùng
-        const response = await UserService.updateUserInfo(currentUser.id, updatedData);
-        
-        if (response && response.data && response.data.success) {
-          // Cập nhật thành công
+        try {
+          // Gọi API để cập nhật thông tin người dùng
+          const response = await UserService.updateUserInfo(currentUser.id, updatedData);
+          console.log("API response success:", response.data);
           
-          // Nếu cập nhật mật khẩu, đăng xuất và chuyển hướng đến trang đăng nhập
+          // Cập nhật thành công
           if (updatedData.password) {
-            // Hiển thị thông báo thành công
+            // Hiển thị thông báo trước khi chuyển hướng
             this.alert = {
               show: true,
               type: 'success',
@@ -157,10 +155,12 @@ export default {
           }
           
           // Cập nhật dữ liệu người dùng trong component
-          this.userInfo = { ...this.userInfo, ...updatedData };
+          this.userInfo = response.data;
           
           // Cập nhật thông tin người dùng trong localStorage
-          const updatedUserData = { ...currentUser, ...updatedData };
+          const updatedUserData = { ...currentUser };
+          if (updatedData.username) updatedUserData.username = updatedData.username;
+          if (updatedData.avatar) updatedUserData.avatar = updatedData.avatar;
           localStorage.setItem('user', JSON.stringify(updatedUserData));
           
           // Hiển thị thông báo thành công
@@ -172,62 +172,72 @@ export default {
           };
           
           this.maintainEditing = false; // Đóng chế độ chỉnh sửa
-        } else {
+        } catch (error) {
+          console.error("Error response:", error.response);
+          
           // Xử lý các trường hợp lỗi cụ thể
-          if (response.data && response.data.errorCode === 'INVALID_OLD_PASSWORD') {
-            this.alert = {
-              show: true,
-              type: 'error',
-              title: 'Lỗi cập nhật',
-              message: 'Mật khẩu hiện tại không đúng'
-            };
-            this.maintainEditing = true; // Giữ chế độ chỉnh sửa khi có lỗi
+          if (error.response && error.response.data) {
+            const errorData = error.response.data;
+            const errorCode = errorData.errorCode;
             
-            // Truy cập đến component con ProfilePage và gọi phương thức setOldPasswordError
-            this.$refs.profilePage?.setOldPasswordError('Mật khẩu hiện tại không đúng');
+            switch (errorCode) {
+              case 'INVALID_OLD_PASSWORD':
+                this.alert = {
+                  show: true,
+                  type: 'error',
+                  title: 'Lỗi cập nhật',
+                  message: 'Mật khẩu hiện tại không đúng'
+                };
+                this.$refs.profilePage?.setOldPasswordError('Mật khẩu hiện tại không đúng');
+                break;
+                
+              case 'OLD_PASSWORD_REQUIRED':
+                this.alert = {
+                  show: true,
+                  type: 'error',
+                  title: 'Lỗi cập nhật',
+                  message: 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu'
+                };
+                this.$refs.profilePage?.setOldPasswordError('Vui lòng nhập mật khẩu hiện tại');
+                break;
+                
+              case 'INVALID_PASSWORD':
+                this.alert = {
+                  show: true,
+                  type: 'error',
+                  title: 'Lỗi cập nhật',
+                  message: 'Mật khẩu mới phải có ít nhất 8 ký tự'
+                };
+                break;
+                
+              case 'USER_ALREADY_EXISTS':
+                this.alert = {
+                  show: true,
+                  type: 'error',
+                  title: 'Lỗi cập nhật',
+                  message: 'Tên đăng nhập đã được sử dụng bởi người dùng khác'
+                };
+                break;
+                
+              default:
+                this.alert = {
+                  show: true,
+                  type: 'error',
+                  title: 'Lỗi hệ thống',
+                  message: errorData.message || 'Đã xảy ra lỗi khi cập nhật thông tin'
+                };
+            }
           } else {
             this.alert = {
               show: true,
               type: 'error',
-              title: 'Cập nhật thất bại',
-              message: 'Không thể cập nhật thông tin người dùng'
-            };
-            this.maintainEditing = true; // Giữ chế độ chỉnh sửa khi có lỗi
-          }
-        }
-      } catch (error) {
-        console.error("Error updating user profile:", error);
-        
-        // Xử lý các trường hợp lỗi từ response
-        if (error.response && error.response.data) {
-          if (error.response.data.errorCode === 'INVALID_OLD_PASSWORD') {
-            this.alert = {
-              show: true,
-              type: 'error',
-              title: 'Lỗi cập nhật',
-              message: 'Mật khẩu hiện tại không đúng'
-            };
-            
-            // Truy cập đến component con ProfilePage và gọi phương thức setOldPasswordError
-            this.$refs.profilePage?.setOldPasswordError('Mật khẩu hiện tại không đúng');
-          } else {
-            this.alert = {
-              show: true,
-              type: 'error',
-              title: 'Lỗi hệ thống',
-              message: error.response.data.message || 'Đã xảy ra lỗi khi cập nhật thông tin'
+              title: 'Lỗi kết nối',
+              message: 'Không thể kết nối đến máy chủ, vui lòng thử lại sau'
             };
           }
-        } else {
-          this.alert = {
-            show: true,
-            type: 'error',
-            title: 'Lỗi hệ thống',
-            message: 'Đã xảy ra lỗi khi cập nhật thông tin'
-          };
+          
+          this.maintainEditing = true; // Giữ chế độ chỉnh sửa khi có lỗi
         }
-        
-        this.maintainEditing = true; // Giữ chế độ chỉnh sửa khi có lỗi
       } finally {
         this.loading = false;
       }

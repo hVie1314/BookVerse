@@ -47,20 +47,25 @@
 
         <!-- Phần mật khẩu hiện tại khi đổi mật khẩu -->
         <section class="profile-field" v-if="isEditing && userForm.password">
-            <label class="field-label">Mật khẩu hiện tại <span class="required-star">*</span></label>
-            <div class="input-container">
-                <input :type="isOldPasswordVisible ? 'text' : 'password'" v-model="userForm.oldPassword" 
-                       placeholder="Nhập mật khẩu hiện tại" class="field-input"
-                       :class="{ 'error': oldPasswordError }"
-                       @focus="oldPasswordFocused = true" @blur="oldPasswordFocused = false">
-                <div class="icon-container password-toggle" @click="toggleOldPasswordVisibility">
-                    <transition name="fade" mode="out-in">
-                        <div v-if="isOldPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
-                        <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
-                    </transition>
-                </div>
+          <label class="field-label">Mật khẩu hiện tại <span class="required-star">*</span></label>
+          <div class="input-container">
+            <input 
+              :type="isOldPasswordVisible ? 'text' : 'password'" 
+              v-model="userForm.oldPassword" 
+              placeholder="Nhập mật khẩu hiện tại" 
+              class="field-input"
+              :class="{ 'error': oldPasswordError }"
+              @focus="oldPasswordFocused = true" 
+              @blur="oldPasswordFocused = false"
+            >
+            <div class="icon-container password-toggle" @click="toggleOldPasswordVisibility">
+              <transition name="fade" mode="out-in">
+                <div v-if="isOldPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
+                <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
+              </transition>
             </div>
-            <div v-if="oldPasswordError" class="field-error">{{ oldPasswordError }}</div>
+          </div>
+          <div v-if="oldPasswordError" class="field-error">{{ oldPasswordError }}</div>
         </section>
       
         <!-- Phần địa chỉ -->
@@ -222,10 +227,24 @@ export default {
       this.validationError = '';
       this.oldPasswordError = '';
 
-      // Kiểm tra nếu có mật khẩu mới nhưng không có mật khẩu cũ
-      if (this.userForm.password && !this.userForm.oldPassword) {
-        this.oldPasswordError = 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu';
+      // Kiểm tra username
+      if (this.userForm.username && this.userForm.username.trim() === '') {
+        this.validationError = 'Tên đăng nhập không được để trống';
         return false;
+      }
+
+      // Kiểm tra độ dài mật khẩu
+      if (this.userForm.password) {
+        if (this.userForm.password.length < 8) {
+          this.validationError = 'Mật khẩu phải có ít nhất 8 ký tự';
+          return false;
+        }
+        
+        // Kiểm tra mật khẩu cũ
+        if (!this.userForm.oldPassword) {
+          this.oldPasswordError = 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu mới';
+          return false;
+        }
       }
 
       return true;
