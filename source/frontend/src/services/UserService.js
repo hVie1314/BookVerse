@@ -35,14 +35,57 @@ export default {
             return Promise.reject(new Error('Authentication token not found'));
         }
         
+        // Chỉ gửi các trường được phép cập nhật theo backend
+        const allowedFields = ['username', 'password', 'oldPassword', 'address', 'avatar'];
+        const filteredData = {};
+        
+        Object.keys(userData).forEach(key => {
+            if (allowedFields.includes(key) && userData[key] !== undefined) {
+                filteredData[key] = userData[key];
+            }
+        });
+        
+        // Kiểm tra các trường bắt buộc
+        if (filteredData.password && !filteredData.oldPassword) {
+            console.error('Thiếu mật khẩu cũ khi cập nhật mật khẩu mới');
+            return Promise.reject({
+                response: {
+                    data: {
+                        success: false,
+                        errorCode: 'OLD_PASSWORD_REQUIRED',
+                        message: 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu mới'
+                    },
+                    status: 400
+                }
+            });
+        }
+        
+        if (filteredData.password && filteredData.password.length < 8) {
+            console.error('Mật khẩu mới phải có ít nhất 8 ký tự');
+            return Promise.reject({
+                response: {
+                    data: {
+                        success: false,
+                        errorCode: 'INVALID_PASSWORD',
+                        message: 'Mật khẩu mới phải có ít nhất 8 ký tự'
+                    },
+                    status: 400
+                }
+            });
+        }
+        
         // Log dữ liệu gửi đi (loại bỏ mật khẩu trong log để bảo mật)
-        const logData = { ...userData };
+        const logData = { ...filteredData };
         if (logData.password) logData.password = '********';
         if (logData.oldPassword) logData.oldPassword = '********';
         console.log(`Cập nhật thông tin người dùng ${id} với dữ liệu:`, logData);
         
-        return Api().put(`user/${id}`, userData, {
+        return Api().put(`user/${id}`, filteredData, {
             headers: { 'Authorization': `Bearer ${token}` }
+        }).catch(error => {
+            console.error('Lỗi khi cập nhật thông tin:', error.response?.data || error.message);
+            // Throw lại lỗi để component cha xử lý
+            throw error;
         });
     },
     
