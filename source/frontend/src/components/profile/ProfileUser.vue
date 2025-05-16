@@ -18,13 +18,14 @@
                     <button @click="$router.push('/')" class="action-button">Về trang chủ</button>
                 </div>
             </div>
-            <ProfilePage 
-                v-else 
-                ref="profilePage"
-                :user="userInfo" 
-                :maintain-editing="maintainEditing"
-                @update-profile="updateUserProfile" 
-            />
+           <ProfilePage 
+              v-else 
+              ref="profilePage"
+              :user="userInfo" 
+              :maintain-editing="maintainEditing"
+              @update-profile="updateUserProfile"
+              @password-error="showPasswordError"
+          />
         </main>
         <Footer />
     </div>
@@ -65,6 +66,14 @@ export default {
     this.fetchUserData();
   },
   methods: {
+    showPasswordError(message) {
+      this.alert = {
+        show: true,
+        type: 'error',
+        title: 'Mật khẩu không chính xác',
+        message: message
+      };
+    },
     async fetchUserData() {
       try {
         this.loading = true;
@@ -195,29 +204,42 @@ export default {
                 this.alert = {
                   show: true,
                   type: 'error',
-                  title: 'Lỗi cập nhật',
-                  message: 'Mật khẩu hiện tại không đúng'
+                  title: 'Mật khẩu không chính xác',
+                  message: 'Mật khẩu hiện tại bạn nhập không chính xác'
                 };
+                // Thay đổi: không hiển thị alert mà gọi phương thức trên component con
+                if (this.$refs.profilePage) {
+                  this.$refs.profilePage.setOldPasswordError('Mật khẩu hiện tại không đúng');
+                }
                 break;
                 
               case 'OLD_PASSWORD_REQUIRED':
-                this.alert = {
-                  show: true,
-                  type: 'error',
-                  title: 'Lỗi cập nhật',
-                  message: 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu'
-                };
+                if (this.$refs.profilePage) {
+                  this.$refs.profilePage.setOldPasswordError('Vui lòng nhập mật khẩu hiện tại');
+                } else {
+                  this.alert = {
+                    show: true,
+                    type: 'error',
+                    title: 'Lỗi cập nhật',
+                    message: 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu'
+                  };
+                }
                 break;
                 
               case 'INVALID_PASSWORD':
-                this.alert = {
-                  show: true,
-                  type: 'error',
-                  title: 'Lỗi cập nhật',
-                  message: 'Mật khẩu mới phải có ít nhất 8 ký tự'
-                };
+                if (this.$refs.profilePage) {
+                  this.$refs.profilePage.setPasswordError('Mật khẩu mới phải có ít nhất 8 ký tự');
+                } else {
+                  this.alert = {
+                    show: true,
+                    type: 'error',
+                    title: 'Lỗi cập nhật',
+                    message: 'Mật khẩu mới phải có ít nhất 8 ký tự'
+                  };
+                }
                 break;
                 
+              // Các case khác giữ nguyên
               case 'USER_ALREADY_EXISTS':
                 this.alert = {
                   show: true,

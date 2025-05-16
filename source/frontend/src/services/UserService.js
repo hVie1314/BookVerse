@@ -64,4 +64,5 @@ export default {
     deleteUser(id) {
         return Api().delete(`user/${id}`);
     }
+
 }
