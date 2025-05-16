@@ -32,17 +32,24 @@
         <section class="profile-field">
             <label class="field-label">Mật khẩu mới</label>
             <div class="input-container">
-                <input :type="isPasswordVisible ? 'text' : 'password'" v-model="userForm.password" 
-                       placeholder="••••••••" :disabled="!isEditing" class="field-input"
-                       @focus="passwordFocused = true" @blur="passwordFocused = false">
+                <input :type="isPasswordVisible ? 'text' : 'password'" 
+                    v-model="userForm.password" 
+                    placeholder="••••••••" 
+                    :disabled="!isEditing" 
+                    class="field-input"
+                    :class="{ 'error': passwordError }"
+                    @focus="passwordFocused = true" 
+                    @blur="passwordFocused = false">
                 <div class="icon-container password-toggle" @click="togglePasswordVisibility" v-if="isEditing">
-                    <transition name="fade" mode="out-in">
-                        <div v-if="isPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
-                        <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
-                    </transition>
+                <transition name="fade" mode="out-in">
+                    <div v-if="isPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
+                    <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
+                </transition>
                 </div>
                 <div class="icon-container" v-else><i class="fa-solid fa-lock eyes"></i></div>
             </div>
+            <!-- Thêm hiển thị lỗi mật khẩu -->
+            <div v-if="passwordError" class="field-error">{{ passwordError }}</div>
         </section>
 
         <!-- Phần mật khẩu hiện tại khi đổi mật khẩu -->
@@ -153,7 +160,8 @@ export default {
       isPasswordVisible: false,
       isOldPasswordVisible: false,
       validationError: '',
-      oldPasswordError: ''
+      oldPasswordError: '',
+      passwordError: ''
     }
   },
   computed: {
@@ -193,6 +201,7 @@ export default {
         this.userForm.oldPassword = '';
         this.oldPasswordError = '';
       }
+      this.passwordError = '';
     }
   },
   methods: {
@@ -207,6 +216,7 @@ export default {
       };
       this.validationError = '';
       this.oldPasswordError = '';
+      this.passwordError = '';
     },
     startEditing() {
       this.isEditing = true;
@@ -233,10 +243,10 @@ export default {
         return false;
       }
 
-      // Kiểm tra độ dài mật khẩu
+      // Kiểm tra mật khẩu
       if (this.userForm.password) {
         if (this.userForm.password.length < 8) {
-          this.validationError = 'Mật khẩu phải có ít nhất 8 ký tự';
+          this.passwordError = 'Mật khẩu mới phải có ít nhất 8 ký tự';
           return false;
         }
         
