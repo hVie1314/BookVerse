@@ -2,7 +2,7 @@
 
 ## Overview
 This repository contains the source code and materials for **BookVerse**, an e-commerce platform for buying and reading books.  
-Built with **Express handlebars**, **Node.js**, and **MongoDB**, BookVerse offers a seamless, secure, and user-friendly experience for book lovers.
+Built with **Vue.js**, **Node.js**, and **MongoDB**, BookVerse offers a seamless, secure, and user-friendly experience for book lovers.
 
 ## Team Information
 
@@ -26,7 +26,7 @@ The repository is organized into the following main branches:
 
 - **main**: The production-ready branch with the latest stable version of both frontend and backend.
 - **develop**: The main development branch where all features are merged before being pushed to `main`.
-- **feature/frontend**: Contains the frontend code, built with **ExpressJs handlebars** and **TailwindCSS**.
+- **feature/frontend**: Contains the frontend code, built with **Vue.js** and **Bootstrap**
 - **feature/backend**: Contains the backend code, built with **Node.js** and **Express.js**.
 
 Feature branches are created under `feature/frontend` or `feature/backend` for specific functionalities before merging into their respective branches.
@@ -37,7 +37,6 @@ Feature branches are created under `feature/frontend` or `feature/backend` for s
 - 🔍 **Smart search** – Quickly find books based on titles, authors, and genres.
 - ✍️ **Reviews & comments** – Share your thoughts with the community.
 - 🔐 **User authentication** – Secure sign-up, login, and account management.
-- 🎟️ **Coupons & promotions** – Enjoy discounts and special offers.
 - 📊 **Admin dashboard** – Manage books, users, and orders.
 - 📈 **Statistics & reporting** – Gain insights into sales and user engagement.
 
@@ -62,7 +61,7 @@ cd BookVerse
 ##### Frontend
 ```bash
 cd frontend
-npm install
+npm run serve
 ```
 
 ##### Backend
@@ -74,9 +73,19 @@ npm install
 #### Set up environment variables
 Create a **.env** file in the backend/ directory and configure:
 ```bash
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-PORT=your_application_port
+PORT = 
+CONNECTION_MONGODB_URL = 
+CONNECTION_REDIS_URL =  
+ACCESS_TOKEN_SECRET = 
+EMAIL_SERVICE = 
+EMAIL_USER = 
+EMAIL_PASSWORD = 
+MOMO_ACCESS_KEY = 
+MOMO_SECRET_KEY = 
+MOMO_REDIRECT_URL = 
+MOMO_IPN_URL = 
+MOMO_CREATE_URL = 
+MOMO_QUERY_URL = 
 ```
 
 Start the application
@@ -95,15 +104,15 @@ npm start
 ## Tech Stack
 
 ### Frontend:
-- Express handlebars
-- TailwindCSS
+- Vue.js
+- Bootstrap
 
 ### Backend:
 - Node.js + Express.js
 - MongoDB
+- Redis 
 
 ### DevOps:
-- Docker
 - GitHub Actions (CI/CD)
 
 ## Contributing
@@ -111,3 +120,8 @@ We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING
 
 ## License
 This project is licensed under the MIT License. See the full license [here](LICENSE).
+
+## References / Data Sources
+- Some book data (titles, cover images, descriptions) are referenced from [Fahasa](https://www.fahasa.com/).
+- This project is for educational and non-commercial purposes only.
+
