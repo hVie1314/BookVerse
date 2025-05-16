@@ -45,35 +45,6 @@ export default {
             }
         });
         
-        // Kiểm tra các trường bắt buộc
-        if (filteredData.password && !filteredData.oldPassword) {
-            console.error('Thiếu mật khẩu cũ khi cập nhật mật khẩu mới');
-            return Promise.reject({
-                response: {
-                    data: {
-                        success: false,
-                        errorCode: 'OLD_PASSWORD_REQUIRED',
-                        message: 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu mới'
-                    },
-                    status: 400
-                }
-            });
-        }
-        
-        if (filteredData.password && filteredData.password.length < 8) {
-            console.error('Mật khẩu mới phải có ít nhất 8 ký tự');
-            return Promise.reject({
-                response: {
-                    data: {
-                        success: false,
-                        errorCode: 'INVALID_PASSWORD',
-                        message: 'Mật khẩu mới phải có ít nhất 8 ký tự'
-                    },
-                    status: 400
-                }
-            });
-        }
-        
         // Log dữ liệu gửi đi (loại bỏ mật khẩu trong log để bảo mật)
         const logData = { ...filteredData };
         if (logData.password) logData.password = '********';
