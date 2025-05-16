@@ -236,25 +236,12 @@ export default {
     validateForm() {
       this.validationError = '';
       this.oldPasswordError = '';
+      this.passwordError = '';
 
       // Kiểm tra username
       if (this.userForm.username && this.userForm.username.trim() === '') {
         this.validationError = 'Tên đăng nhập không được để trống';
         return false;
-      }
-
-      // Kiểm tra mật khẩu
-      if (this.userForm.password) {
-        if (this.userForm.password.length < 8) {
-          this.passwordError = 'Mật khẩu mới phải có ít nhất 8 ký tự';
-          return false;
-        }
-        
-        // Kiểm tra mật khẩu cũ
-        if (!this.userForm.oldPassword) {
-          this.oldPasswordError = 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu mới';
-          return false;
-        }
       }
 
       return true;
@@ -293,6 +280,10 @@ export default {
     // Phương thức được gọi từ ProfileUser khi mật khẩu cũ không đúng
     setOldPasswordError(message) {
       this.oldPasswordError = message;
+    },
+
+    setPasswordError(message) {
+        this.passwordError = message;
     }
   }
 }

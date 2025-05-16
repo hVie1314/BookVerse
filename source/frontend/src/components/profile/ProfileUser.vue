@@ -106,6 +106,16 @@ export default {
       try {
         const currentUser = AuthenticationService.getCurrentUser();
         
+        if (!currentUser || !currentUser.id) {
+          this.alert = {
+            show: true,
+            type: 'error',
+            title: 'Lỗi xác thực',
+            message: 'Vui lòng đăng nhập để cập nhật thông tin'
+          };
+          return;
+        }
+        
         // Kiểm tra xem có thay đổi không
         if (Object.keys(updatedData).length === 0) {
           this.alert = {
@@ -123,59 +133,47 @@ export default {
         try {
           // Gọi API để cập nhật thông tin người dùng
           const response = await UserService.updateUserInfo(currentUser.id, updatedData);
-          console.log("API response success:", response.data);
           
-          // Cập nhật thành công
-          if (updatedData.password) {
-            // Hiển thị thông báo trước khi chuyển hướng
+          console.log("API response:", response.data);
+          
+          // Xử lý phản hồi thành công
+          if (response && response.data) {
+            // Xử lý đổi mật khẩu thành công
+            if (updatedData.password) {
+              this.alert = {
+                show: true,
+                type: 'success',
+                title: 'Đổi mật khẩu thành công',
+                message: 'Mật khẩu đã được cập nhật, bạn sẽ được chuyển đến trang đăng nhập'
+              };
+              
+              setTimeout(async () => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                await AuthenticationService.logout();
+                this.$router.push({
+                  path: '/login',
+                  query: { message: 'Vui lòng đăng nhập lại với mật khẩu mới' }
+                });
+              }, 1500);
+              
+              return;
+            }
+            
+            // Xử lý cập nhật thông tin thành công
+            this.userInfo = response.data;
             this.alert = {
               show: true,
               type: 'success',
-              title: 'Đổi mật khẩu thành công',
-              message: 'Mật khẩu đã được cập nhật, bạn sẽ được chuyển đến trang đăng nhập'
+              title: 'Cập nhật thành công',
+              message: 'Thông tin tài khoản của bạn đã được cập nhật'
             };
-            
-            // Đợi 1.5 giây để người dùng đọc thông báo
-            setTimeout(async () => {
-              // Xóa token và thông tin người dùng
-              localStorage.removeItem('token');
-              localStorage.removeItem('user');
-              
-              // Đăng xuất chính thức
-              await AuthenticationService.logout();
-              
-              // Chuyển hướng đến trang đăng nhập
-              this.$router.push({
-                path: '/login',
-                query: { message: 'Vui lòng đăng nhập lại với mật khẩu mới' }
-              });
-            }, 1500);
-            
-            return;
+            this.maintainEditing = false;
           }
-          
-          // Cập nhật dữ liệu người dùng trong component
-          this.userInfo = response.data;
-          
-          // Cập nhật thông tin người dùng trong localStorage
-          const updatedUserData = { ...currentUser };
-          if (updatedData.username) updatedUserData.username = updatedData.username;
-          if (updatedData.avatar) updatedUserData.avatar = updatedData.avatar;
-          localStorage.setItem('user', JSON.stringify(updatedUserData));
-          
-          // Hiển thị thông báo thành công
-          this.alert = {
-            show: true,
-            type: 'success',
-            title: 'Cập nhật thành công',
-            message: 'Thông tin tài khoản của bạn đã được cập nhật'
-          };
-          
-          this.maintainEditing = false; // Đóng chế độ chỉnh sửa
         } catch (error) {
-          console.error("Error response:", error.response);
+          // Xử lý lỗi từ API dựa trên mã lỗi trả về từ backend
+          console.error("Error updating user profile:", error.response);
           
-          // Xử lý các trường hợp lỗi cụ thể
           if (error.response && error.response.data) {
             const errorData = error.response.data;
             const errorCode = errorData.errorCode;
@@ -188,6 +186,7 @@ export default {
                   title: 'Lỗi cập nhật',
                   message: 'Mật khẩu hiện tại không đúng'
                 };
+                // Hiển thị lỗi tại trường mật khẩu cũ
                 this.$refs.profilePage?.setOldPasswordError('Mật khẩu hiện tại không đúng');
                 break;
                 
@@ -208,6 +207,8 @@ export default {
                   title: 'Lỗi cập nhật',
                   message: 'Mật khẩu mới phải có ít nhất 8 ký tự'
                 };
+                // Hiển thị lỗi tại trường mật khẩu mới
+                this.$refs.profilePage?.setPasswordError('Mật khẩu mới phải có ít nhất 8 ký tự');
                 break;
                 
               case 'USER_ALREADY_EXISTS':
