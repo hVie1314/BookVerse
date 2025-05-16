@@ -178,6 +178,11 @@ export default {
               if (updatedData.address) updatedUserData.address = response.data.data.address;
               if (updatedData.avatar) updatedUserData.avatar = response.data.data.avatar;
               localStorage.setItem('user', JSON.stringify(updatedUserData));
+              
+              // Thông báo cho ProfilePage cập nhật lại form với dữ liệu mới nhất
+              if (this.$refs.profilePage) {
+                this.$refs.profilePage.updateFormWithLatestData(response.data.data);
+              }
             }
             
             // Hiển thị thông báo thành công
@@ -200,17 +205,22 @@ export default {
             
             switch (errorCode) {
               case 'INVALID_OLD_PASSWORD':
-                console.log('đã đi vào case invalid_old_pass!');
-                this.alert = {
-                  show: true,
-                  type: 'error',
-                  title: 'Mật khẩu không chính xác',
-                  message: 'Mật khẩu hiện tại bạn nhập không chính xác'
-                };
+                // console.log('đã đi vào case invalid_old_pass!');
+                // this.alert = {
+                //   show: true,
+                //   type: 'error',
+                //   title: 'Mật khẩu không chính xác',
+                //   message: 'Mật khẩu hiện tại bạn nhập không chính xác'
+                // };
+
+                this.maintainEditing = true;
                 // Thay đổi: không hiển thị alert mà gọi phương thức trên component con
-                if (this.$refs.profilePage) {
-                  this.$refs.profilePage.setOldPasswordError('Mật khẩu hiện tại không đúng');
-                }
+                setTimeout(() => {
+                  if (this.$refs.profilePage) {
+                    console.log('Gọi setOldPasswordError và khôi phục form');
+                    this.$refs.profilePage.setOldPasswordError('Mật khẩu hiện tại không đúng', false);
+                  }
+                }, 0);
                 break;
                 
               case 'OLD_PASSWORD_REQUIRED':
@@ -271,7 +281,9 @@ export default {
       } finally {
         this.loading = false;
       }
-    }
+    },
+    // Thêm phương thức này vào methods
+
   }
 }
 </script>
