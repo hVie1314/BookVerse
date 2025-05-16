@@ -7,6 +7,14 @@ import eventBus from "@/eventBus"; // Import event bus để hiển thị thông
 let isRefreshing = false;
 let failedQueue = [];
 
+// Thêm biến để theo dõi nếu đang kiểm tra mật khẩu 
+let isPasswordValidation = false;
+
+// Thêm phương thức để thiết lập trạng thái kiểm tra mật khẩu
+export const setPasswordValidationMode = (value) => {
+    isPasswordValidation = value;
+};
+
 const processQueue = (error, token = null) => {
     failedQueue.forEach(prom => {
         if (error) {
@@ -20,7 +28,7 @@ const processQueue = (error, token = null) => {
 
 export default () => {
     // Lấy token từ localStorage nếu có
-    const token = localStorage.getItem('userToken');
+    const token = localStorage.getItem('token');
     
     const instance = axios.create({
         baseURL: "http://localhost:3000",
@@ -37,8 +45,29 @@ export default () => {
         async (error) => {
             const originalRequest = error.config;
 
+            // Kiểm tra xem đây có phải lỗi 401 do mật khẩu không đúng không
+            const isPasswordError = error.response && 
+                error.response.status === 401 && 
+                error.response.data && 
+                error.response.data.errorCode === 'INVALID_OLD_PASSWORD';
+
+            // Nếu đang trong chế độ kiểm tra mật khẩu hoặc là lỗi mật khẩu, skip refresh token
+            if (isPasswordValidation || isPasswordError) {
+                console.log('Đây là lỗi xác thực mật khẩu, không refresh token');
+                // Reset flag nếu đang ở chế độ kiểm tra mật khẩu
+                isPasswordValidation = false;
+                // Trả về lỗi để component xử lý hiển thị thông báo
+                return Promise.reject(error);
+            }
+
             // Nếu lỗi 401 (Unauthorized) và chưa thử refresh token
             if (error.response && error.response.status === 401 && !originalRequest._retry) {
+                // Thêm kiểm tra lỗi mật khẩu
+                if (error.response.data && error.response.data.errorCode === 'INVALID_OLD_PASSWORD') {
+                    console.log('Lỗi mật khẩu, không tiến hành refresh token');
+                    return Promise.reject(error);
+                }
+
                 if (isRefreshing) {
                     // Nếu đang refresh, thêm request vào hàng đợi
                     return new Promise(function(resolve, reject) {
@@ -79,6 +108,7 @@ export default () => {
                 }
             }
 
+            // Các xử lý khác giữ nguyên
             if (error.response && error.response.status === 403) {
                 console.error('Lỗi quyền truy cập:', error.response.data);
                 

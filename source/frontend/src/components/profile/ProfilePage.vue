@@ -29,51 +29,68 @@
         </section>
       
         <!-- Phần nhập mật khẩu mới -->
-        <section class="profile-field">
-            <label class="field-label">Mật khẩu mới</label>
+        <section class="profile-field" v-if="isEditing">
+            <label class="field-label">Mật khẩu</label>
+            <div class="password-toggle-container" @click="togglePasswordChange">
+            <div class="password-toggle-button">
+                <span>Thay đổi mật khẩu</span>
+                <i :class="isChangingPassword ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
+            </div>
+            </div>
+        </section>
+
+        <!-- Khi người dùng chọn thay đổi mật khẩu, hiển thị 2 ô mật khẩu -->
+        <div v-if="isEditing && isChangingPassword" class="password-change-section">
+            <!-- Phần mật khẩu hiện tại -->
+            <section class="profile-field">
+            <label class="field-label">Mật khẩu hiện tại <span class="required-star">*</span></label>
             <div class="input-container">
-                <input :type="isPasswordVisible ? 'text' : 'password'" 
-                    v-model="userForm.password" 
-                    placeholder="••••••••" 
-                    :disabled="!isEditing" 
+                <input 
+                    :type="isOldPasswordVisible ? 'text' : 'password'" 
+                    v-model="userForm.oldPassword" 
+                    placeholder="Nhập mật khẩu hiện tại" 
                     class="field-input"
-                    :class="{ 'error': passwordError }"
-                    @focus="passwordFocused = true" 
-                    @blur="passwordFocused = false">
-                <div class="icon-container password-toggle" @click="togglePasswordVisibility" v-if="isEditing">
+                    :class="{ 'error': oldPasswordError }"
+                    @focus="oldPasswordFocused = true" 
+                    @blur="validateOldPassword"
+                >
+                <div class="icon-container password-toggle" @click="toggleOldPasswordVisibility">
+                <transition name="fade" mode="out-in">
+                    <div v-if="isOldPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
+                    <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
+                </transition>
+                </div>
+            </div>
+            <div v-if="oldPasswordError" class="field-error">{{ oldPasswordError }}</div>
+            </section>
+
+            <!-- Phần mật khẩu mới -->
+            <section class="profile-field">
+            <label class="field-label">Mật khẩu mới <span class="required-star">*</span></label>
+            <div class="input-container">
+                <input 
+                :type="isPasswordVisible ? 'text' : 'password'" 
+                v-model="userForm.password" 
+                placeholder="Nhập mật khẩu mới" 
+                class="field-input"
+                :class="{ 'error': passwordError }"
+                @focus="passwordFocused = true" 
+                @blur="passwordFocused = false"
+                >
+                <div class="icon-container password-toggle" @click="togglePasswordVisibility">
                 <transition name="fade" mode="out-in">
                     <div v-if="isPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
                     <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
                 </transition>
                 </div>
-                <div class="icon-container" v-else><i class="fa-solid fa-lock eyes"></i></div>
             </div>
-            <!-- Thêm hiển thị lỗi mật khẩu -->
             <div v-if="passwordError" class="field-error">{{ passwordError }}</div>
-        </section>
-
-        <!-- Phần mật khẩu hiện tại khi đổi mật khẩu -->
-        <section class="profile-field" v-if="isEditing && userForm.password">
-          <label class="field-label">Mật khẩu hiện tại <span class="required-star">*</span></label>
-          <div class="input-container">
-            <input 
-              :type="isOldPasswordVisible ? 'text' : 'password'" 
-              v-model="userForm.oldPassword" 
-              placeholder="Nhập mật khẩu hiện tại" 
-              class="field-input"
-              :class="{ 'error': oldPasswordError }"
-              @focus="oldPasswordFocused = true" 
-              @blur="oldPasswordFocused = false"
-            >
-            <div class="icon-container password-toggle" @click="toggleOldPasswordVisibility">
-              <transition name="fade" mode="out-in">
-                <div v-if="isOldPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
-                <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
-              </transition>
+            </section>
+            
+            <div class="password-note">
+            <span class="required-star">*</span> Lưu ý: Nếu bạn thay đổi mật khẩu, bạn sẽ cần đăng nhập lại
             </div>
-          </div>
-          <div v-if="oldPasswordError" class="field-error">{{ oldPasswordError }}</div>
-        </section>
+        </div>
       
         <!-- Phần địa chỉ -->
         <section class="profile-field">
@@ -103,10 +120,6 @@
         <div class="field-note" v-if="isEditing">
             <span class="required-star">*</span> Những thông tin này không thể thay đổi
         </div>
-        
-        <div class="password-note" v-if="isEditing && userForm.password">
-            <span class="required-star">*</span> Lưu ý: Nếu bạn thay đổi mật khẩu, bạn sẽ cần đăng nhập lại
-        </div>
 
         <!-- Các nút tương tác -->
         <div class="button-container">
@@ -128,6 +141,10 @@
 </template>
 
 <script>
+import UserService from '@/services/UserService';
+import AuthenticationService from '@/services/AuthenticationService';
+import { setPasswordValidationMode } from '@/services/Api';
+
 export default {
   name: 'ProfilePage',
   props: {
@@ -143,6 +160,7 @@ export default {
   data() {
     return {
       isEditing: false,
+      isChangingPassword: false,
       userForm: {
         username: '',
         email: '',
@@ -205,6 +223,75 @@ export default {
     }
   },
   methods: {
+    async validateOldPassword() {
+        this.oldPasswordFocused = false;
+        
+        // Chỉ kiểm tra nếu đã nhập mật khẩu và chuỗi không trống
+        if (!this.userForm.oldPassword || this.userForm.oldPassword.trim() === '') {
+            return;
+        }
+        
+        try {
+            const currentUser = AuthenticationService.getCurrentUser();
+            if (!currentUser || !currentUser.id) return;
+            
+            // Đánh dấu rằng đây là request kiểm tra mật khẩu
+            setPasswordValidationMode(true);
+            
+            // Tạo một đối tượng dữ liệu "giả" chỉ chứa oldPassword để kiểm tra
+            const testData = {
+                oldPassword: this.userForm.oldPassword
+            };
+            
+            // Gọi API updateUserInfo với dữ liệu trên, nhưng không thay đổi gì thực sự
+            await UserService.updateUserInfo(currentUser.id, testData);
+            
+            // Nếu không có lỗi, mật khẩu là đúng
+            this.oldPasswordError = '';
+        } catch (error) {
+            // Xử lý lỗi mật khẩu không đúng
+            if (error.response && error.response.status === 401 && 
+                error.response.data && error.response.data.errorCode === 'INVALID_OLD_PASSWORD') {
+                this.oldPasswordError = 'Mật khẩu hiện tại không chính xác';
+                
+                // Emit event để component cha hiển thị alert
+                this.$emit('password-error', 'Mật khẩu hiện tại bạn nhập không chính xác');
+            }
+        } finally {
+            // Đảm bảo reset flag sau khi xong
+            setPasswordValidationMode(false);
+        }
+    },
+
+    setOldPasswordError(errorMessage) {
+      this.oldPasswordError = errorMessage;
+      // Đảm bảo tab mật khẩu được mở
+      this.isChangingPassword = true;
+      // Tập trung vào input mật khẩu cũ
+      this.$nextTick(() => {
+        const oldPasswordInput = document.querySelector('input[v-model="userForm.oldPassword"]');
+        if (oldPasswordInput) {
+          oldPasswordInput.focus();
+        }
+      });
+    },
+    
+    setPasswordError(errorMessage) {
+      this.passwordError = errorMessage;
+      // Đảm bảo tab mật khẩu được mở
+      this.isChangingPassword = true;
+    },
+    togglePasswordChange() {
+      this.isChangingPassword = !this.isChangingPassword;
+      
+      // Nếu đóng phần thay đổi mật khẩu, xóa các giá trị đã nhập
+      if (!this.isChangingPassword) {
+        this.userForm.password = '';
+        this.userForm.oldPassword = '';
+        this.oldPasswordError = '';
+        this.passwordError = '';
+      }
+    },
     initializeForm() {
       this.userForm = {
         username: this.user.username || '',
@@ -223,6 +310,7 @@ export default {
     },
     cancelEditing() {
       this.isEditing = false;
+      this.isChangingPassword = false;
       this.initializeForm();
     },
     togglePasswordVisibility() {
@@ -233,15 +321,36 @@ export default {
     toggleOldPasswordVisibility() {
       this.isOldPasswordVisible = !this.isOldPasswordVisible;
     },
-    validateForm() {
+   validateForm() {
       this.validationError = '';
-      this.oldPasswordError = '';
-      this.passwordError = '';
-
+      
+      // Nếu đã có lỗi mật khẩu cũ, không cần kiểm tra lại
+      if (this.oldPasswordError) {
+        return false;
+      }
+      
       // Kiểm tra username
       if (this.userForm.username && this.userForm.username.trim() === '') {
         this.validationError = 'Tên đăng nhập không được để trống';
         return false;
+      }
+      
+      // Kiểm tra mật khẩu cũ và mới nếu đang thay đổi mật khẩu
+      if (this.isChangingPassword) {
+        if (!this.userForm.oldPassword) {
+          this.oldPasswordError = 'Vui lòng nhập mật khẩu hiện tại';
+          return false;
+        }
+        
+        if (!this.userForm.password) {
+          this.passwordError = 'Vui lòng nhập mật khẩu mới';
+          return false;
+        }
+        
+        if (this.userForm.password.length < 8) {
+          this.passwordError = 'Mật khẩu mới phải có ít nhất 8 ký tự';
+          return false;
+        }
       }
 
       return true;
@@ -252,6 +361,15 @@ export default {
         return;
       }
 
+      if (this.isChangingPassword && this.oldPasswordError) {
+    // Emit sự kiện để hiển thị alert
+        this.$emit('password-error', 'Mật khẩu hiện tại bạn nhập không chính xác');
+        return;
+    }
+      // Reset lỗi mật khẩu khi submit form
+      this.oldPasswordError = '';
+      this.passwordError = '';
+
       // Tạo đối tượng chỉ chứa dữ liệu đã thay đổi
       const updatedData = {};
       
@@ -260,8 +378,8 @@ export default {
         updatedData.username = this.userForm.username;
       }
       
-      // Thêm mật khẩu và mật khẩu cũ nếu có nhập mật khẩu mới
-      if (this.userForm.password) {
+      // Thêm mật khẩu và mật khẩu cũ nếu đang thay đổi mật khẩu
+      if (this.isChangingPassword && this.userForm.password) {
         updatedData.password = this.userForm.password;
         updatedData.oldPassword = this.userForm.oldPassword;
       }
@@ -277,14 +395,6 @@ export default {
       // Phát sự kiện cập nhật thông tin
       this.$emit('update-profile', updatedData);
     },
-    // Phương thức được gọi từ ProfileUser khi mật khẩu cũ không đúng
-    setOldPasswordError(message) {
-      this.oldPasswordError = message;
-    },
-
-    setPasswordError(message) {
-        this.passwordError = message;
-    }
   }
 }
 </script>
@@ -541,6 +651,30 @@ export default {
         transition: transform 0.3s ease;
     }
 
+    .password-toggle-container {
+        width: 100%;
+        cursor: pointer;
+    }
+
+    .password-toggle-button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background-color: #f9f5f0;
+        border: 2px solid #4d2900;
+        border-radius: 8px;
+        font-family: "Montserrat", sans-serif;
+        font-weight: 600;
+        color: #4d2900;
+        transition: all 0.3s ease;
+    }
+
+    .password-toggle-button:hover {
+        background-color: #f0e5d8;
+        transform: translateY(-2px);
+    }
+
     .password-toggle {
         cursor: pointer;
     }
@@ -549,6 +683,26 @@ export default {
         transform: translateY(-50%) scale(1.1);
     }
 
+    .password-change-section {
+        width: 80%;
+        background-color: #f9f5f0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-left: 3px solid #4d2900;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
     /* Buttons */
     .button-container {
         display: flex;
