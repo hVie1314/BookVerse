@@ -11,19 +11,21 @@
             <div v-if="loading" class="loading-container">
                 <i class="fa-solid fa-spinner fa-spin"></i> Đang tải thông tin...
             </div>
-        <div v-else-if="error" class="error-message">
-            {{ error }}
-            <div class="error-actions">
-                <button @click="$router.push('/login')" class="action-button">Đăng nhập</button>
-                <button @click="$router.push('/')" class="action-button">Về trang chủ</button>
+            <div v-else-if="error" class="error-message">
+                {{ error }}
+                <div class="error-actions">
+                    <button @click="$router.push('/login')" class="action-button">Đăng nhập</button>
+                    <button @click="$router.push('/')" class="action-button">Về trang chủ</button>
+                </div>
             </div>
-        </div>
-        <ProfilePage 
-            v-else 
-            :user="userInfo" 
-            :maintain-editing="maintainEditing"
-            @update-profile="updateUserProfile" 
-        />
+           <ProfilePage 
+              v-else 
+              ref="profilePage"
+              :user="userInfo" 
+              :maintain-editing="maintainEditing"
+              @update-profile="updateUserProfile"
+              @password-error="showPasswordError"
+          />
         </main>
         <Footer />
     </div>
@@ -38,204 +40,251 @@ import AuthenticationService from '@/services/AuthenticationService';
 import Alert from '@/components/Alert.vue'
 
 export default {
-name: 'ProfileUser',
-components: {
+  name: 'ProfileUser',
+  components: {
     Nav,
     Footer,
     ProfilePage,
     Alert
-},
-data() {
+  },
+  data() {
     return {
-        userInfo: null,
-        loading: true,
-        error: null,
-        alert:{
-            show: false,
-            type: 'success',
-            title: 'Thông báo',
-            message: ''
-        },
-        maintainEditing: false // Biến này sẽ được sử dụng để kiểm soát chế độ chỉnh sửa
+      userInfo: null,
+      loading: true,
+      error: null,
+      alert:{
+        show: false,
+        type: 'success',
+        title: 'Thông báo',
+        message: ''
+      },
+      maintainEditing: false // Biến này sẽ được sử dụng để kiểm soát chế độ chỉnh sửa
     }
-},
-created() {
-    this.maintainEditing = false; // Đặt chế độ chỉnh sửa mặc định là false 
+  },
+  created() {
+    this.maintainEditing = false;
     this.fetchUserData();
-},
-    methods: {
-        async fetchUserData() {
-            try {
-                this.loading = true;
-                // Kiểm tra nếu người dùng đã đăng nhập
-                const currentUser = AuthenticationService.getCurrentUser();
-                
-                if (!currentUser || !currentUser.id) {
-                    this.error = "Vui lòng đăng nhập để xem thông tin cá nhân";
-                    this.loading = false;
-                    return;
-                }
-                
-                // Lấy dữ liệu đầy đủ của người dùng từ API
-                const response = await UserService.getUserById(currentUser.id);
-                console.log("User data response:", response);
-                
-                if (response.data && response.data.success) {
-                    // Lấy thông tin người dùng từ response
-                    this.userInfo = response.data.data || response.data.user;
-                } else if (response.data && response.data.user) {
-                // Trường hợp API trả về cấu trúc khác
-                    this.userInfo = response.data.user;
-                } else if (response.data) {
-                // Trường hợp API trả về dữ liệu người dùng trực tiếp
-                    this.userInfo = response.data;
-                } else {
-                    this.error = "Không thể tải thông tin người dùng";
-                }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-                this.error = "Đã xảy ra lỗi khi tải thông tin người dùng";
-            } finally {
-                this.loading = false;
-            }
-        },
-
-        // Kiểm tra URL hình ảnh hợp lệ
-        async isValidImageUrl(url) {
-            // Nếu không có URL, coi như hợp lệ (không cập nhật hình ảnh)
-            if (!url) return true;
-            
-            // Kiểm tra định dạng URL
-            const pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
-                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-                '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-                '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-                '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
-            
-            if (!pattern.test(url)) {
-                return false;
-            }
-            
-            // Kiểm tra xem URL có phải là hình ảnh hay không (tùy chọn)
-            try {
-                return new Promise((resolve) => {
-                    const img = new Image();
-                    img.onload = () => resolve(true);
-                    img.onerror = () => resolve(false);
-                    img.src = url;
-                    
-                    // Nếu sau 5 giây không load được, coi như không hợp lệ
-                    setTimeout(() => resolve(false), 5000);
-                });
-            } catch (error) {
-                return false;
-            }
-        },
+  },
+  methods: {
+    showPasswordError(message) {
+      this.alert = {
+        show: true,
+        type: 'error',
+        title: 'Mật khẩu không chính xác',
+        message: message
+      };
+    },
+    async fetchUserData() {
+      try {
+        this.loading = true;
         
-        async updateUserProfile(updatedData) {
+        // Kiểm tra nếu người dùng đã đăng nhập
+        const currentUser = AuthenticationService.getCurrentUser();
+        
+        if (!currentUser || !currentUser.id) {
+          this.error = "Vui lòng đăng nhập để xem thông tin cá nhân";
+          this.loading = false;
+          return;
+        }
+        
+        // Lấy dữ liệu đầy đủ của người dùng từ API
+        const response = await UserService.getUserById(currentUser.id);
+        console.log("response của fetch info:", response);
+        
+        if (response.data && response.data.success) {
+          // Lấy thông tin người dùng từ response
+          this.userInfo = response.data.data || response.data.user;
+        } else if (response.data && response.data.user) {
+          // Trường hợp API trả về cấu trúc khác
+          this.userInfo = response.data.user;
+        } else if (response.data) {
+          // Trường hợp API trả về dữ liệu người dùng trực tiếp
+          this.userInfo = response.data;
+        } else {
+          this.error = "Không thể lấy thông tin người dùng";
+        }
+      } catch (error) {
+        this.error = "Đã xảy ra lỗi khi tải thông tin người dùng";
+        console.error("Error fetching user data:", error);
+      } finally {
+        this.loading = false;
+      }
+    },
+    
+    async updateUserProfile(updatedData) {
+      try {
+        const currentUser = AuthenticationService.getCurrentUser();
+        
+        if (!currentUser || !currentUser.id) {
+          this.alert = {
+            show: true,
+            type: 'error',
+            title: 'Lỗi xác thực',
+            message: 'Vui lòng đăng nhập để cập nhật thông tin'
+          };
+          return;
+        }
+        
+        // Kiểm tra xem có thay đổi không
+        if (Object.keys(updatedData).length === 0) {
+          this.alert = {
+            show: true,
+            type: 'error',
+            title: 'Không có thay đổi',
+            message: 'Không có thông tin nào được thay đổi'
+          };
+          return;
+        }
+        
+        this.loading = true;
+        console.log("Updating user with data:", updatedData);
+        
+        try {
+          // Gọi API để cập nhật thông tin người dùng
+          const response = await UserService.updateUserInfo(currentUser.id, updatedData);
+          console.log("API response:", response);
+          
+          if (response && response.data && response.data.success) {
+            // Trường hợp đổi mật khẩu thành công
+            if (updatedData.password) {
+              this.alert = {
+                show: true,
+                type: 'success',
+                title: 'Đổi mật khẩu thành công',
+                message: 'Mật khẩu đã được cập nhật, bạn sẽ được chuyển đến trang đăng nhập'
+              };
+              
+              setTimeout(async () => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                await AuthenticationService.logout();
+                this.$router.push({
+                  path: '/login',
+                  query: { message: 'Vui lòng đăng nhập lại với mật khẩu mới' }
+                });
+              }, 1500);
+              
+              return;
+            }
+
+            // CẬP NHẬT THÔNG TIN USER BẰNG DỮ LIỆU MỚI TỪ API
+            if (response.data.data) {
+              // Cập nhật userInfo với dữ liệu trả về từ API
+              this.userInfo = response.data.data;
+              
+              // Cập nhật thông tin trong localStorage
+              const updatedUserData = { ...currentUser };
+              if (updatedData.username) updatedUserData.username = response.data.data.username;
+              if (updatedData.address) updatedUserData.address = response.data.data.address;
+              if (updatedData.avatar) updatedUserData.avatar = response.data.data.avatar;
+              localStorage.setItem('user', JSON.stringify(updatedUserData));
+              
+              // Thông báo cho ProfilePage cập nhật lại form với dữ liệu mới nhất
+              if (this.$refs.profilePage) {
+                this.$refs.profilePage.updateFormWithLatestData(response.data.data);
+              }
+            }
             
-            // Sử dụng biến this toàn cục thay vì self
-            try {
-                const currentUser = AuthenticationService.getCurrentUser();
+            // Hiển thị thông báo thành công
+            this.alert = {
+              show: true,
+              type: 'success',
+              title: 'Cập nhật thành công',
+              message: 'Thông tin tài khoản của bạn đã được cập nhật'
+            };
+            
+            this.maintainEditing = false; // Đóng chế độ chỉnh sửa
+          }
+        } catch (error) {
+          console.error("Error updating user profile:", error.response);
+          console.log("thông điệp lỗi kiểu error.response.data: ", error.response?.data);
+
+          if (error.response && error.response.data) {
+            const errorData = error.response.data;
+            const errorCode = errorData.errorCode;
+            
+            switch (errorCode) {
+              case 'INVALID_OLD_PASSWORD':
+                // console.log('đã đi vào case invalid_old_pass!');
+                // this.alert = {
+                //   show: true,
+                //   type: 'error',
+                //   title: 'Mật khẩu không chính xác',
+                //   message: 'Mật khẩu hiện tại bạn nhập không chính xác'
+                // };
+
+                this.maintainEditing = true;
+                // Thay đổi: không hiển thị alert mà gọi phương thức trên component con
+                setTimeout(() => {
+                  if (this.$refs.profilePage) {
+                    console.log('Gọi setOldPasswordError và khôi phục form');
+                    this.$refs.profilePage.setOldPasswordError('Mật khẩu hiện tại không đúng', false);
+                  }
+                }, 0);
+                break;
                 
-                if (!currentUser || !currentUser.id) {
-                    this.alert = {
-                        show: true,
-                        type: 'error',
-                        title: 'Lỗi xác thực',
-                        message: 'Vui lòng đăng nhập để cập nhật thông tin'
-                    };
-                    this.loading = false;
-                    return;
-                }
-                
-                // Kiểm tra URL hình ảnh nếu có
-                if (updatedData.avatar) {
-                    const isValidImage = await this.isValidImageUrl(updatedData.avatar);
-                    if (!isValidImage) {
-                        this.maintainEditing = true; // Giữ chế độ chỉnh sửa nếu có lỗi
-                        // Hiển thị thông báo lỗi
-                        this.alert = {
-                            show: true,
-                            type: 'error',
-                            title: 'Lỗi hình ảnh',
-                            message: 'URL hình ảnh không hợp lệ. Vui lòng kiểm tra lại đường dẫn.'
-                        };
-                        this.loading = false;
-                        return;
-                    }
-                }
-                // Chỉ gửi những trường được phép thay đổi theo API
-                const allowedFields = ['password', 'address', 'avatar'];
-                const filteredData = {
-                    userId: currentUser.id,  // Thêm userId vào request body
-                    ...updatedData
-                };
-                
-                for (const field of allowedFields) {
-                    if (updatedData[field] !== undefined) {
-                        filteredData[field] = updatedData[field];
-                    }
-                }
-                
-                if (Object.keys(filteredData).length === 0) {
-                    this.maintainEditing = true; // Giữ chế độ chỉnh sửa nếu không có thay đổi
-                    this.alert = {
-                        show: true,
-                        type: 'error',
-                        title: 'Không có thay đổi',
-                        message: 'Không có thông tin nào được thay đổi'
-                    };
-                    this.loading = false;
-                    return;
-                }
-                
-                this.loading = true;
-                const response = await UserService.updateUserInfo(currentUser.id, filteredData);
-                
-                // Xử lý response linh hoạt
-                if (response && response.data) {
-                    this.maintainEditing = false; // Đóng chế độ chỉnh sửa sau khi cập nhật
-                    // Cập nhật dữ liệu người dùng trong component
-                    this.userInfo = { ...this.userInfo, ...filteredData };
-                    
-                    // Cập nhật thông tin người dùng trong localStorage
-                    const updatedUserData = { ...currentUser, ...filteredData };
-                    localStorage.setItem('userData', JSON.stringify(updatedUserData));
-                    
-                    // Hiển thị Alert thành công
-                    this.alert = {
-                        show: true,
-                        type: 'success',
-                        title: 'Cập nhật thành công',
-                        message: 'Thông tin tài khoản của bạn đã được cập nhật'
-                    };
+              case 'OLD_PASSWORD_REQUIRED':
+                if (this.$refs.profilePage) {
+                  this.$refs.profilePage.setOldPasswordError('Vui lòng nhập mật khẩu hiện tại');
                 } else {
-                    // Hiển thị Alert thất bại
-                    this.maintainEditing = true; // Giữ chế độ chỉnh sửa nếu có lỗi
-                    this.alert = {
-                        show: true,
-                        type: 'error',
-                        title: 'Cập nhật thất bại',
-                        message: 'Không thể cập nhật thông tin người dùng'
-                    };
-                }
-            } catch (error) {
-                console.error("Error updating user profile:", error);
-                // Hiển thị Alert lỗi
-                this.maintainEditing = true; // Giữ chế độ chỉnh sửa nếu có lỗi
-                this.alert = {
+                  this.alert = {
                     show: true,
                     type: 'error',
-                    title: 'Lỗi hệ thống',
-                    message: 'Đã xảy ra lỗi khi cập nhật thông tin'
+                    title: 'Lỗi cập nhật',
+                    message: 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu'
+                  };
+                }
+                break;
+                
+              case 'INVALID_PASSWORD':
+                if (this.$refs.profilePage) {
+                  this.$refs.profilePage.setPasswordError('Mật khẩu mới phải có ít nhất 8 ký tự');
+                } else {
+                  this.alert = {
+                    show: true,
+                    type: 'error',
+                    title: 'Lỗi cập nhật',
+                    message: 'Mật khẩu mới phải có ít nhất 8 ký tự'
+                  };
+                }
+                break;
+                
+              // Các case khác giữ nguyên
+              case 'USER_ALREADY_EXISTS':
+                this.alert = {
+                  show: true,
+                  type: 'error',
+                  title: 'Lỗi cập nhật',
+                  message: 'Tên đăng nhập đã được sử dụng bởi người dùng khác'
                 };
-            } finally {
-                this.loading = false;
+                break;
+                
+              default:
+                this.alert = {
+                  show: true,
+                  type: 'error',
+                  title: 'Lỗi hệ thống',
+                  message: errorData.message || 'Đã xảy ra lỗi khi cập nhật thông tin'
+                };
             }
+          } else {
+            this.alert = {
+              show: true,
+              type: 'error',
+              title: 'Lỗi kết nối',
+              message: 'Không thể kết nối đến máy chủ, vui lòng thử lại sau'
+            };
+          }
+          
+          this.maintainEditing = true; // Giữ chế độ chỉnh sửa khi có lỗi
         }
-    }
+      } finally {
+        this.loading = false;
+      }
+    },
+    // Thêm phương thức này vào methods
+
+  }
 }
 </script>
   

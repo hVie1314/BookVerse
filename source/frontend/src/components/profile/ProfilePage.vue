@@ -5,16 +5,7 @@
             <img :src="userAvatar" alt="avatar" class="profile-avatar" />
         </header>
       
-        <section class="profile-field">
-            <label class="field-label">
-                Tên đăng nhập <span class="required-star">*</span>
-            </label>
-            <div class="input-container">
-                <input type="text" v-model="userForm.username" disabled class="field-input">
-                <div class="icon-container"><i class="fa-regular fa-user eyes"></i></div>
-            </div>
-        </section>
-      
+        <!-- Hiển thị Email trước -->
         <section class="profile-field">
             <label class="field-label">
                 Email <span class="required-star">*</span>
@@ -25,22 +16,89 @@
             </div>
         </section>
       
+        <!-- Username sau Email và cho phép chỉnh sửa -->
         <section class="profile-field">
-            <label class="field-label">Mật khẩu</label>
+            <label class="field-label">
+                Tên đăng nhập
+            </label>
             <div class="input-container">
-                <input :type="isPasswordVisible ? 'text' : 'password'" v-model="userForm.password" 
-                       placeholder="••••••••" :disabled="!isEditing" class="field-input"
-                       @focus="passwordFocused = true" @blur="passwordFocused = false">
-                <div class="icon-container password-toggle" @click="togglePasswordVisibility" v-if="isEditing">
-                    <transition name="fade" mode="out-in">
-                        <div v-if="isPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
-                        <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
-                    </transition>
-                </div>
-                <div class="icon-container" v-else><i class="fa-solid fa-lock eyes"></i></div>
+                <input type="text" v-model="userForm.username" :disabled="!isEditing" class="field-input"
+                       @focus="usernameFocused = true" @blur="usernameFocused = false">
+                <div class="icon-container"><i class="fa-regular fa-user eyes"></i></div>
             </div>
         </section>
       
+        <!-- Phần nhập mật khẩu mới -->
+        <section class="profile-field" v-if="isEditing">
+            <label class="field-label">Mật khẩu</label>
+            <div class="password-toggle-container" @click="togglePasswordChange">
+            <div class="password-toggle-button">
+                <span>Thay đổi mật khẩu</span>
+                <i :class="isChangingPassword ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
+            </div>
+            </div>
+        </section>
+
+        <!-- Khi người dùng chọn thay đổi mật khẩu, hiển thị 2 ô mật khẩu -->
+        <div v-if="isEditing && isChangingPassword" class="password-change-section">
+            <!-- Phần mật khẩu hiện tại -->
+            <section class="profile-field password-field">
+                <label class="field-label">Mật khẩu hiện tại <span class="required-star">*</span></label>
+                <div class="input-container">
+                    <input 
+                    :type="isOldPasswordVisible ? 'text' : 'password'" 
+                    v-model="userForm.oldPassword" 
+                    placeholder="Nhập mật khẩu hiện tại" 
+                    class="field-input"
+                    :class="{ 'error-input': oldPasswordError }" 
+                    @focus="oldPasswordFocused = true" 
+                    @blur="validateOldPassword"
+                    >
+                    <div class="icon-container password-toggle" @click="toggleOldPasswordVisibility">
+                    <transition name="fade" mode="out-in">
+                        <div v-if="isOldPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
+                        <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
+                    </transition>
+                    </div>
+                </div>
+                <!-- Sửa container cho thông báo lỗi -->
+                
+            </section>
+            <div v-if="oldPasswordError" class="field-error-container">
+                    <div class="field-error">
+                    <i class="fa-solid fa-circle-exclamation error-icon"></i>
+                    {{ oldPasswordError }}
+                    </div>
+            </div>
+            <!-- Phần mật khẩu mới -->
+            <section class="profile-field">
+            <label class="field-label">Mật khẩu mới <span class="required-star">*</span></label>
+            <div class="input-container">
+                <input 
+                :type="isPasswordVisible ? 'text' : 'password'" 
+                v-model="userForm.password" 
+                placeholder="Nhập mật khẩu mới" 
+                class="field-input"
+                :class="{ 'error': passwordError }"
+                @focus="passwordFocused = true" 
+                @blur="passwordFocused = false"
+                >
+                <div class="icon-container password-toggle" @click="togglePasswordVisibility">
+                <transition name="fade" mode="out-in">
+                    <div v-if="isPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
+                    <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
+                </transition>
+                </div>
+            </div>
+            
+            </section>
+            <div v-if="passwordError"  class="field-error-container"><div class="field-error">{{ passwordError }}</div></div>
+            <div class="password-note">
+            <span class="required-star">*</span> Lưu ý: Nếu bạn thay đổi mật khẩu, bạn sẽ cần đăng nhập lại
+            </div>
+        </div>
+      
+        <!-- Phần địa chỉ -->
         <section class="profile-field">
             <label class="field-label">Địa chỉ</label>
             <div class="input-container">
@@ -50,6 +108,7 @@
             </div>
         </section>
       
+        <!-- Phần URL ảnh đại diện -->
         <section class="profile-field" v-if="isEditing">
             <label class="field-label">Ảnh đại diện URL</label>
             <div class="input-container">
@@ -59,10 +118,16 @@
             </div>
         </section>
         
+        <!-- Thông báo lỗi -->
+        <div class="validation-error" v-if="validationError">
+            {{ validationError }}
+        </div>
+        
         <div class="field-note" v-if="isEditing">
             <span class="required-star">*</span> Những thông tin này không thể thay đổi
         </div>
 
+        <!-- Các nút tương tác -->
         <div class="button-container">
             <button v-if="!isEditing" @click="startEditing" class="edit-button">
                 <span class="button-text">Chỉnh sửa thông tin</span>
@@ -82,6 +147,10 @@
 </template>
 
 <script>
+import UserService from '@/services/UserService';
+import AuthenticationService from '@/services/AuthenticationService';
+import { setPasswordValidationMode } from '@/services/Api';
+
 export default {
   name: 'ProfilePage',
   props: {
@@ -97,19 +166,26 @@ export default {
   data() {
     return {
       isEditing: false,
+      isChangingPassword: false,
       userForm: {
         username: '',
         email: '',
         password: '',
+        oldPassword: '',
         address: '',
         avatarUrl: ''
       },
       usernameFocused: false,
       emailFocused: false,
       passwordFocused: false,
+      oldPasswordFocused: false,
       addressFocused: false,
       avatarFocused: false,
-      isPasswordVisible: false
+      isPasswordVisible: false,
+      isOldPasswordVisible: false,
+      validationError: '',
+      oldPasswordError: '',
+      passwordError: ''
     }
   },
   computed: {
@@ -131,66 +207,281 @@ export default {
       },
       deep: true
     },
-    // Thêm watcher để phản ứng với prop maintainEditing
     maintainEditing: {
-        immediate: true, // Đảm bảo chạy ngay khi component được tạo
+        immediate: true, 
         handler(newVal) {
             if (newVal === true) {
-                this.isEditing = true;
+            this.isEditing = true;
+            // Không gọi initializeForm() - điều này sẽ giúp giữ lại dữ liệu
+            } else {
+            // Nếu maintainEditing chuyển sang false, reset form
+            this.initializeForm();
             }
         }
+    },
+    // Đặt lại lỗi mật khẩu cũ khi người dùng thay đổi input
+    'userForm.oldPassword'() {
+      this.oldPasswordError = '';
+    },
+    // Theo dõi mật khẩu mới, nếu xóa trắng thì cũng xóa trường mật khẩu cũ
+    'userForm.password'(newVal) {
+      if (!newVal) {
+        this.userForm.oldPassword = '';
+        this.oldPasswordError = '';
+      }
+      this.passwordError = '';
     }
   },
   methods: {
+    restoreFormAfterPasswordError() {
+        // Lấy backup từ localStorage nếu có
+        const formBackup = localStorage.getItem('profile_form_backup');
+        if (formBackup) {
+        try {
+            const backupData = JSON.parse(formBackup);
+            
+            // Giữ lại mật khẩu cũ và mới đã nhập
+            const oldPassword = this.userForm.oldPassword;
+            const newPassword = this.userForm.password;
+            
+            // Khôi phục các trường khác
+            this.userForm = {
+            ...backupData,
+            oldPassword: oldPassword,
+            password: newPassword
+            };
+            
+            console.log('Đã khôi phục form sau lỗi mật khẩu:', 
+            { ...this.userForm, password: '[HIDDEN]', oldPassword: '[HIDDEN]' });
+        } catch (e) {
+            console.error('Lỗi khi khôi phục form:', e);
+        }
+        }
+    },
+    updateFormWithLatestData(userData) {
+        // Không làm gì nếu không có dữ liệu
+        if (!userData) return;
+        
+        // Lưu giữ các giá trị người dùng đã nhập
+        const oldPassword = this.userForm.oldPassword;
+        const newPassword = this.userForm.password;
+        
+        // Chỉ cập nhật các trường không phải password
+        if (userData.username) this.userForm.username = userData.username;
+        if (userData.email) this.userForm.email = userData.email;
+        if (userData.address) this.userForm.address = userData.address;
+        if (userData.avatar) this.userForm.avatarUrl = userData.avatar;
+        
+        // Khôi phục lại các giá trị password
+        if (this.isChangingPassword) {
+            this.userForm.oldPassword = oldPassword;
+            this.userForm.password = newPassword;
+        }
+    },
+    async validateOldPassword() {
+        this.oldPasswordFocused = false;
+        
+        // Chỉ kiểm tra nếu đã nhập mật khẩu và chuỗi không trống
+        if (!this.userForm.oldPassword || this.userForm.oldPassword.trim() === '') {
+            return;
+        }
+        
+        try {
+            const currentUser = AuthenticationService.getCurrentUser();
+            if (!currentUser || !currentUser.id) return;
+            
+            // Đánh dấu rằng đây là request kiểm tra mật khẩu
+            setPasswordValidationMode(true);
+            
+            // Tạo một đối tượng dữ liệu "giả" chỉ chứa oldPassword để kiểm tra
+            const testData = {
+            oldPassword: this.userForm.oldPassword
+            };
+            
+            // Gọi API updateUserInfo với dữ liệu trên, nhưng không thay đổi gì thực sự
+            await UserService.updateUserInfo(currentUser.id, testData);
+            
+            // Nếu không có lỗi, mật khẩu là đúng
+            this.oldPasswordError = '';
+        } catch (error) {
+            // Xử lý lỗi mật khẩu không đúng
+            if (error.response && error.response.status === 401 && 
+                error.response.data && error.response.data.errorCode === 'INVALID_OLD_PASSWORD') {
+            this.oldPasswordError = 'Mật khẩu hiện tại không chính xác';
+            
+            // Emit event để component cha hiển thị alert nhưng không reset form
+            this.$emit('password-error', 'Mật khẩu hiện tại bạn nhập không chính xác');
+            }
+        } finally {
+            // Đảm bảo reset flag sau khi xong
+            setPasswordValidationMode(false);
+        }
+    },
+
+    setOldPasswordError(errorMessage, resetForm = false) {
+        this.oldPasswordError = errorMessage;
+        
+        // Đảm bảo tab mật khẩu được mở
+        this.isChangingPassword = true;
+        
+        // Khôi phục toàn bộ form từ backup
+        this.restoreFormAfterPasswordError();
+        
+        // Sử dụng nextTick để đảm bảo DOM đã cập nhật 
+        // trước khi cố gắng tìm và focus vào phần tử
+        this.$nextTick(() => {
+            // Cải thiện cách chọn selector để đảm bảo tìm đúng phần tử
+            const oldPasswordInput = this.$el.querySelector('input[placeholder="Nhập mật khẩu hiện tại"]');
+            if (oldPasswordInput) {
+            // Focus vào input mật khẩu cũ
+            oldPasswordInput.focus();
+            
+            // Scroll đến vị trí của input nếu cần
+            oldPasswordInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+        
+        // Nếu resetForm = true, mới xóa mật khẩu đã nhập
+        if (resetForm) {
+            this.userForm.oldPassword = '';
+        }
+        },
+    
+    setPasswordError(errorMessage) {
+      this.passwordError = errorMessage;
+      // Đảm bảo tab mật khẩu được mở
+      this.isChangingPassword = true;
+    },
+    togglePasswordChange() {
+      this.isChangingPassword = !this.isChangingPassword;
+      
+      // Nếu đóng phần thay đổi mật khẩu, xóa các giá trị đã nhập
+      if (!this.isChangingPassword) {
+        this.userForm.password = '';
+        this.userForm.oldPassword = '';
+        this.oldPasswordError = '';
+        this.passwordError = '';
+      }
+    },
     initializeForm() {
       this.userForm = {
         username: this.user.username || '',
         email: this.user.email || '',
         password: '',
+        oldPassword: '',
         address: this.user.address || '',
         avatarUrl: this.user.avatar || this.user.avatarUrl || ''
       };
+      this.validationError = '';
+      this.oldPasswordError = '';
+      this.passwordError = '';
     },
     startEditing() {
       this.isEditing = true;
     },
     cancelEditing() {
       this.isEditing = false;
+      this.isChangingPassword = false;
       this.initializeForm();
     },
-    saveChanges() {
-      // Tạo đối tượng chỉ chứa dữ liệu đã thay đổi
-      const updatedData = {};
-      
-      if (this.userForm.password) {
-        updatedData.password = this.userForm.password;
-      }
-      
-      if (this.userForm.address !== this.user.address) {
-        updatedData.address = this.userForm.address;
-      }
-      
-      if (this.userForm.avatarUrl !== this.user.avatar && this.userForm.avatarUrl !== this.user.avatarUrl) {
-        updatedData.avatar = this.userForm.avatarUrl;
-      }
-      
-    //   // Kiểm tra xem có dữ liệu thay đổi không
-    //   if (Object.keys(updatedData).length > 0) {
-      this.$emit('update-profile', updatedData);
-    //   }
-      
-    //   this.isEditing = false;
-    },
     togglePasswordVisibility() {
-      if (this.isEditing) { // Chỉ toggle khi đang ở chế độ edit
+      if (this.isEditing) {
         this.isPasswordVisible = !this.isPasswordVisible;
       }
-    }
+    },
+    toggleOldPasswordVisibility() {
+      this.isOldPasswordVisible = !this.isOldPasswordVisible;
+    },
+   validateForm() {
+      this.validationError = '';
+      
+      // Nếu đã có lỗi mật khẩu cũ, không cần kiểm tra lại
+      if (this.oldPasswordError) {
+        return false;
+      }
+      
+      // Kiểm tra username
+      if (this.userForm.username && this.userForm.username.trim() === '') {
+        this.validationError = 'Tên đăng nhập không được để trống';
+        return false;
+      }
+      
+      // Kiểm tra mật khẩu cũ và mới nếu đang thay đổi mật khẩu
+      if (this.isChangingPassword) {
+        if (!this.userForm.oldPassword) {
+          this.oldPasswordError = 'Vui lòng nhập mật khẩu hiện tại';
+          return false;
+        }
+        
+        if (!this.userForm.password) {
+          this.passwordError = 'Vui lòng nhập mật khẩu mới';
+          return false;
+        }
+        
+        if (this.userForm.password.length < 8) {
+          this.passwordError = 'Mật khẩu mới phải có ít nhất 8 ký tự';
+          return false;
+        }
+      }
+
+      return true;
+    },
+    saveChanges() {
+        // Kiểm tra dữ liệu trước khi gửi
+        if (!this.validateForm()) {
+            return;
+        }
+
+        if (this.isChangingPassword && this.oldPasswordError) {
+            // Emit sự kiện để hiển thị alert nhưng không reset form
+            this.$emit('password-error', 'Mật khẩu hiện tại bạn nhập không chính xác');
+            return;
+        }
+
+        const formState = {
+            username: this.userForm.username,
+            email: this.userForm.email,
+            address: this.userForm.address,
+            avatarUrl: this.userForm.avatarUrl,
+            oldPassword: this.userForm.oldPassword,
+            password: this.userForm.password
+        };
+        localStorage.setItem('profile_form_backup', JSON.stringify(formState));
+        console.log('Đã lưu backup form với địa chỉ:', this.userForm.address);
+        // Tạo đối tượng chỉ chứa dữ liệu đã thay đổi
+        const updatedData = {};
+        
+        // Thêm username nếu đã thay đổi
+        if (this.userForm.username !== this.user.username) {
+            updatedData.username = this.userForm.username;
+        }
+        
+        // Thêm mật khẩu và mật khẩu cũ nếu đang thay đổi mật khẩu
+        if (this.isChangingPassword && this.userForm.password) {
+            updatedData.password = this.userForm.password;
+            updatedData.oldPassword = this.userForm.oldPassword;
+        }
+        
+        if (this.userForm.address !== this.user.address) {
+            updatedData.address = this.userForm.address;
+        }
+        
+        if (this.userForm.avatarUrl !== this.user.avatar && this.userForm.avatarUrl !== this.user.avatarUrl) {
+            updatedData.avatar = this.userForm.avatarUrl;
+        }
+        
+        // Phát sự kiện cập nhật thông tin
+        this.$emit('update-profile', updatedData);
+        }
   }
 }
 </script>
 
 <style scoped>
+    .password-field{
+        display: flex;
+        
+    }
     .profile-container {
         margin-top: 100px;
         width: 100%;
@@ -442,6 +733,30 @@ export default {
         transition: transform 0.3s ease;
     }
 
+    .password-toggle-container {
+        width: 100%;
+        cursor: pointer;
+    }
+
+    .password-toggle-button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background-color: #f9f5f0;
+        border: 2px solid #4d2900;
+        border-radius: 8px;
+        font-family: "Montserrat", sans-serif;
+        font-weight: 600;
+        color: #4d2900;
+        transition: all 0.3s ease;
+    }
+
+    .password-toggle-button:hover {
+        background-color: #f0e5d8;
+        transform: translateY(-2px);
+    }
+
     .password-toggle {
         cursor: pointer;
     }
@@ -450,6 +765,26 @@ export default {
         transform: translateY(-50%) scale(1.1);
     }
 
+    .password-change-section {
+        width: 80%;
+        background-color: #f9f5f0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-left: 3px solid #4d2900;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
     /* Buttons */
     .button-container {
         display: flex;
@@ -584,5 +919,86 @@ export default {
     color: #777;
     cursor: not-allowed;
     }
+
+    /* Giữ nguyên các style hiện tại */
+
+    /* Thêm style cho hiển thị lỗi trường mật khẩu cũ */
+    .field-error {
+  color: #e74c3c;
+  margin-top: 5px;
+  font-size: 14px;
+  font-family: "Montserrat", sans-serif;
+}
+
+.input-container .error {
+  border-color: #e74c3c;
+}
+
+.validation-error {
+  color: #e74c3c;
+  margin: 15px 0;
+  text-align: center;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  padding: 10px;
+  background-color: rgba(231, 76, 60, 0.1);
+  border-left: 3px solid #e74c3c;
+  border-radius: 3px;
+  width: 80%;
+}
+
+.password-note {
+  color: #e67e22;
+  margin: 15px 0;
+  text-align: center;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  font-style: italic;
+  width: 80%;
+}
+
+/* Thêm vào phần <style> của ProfilePage.vue */
+.field-error-container {
+  width: 100%;
+  margin-left: 16%;
+  margin-bottom:20px;
+  margin-top: -5px;
+  display: flex;
+  /* justify-content: flex-start; */
+}
+
+.field-error {
+  color: #e74c3c;
+  font-size: 14px;
+  font-family: "Montserrat", sans-serif;
+  display: flex;
+  align-items: center;
+  background-color: rgba(231, 76, 60, 0.08);
+  padding: 6px 12px;
+  border-radius: 4px;
+  border-left: 3px solid #e74c3c;
+  max-width: 100%;
+}
+
+.error-icon {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+/* Sửa tên class để tránh conflict */
+.error-input {
+  border-color: #e74c3c !important;
+  background-color: rgba(231, 76, 60, 0.03) !important;
+}
+
+/* Thêm hiệu ứng làm nổi bật thông báo lỗi */
+@keyframes errorPulse {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
+
+.field-error {
+  animation: errorPulse 2s infinite;
+}
 </style>
-  
