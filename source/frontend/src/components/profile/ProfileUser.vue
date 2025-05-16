@@ -133,12 +133,10 @@ export default {
         try {
           // Gọi API để cập nhật thông tin người dùng
           const response = await UserService.updateUserInfo(currentUser.id, updatedData);
+          console.log("API response:", response);
           
-          console.log("API response:", response.data);
-          
-          // Xử lý phản hồi thành công
-          if (response && response.data) {
-            // Xử lý đổi mật khẩu thành công
+          if (response && response.data && response.data.success) {
+            // Trường hợp đổi mật khẩu thành công
             if (updatedData.password) {
               this.alert = {
                 show: true,
@@ -159,35 +157,47 @@ export default {
               
               return;
             }
+
+            // CẬP NHẬT THÔNG TIN USER BẰNG DỮ LIỆU MỚI TỪ API
+            if (response.data.data) {
+              // Cập nhật userInfo với dữ liệu trả về từ API
+              this.userInfo = response.data.data;
+              
+              // Cập nhật thông tin trong localStorage
+              const updatedUserData = { ...currentUser };
+              if (updatedData.username) updatedUserData.username = response.data.data.username;
+              if (updatedData.address) updatedUserData.address = response.data.data.address;
+              if (updatedData.avatar) updatedUserData.avatar = response.data.data.avatar;
+              localStorage.setItem('user', JSON.stringify(updatedUserData));
+            }
             
-            // Xử lý cập nhật thông tin thành công
-            this.userInfo = response.data;
+            // Hiển thị thông báo thành công
             this.alert = {
               show: true,
               type: 'success',
               title: 'Cập nhật thành công',
               message: 'Thông tin tài khoản của bạn đã được cập nhật'
             };
-            this.maintainEditing = false;
+            
+            this.maintainEditing = false; // Đóng chế độ chỉnh sửa
           }
         } catch (error) {
-          // Xử lý lỗi từ API dựa trên mã lỗi trả về từ backend
           console.error("Error updating user profile:", error.response);
-          
+          console.log("thông điệp lỗi kiểu error.response.data: ", error.response?.data);
+
           if (error.response && error.response.data) {
             const errorData = error.response.data;
             const errorCode = errorData.errorCode;
             
             switch (errorCode) {
               case 'INVALID_OLD_PASSWORD':
+                console.log('đã đi vào case invalid_old_pass!');
                 this.alert = {
                   show: true,
                   type: 'error',
                   title: 'Lỗi cập nhật',
                   message: 'Mật khẩu hiện tại không đúng'
                 };
-                // Hiển thị lỗi tại trường mật khẩu cũ
-                this.$refs.profilePage?.setOldPasswordError('Mật khẩu hiện tại không đúng');
                 break;
                 
               case 'OLD_PASSWORD_REQUIRED':
@@ -197,7 +207,6 @@ export default {
                   title: 'Lỗi cập nhật',
                   message: 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu'
                 };
-                this.$refs.profilePage?.setOldPasswordError('Vui lòng nhập mật khẩu hiện tại');
                 break;
                 
               case 'INVALID_PASSWORD':
@@ -207,8 +216,6 @@ export default {
                   title: 'Lỗi cập nhật',
                   message: 'Mật khẩu mới phải có ít nhất 8 ký tự'
                 };
-                // Hiển thị lỗi tại trường mật khẩu mới
-                this.$refs.profilePage?.setPasswordError('Mật khẩu mới phải có ít nhất 8 ký tự');
                 break;
                 
               case 'USER_ALREADY_EXISTS':
