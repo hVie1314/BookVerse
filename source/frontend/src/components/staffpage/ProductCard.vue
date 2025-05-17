@@ -22,11 +22,15 @@
       <div class="book-actions">
         <p class="book-price">{{ formatPrice(book.price) }}</p>
         <div class="action-buttons">
-          <button class="edit-button" aria-label="Edit book" @click.stop="$emit('edit-book', book)">
+          <button class="edit-button" aria-label="Edit book" @click.stop="handleEdit">
             <div v-html="editIcon"></div>
           </button>
-          <button class="delete-button" aria-label="Delete book" @click.stop="$emit('delete-book', book)">
-            <div v-html="deleteIcon"></div>
+          <!-- Thay đổi nút delete -->
+          <button class="delete-button" aria-label="Delete book" @click.stop="handleDeleteBook(book)">
+            <div class="delete-icon-wrapper">
+              <i class="fas fa-trash-alt"></i>
+              <span>Xóa</span>
+            </div>
           </button>
         </div>
       </div>
@@ -35,6 +39,7 @@
 </template>
 
 <script>
+import BookService from '@/services/BookService';
 export default {
   name: 'ProductCard',
   props: {
@@ -96,7 +101,41 @@ export default {
         style: 'currency',
         currency: 'VND'
       }).format(price).replace('₫', 'đ');
-    }
+    },
+
+    handleDeleteBook(book) {
+      // Hiển thị dialog xác nhận trước khi xóa
+      this.$emit('delete-book', book);
+    },
+
+    // Method gọi API xóa sách
+    async deleteBook(bookId) {
+      try {
+        // Hiển thị loading nếu cần
+        this.loading = true;
+        
+        // Gọi API xóa sách
+        await BookService.deleteBook(bookId);
+        
+        // Hiển thị thông báo thành công
+        alert('Xóa sách thành công!');
+        
+        // Refresh danh sách sách sau khi xóa
+        this.$emit('book-deleted', bookId);
+      } catch (error) {
+        // Xử lý lỗi
+        console.error('Lỗi khi xóa sách:', error);
+        alert('Có lỗi xảy ra khi xóa sách: ' + (error.response?.data?.message || error.message));
+      } finally {
+        // Tắt loading
+        this.loading = false;
+      }
+    },
+    
+    handleEdit() {
+      console.log('Đang chỉnh sửa sách:', this.book.title);
+      this.$emit('edit-book', this.book);
+    },
   }
 }
 </script>
@@ -299,6 +338,40 @@ export default {
   
   .book-price {
     font-size: 14px;
+  }
+}
+
+.delete-button {
+  background-color: #4d2900;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.delete-button:hover {
+  background-color: #c0392b;
+}
+
+.delete-icon-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .delete-button span {
+    display: none;
+  }
+  
+  .delete-button {
+    padding: 5px 8px;
   }
 }
 </style>

@@ -151,6 +151,7 @@
         <ProductCard
           :book="book"
           @edit-book="editBook"
+          @book-deleted="fetchBooks"
           @delete-book="confirmDeleteBook"
         />
       </div>
@@ -190,8 +191,9 @@
           :book="currentBook"
         />
       </div>
+    </div>
 
-      <div
+    <div
         v-if="showDeleteConfirm"
         class="modal-overlay"
         @click.self="cancelDelete"
@@ -207,7 +209,6 @@
           </div>
         </div>
       </div>
-    </div>
   </div>
 </template>
 

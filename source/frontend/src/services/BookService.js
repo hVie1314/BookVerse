@@ -205,7 +205,15 @@ export default {
     
     // Xóa sách (chỉ admin/staff)
     deleteBook(id) {
-        return Api().delete(`book/${id}`);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Token không hợp lệ hoặc không tồn tại');
+            return Promise.reject(new Error('Token không hợp lệ hoặc không tồn tại'));
+        }
+        
+        return Api().delete(`book/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
 
     // Lấy sách liên quan
