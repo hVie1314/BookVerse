@@ -1,3 +1,4 @@
+<!-- filepath: d:\Workspace\Software-engineering\project\BookVerse\source\frontend\src\components\staffpage\productedit\ProductEditPage.vue -->
 <template>
   <div class="product-create-container">
     <!-- Header giống ProductCreate -->
@@ -197,26 +198,63 @@
         </div>
       </div>
 
-      <!-- Phần đánh giá giữ nguyên -->
-      <ProductReviewsSection
-        :rating="book.rating || 4.5"
-        :reviewCount="book.reviewCount || 0"
-        :ratingDistribution="ratingDistribution"
-        :reviews="book.reviews || []"
-      />
+      <!-- Phần đánh giá - sử dụng RatingSection từ ProductDetail -->
+      <div class="reviews-section">
+        <h2 class="rating-title">Đánh giá sản phẩm</h2>
+        
+        <!-- Hiển thị tóm tắt đánh giá -->
+        <div class="rating-summary-row">
+          <div class="rating-summary-box">
+            <div class="average-rating-container">
+              <h3 class="average-rating">{{ averageRating.toFixed(1) }}</h3>
+              <div class="star-total">
+                <i v-for="index in 5" 
+                  :key="`total-star-${index}`" 
+                  :class="[
+                    index <= Math.floor(averageRating) ? 'fas fa-star filled-star' : 'far fa-star empty-star'
+                  ]"
+                ></i>
+              </div>
+              <p class="total-reviews">{{ bookReviews.length }} đánh giá</p>
+            </div>
+            
+            <div class="ratings-breakdown">
+              <div class="rating-row" v-for="star in 5" :key="`star-${star}`">
+                <div class="star-label-container">
+                  <span class="star-label">{{ star }}</span>
+                  <div class="progress-container">
+                    <div 
+                      class="progress-bar" 
+                      :style="`width: ${getPercentage(star)}%`">
+                    </div>
+                  </div>
+                </div>
+                <span class="count-label">{{ getStarCount(star) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Sử dụng ReviewList từ ProductDetail -->
+        <ReviewList 
+          :bookId="book._id" 
+          class="edit-review-list" 
+        />
+      </div>
     </template>
   </div>
 </template>
 
 <script>
-import ProductReviewsSection from "./ProductReviewsSection.vue";
 import BookService from "@/services/BookService";
+import ReviewService from "@/services/ReviewService";
+import ReviewList from "@/components/ProductDetail/ReviewList.vue";
 import eventBus from "@/eventBus";
 
 export default {
   name: "ProductEditPage",
   components: {
-    ProductReviewsSection,
+    ReviewList
   },
   props: {
     book: {
@@ -248,18 +286,15 @@ export default {
         category: "",
         image: "",
       },
-      ratingDistribution: [
-        { stars: 5, count: 0 },
-        { stars: 4, count: 0 },
-        { stars: 3, count: 0 },
-        { stars: 2, count: 0 },
-        { stars: 1, count: 0 },
-      ],
+      bookReviews: [],
+      averageRating: 0,
+      reviewsLoading: false
     };
   },
   created() {
     this.initializeForm();
     this.fetchCategories();
+    this.fetchBookReviews();
   },
   emits: ["close", "book-updated"],
   methods: {
@@ -275,6 +310,9 @@ export default {
 
       // Xử lý hình ảnh
       this.imageUrls = this.getThumbnails();
+      
+      // Khởi tạo giá trị đánh giá
+      this.averageRating = this.book.rating || 0;
     },
 
     async fetchCategories() {
@@ -302,6 +340,36 @@ export default {
         }
       } catch (error) {
         console.error("Lỗi khi lấy danh mục:", error);
+      }
+    },
+    
+    // Fetch reviews riêng để có thông tin chính xác
+    async fetchBookReviews() {
+      if (!this.book._id) return;
+      
+      this.reviewsLoading = true;
+      try {
+        const response = await ReviewService.getAllReviews(this.book._id);
+        
+        // Truy cập đúng vào dữ liệu reviews
+        let reviews = [];
+        if (response.data && response.data.success && response.data.data && response.data.data.reviews) {
+          reviews = response.data.data.reviews;
+        } else if (response.data && response.data.success && Array.isArray(response.data.data)) {
+          reviews = response.data.data;
+        }
+        
+        this.bookReviews = reviews;
+        
+        // Tính rating trung bình từ reviews thực tế
+        if (reviews.length > 0) {
+          const sum = reviews.reduce((total, review) => total + review.rating, 0);
+          this.averageRating = sum / reviews.length;
+        }
+      } catch (error) {
+        console.error('Lỗi khi lấy đánh giá sách:', error);
+      } finally {
+        this.reviewsLoading = false;
       }
     },
 
@@ -425,6 +493,17 @@ export default {
       }
 
       event.target.value = "";
+    },
+    
+    // Methods để hiển thị phân phối đánh giá
+    getStarCount(star) {
+      return this.bookReviews.filter(review => review.rating === star).length;
+    },
+    
+    getPercentage(star) {
+      if (this.bookReviews.length === 0) return 0;
+      const count = this.getStarCount(star);
+      return (count / this.bookReviews.length) * 100;
     },
 
     validateForm() {
@@ -565,7 +644,7 @@ export default {
 </script>
 
 <style scoped>
-/* Thêm CSS từ ProductCreate */
+/* Giữ nguyên CSS của ProductCreate */
 .product-create-container {
   background-color: #f5f5f5;
   border-radius: 10px;
@@ -911,6 +990,136 @@ export default {
   font-family: 'Montserrat', sans-serif;
 }
 
+/* CSS cho phần đánh giá */
+.reviews-section {
+  margin-top: 40px;
+  border-top: 2px solid #eee;
+  padding-top: 20px;
+  width: 100%; /* Đảm bảo sử dụng chiều rộng đầy đủ */
+}
+
+.rating-title {
+  color: #4D2900;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.rating-summary-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 30px;
+  width: 100%; /* Đảm bảo sử dụng chiều rộng đầy đủ */
+}
+
+.rating-summary-box {
+  display: flex;
+  gap: 40px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 20px;
+  width: 100%; /* Chiếm toàn bộ chiều rộng */
+  max-width: none; /* Xóa giới hạn chiều rộng */
+}
+
+.average-rating-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-right: 30px;
+  border-right: 1px solid #eee;
+}
+
+.average-rating {
+  color: #2E2E2E;
+  font-size: 40px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1;
+}
+
+.star-total {
+  display: flex;
+  margin-top: 10px;
+  gap: 5px;
+}
+
+.filled-star {
+  color: #FFD700;
+  font-size: 20px;
+}
+
+.empty-star {
+  color: #D3D3D3;
+  font-size: 20px;
+}
+
+.total-reviews {
+  color: #000;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.ratings-breakdown {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 15px;
+}
+
+.star-label-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.star-label {
+  min-width: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+.progress-container {
+  flex: 1;
+  height: 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #FFD700;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.count-label {
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 30px;
+  text-align: right;
+}
+
+.edit-review-list {
+  max-width: 100%;
+  margin-top: 20px;
+}
+
 @media (max-width: 991px) {
   .product-create-content {
     flex-direction: column;
@@ -919,6 +1128,57 @@ export default {
   .left-column,
   .right-column {
     width: 100%;
+  }
+  
+  .rating-summary-box {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .average-rating-container {
+    border-right: none;
+    border-bottom: 1px solid #eee;
+    padding-right: 0;
+    padding-bottom: 20px;
+  }
+}
+
+.edit-review-list {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 20px 0 !important; /* Bỏ auto margins */
+}
+
+.edit-review-list :deep(.rating-section) {
+  width: 100% !important; 
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.edit-review-list :deep(.reviews-list) {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.edit-review-list :deep(.review-item) {
+  width: 100%;
+  box-sizing: border-box;
+  max-width: none;
+}
+
+/* Đảm bảo responsive cho rating summary */
+@media (max-width: 991px) {
+  .rating-summary-box {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .average-rating-container {
+    border-right: none;
+    border-bottom: 1px solid #eee;
+    padding-right: 0;
+    padding-bottom: 20px;
   }
 }
 </style>
