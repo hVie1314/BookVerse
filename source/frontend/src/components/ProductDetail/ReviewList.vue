@@ -28,7 +28,7 @@
   <script>
   import ReviewItem from './ReviewItem.vue';
   import ReviewService from '@/services/ReviewService';
-//   import AuthenticationService from '@/services/AuthenticationService';
+  import AuthenticationService from '@/services/AuthenticationService';
   
   export default {
     name: 'ReviewList',
@@ -49,32 +49,45 @@
       return {
         loading: false,
         error: null,
-        fetchedReviews: []
+        fetchedReviews: [],
+        currentUser: null // Thêm biến này để lưu thông tin người dùng hiện tại
       };
     },
     computed: {
       formattedReviews() {
-          // Nếu có reviews từ props, sử dụng chúng
-          if (this.reviews && this.reviews.length > 0) {
-            return this.reviews.map(review => ({
-              id: review._id,
-              name: review.user?.username || 'Người dùng',
-              avatar: review.user?.avatar || 'https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/9c21ecc8fd12f4309a9c06c3afa851e5571e1b4b?placeholderIfAbsent=true',
-              date: this.formatDate(review.createdAt || review.create_at),
-              rating: review.rating,
-              content: review.comment || review.content || '',
-              likes: review.likes || 0,
-              dislikes: review.dislikes || 0,
-              userId: review.user?._id || "null"
-            }));
-          }
+        // Lấy thông tin người dùng hiện tại
+        const currentUser = this.currentUser || {};
+        const isStaff = currentUser.role === 'staff' || currentUser.role === 'admin';
+        
+        // Nếu có reviews từ props, sử dụng chúng
+        if (this.reviews && this.reviews.length > 0) {
+          // Nếu là staff, hiển thị tất cả reviews (kể cả đã ẩn)
+          // Nếu không phải staff, chỉ hiển thị reviews chưa bị ẩn
+          const filteredReviews = isStaff 
+            ? this.reviews 
+            : this.reviews.filter(review => !review.hidden);
           
-          // Sử dụng fetchedReviews nếu không có reviews từ props
-          return this.fetchedReviews;
+          return filteredReviews.map(review => ({
+            ...review,
+            // Thêm indicator cho đánh giá đã ẩn
+            hidden: review.hidden || false,
+            isHidden: review.hidden || false // thêm trường này để dễ nhận biết
+          }));
         }
+        
+        // Tương tự cho fetchedReviews
+        const filteredReviews = isStaff 
+          ? this.fetchedReviews 
+          : this.fetchedReviews.filter(review => !review.hidden);
+        
+        return filteredReviews;
+      }
       },
     created() {
       // Nếu không có reviews từ props và có bookId, thì fetch từ API
+      if (AuthenticationService.isLoggedIn()) {
+        this.currentUser = AuthenticationService.getCurrentUser();
+      }
       if (this.bookId) {
         console.log("Luôn gọi fetchReviews khi có bookId:", this.bookId);
         // In ra reviews từ props để kiểm tra
@@ -118,6 +131,7 @@
             likes: review.likes || 0,
             dislikes: review.dislikes || 0,
             userId: review.userId || "null",
+            hidden: review.hidden || false,
         }));
     } catch (error) {
         console.error('Lỗi khi lấy đánh giá:', error);

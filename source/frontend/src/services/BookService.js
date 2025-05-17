@@ -200,7 +200,14 @@ export default {
     
     // Cập nhật thông tin sách (chỉ admin/staff)
     updateBook(id, bookData) {
-        return Api().put(`book/${id}`, bookData);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Token không hợp lệ hoặc không tồn tại');
+            return Promise.reject(new Error('Token không hợp lệ hoặc không tồn tại'));
+        }
+        return Api().put(`book/${id}`, bookData, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Xóa sách (chỉ admin/staff)

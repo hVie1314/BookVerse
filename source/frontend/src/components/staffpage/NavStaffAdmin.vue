@@ -35,6 +35,24 @@
         </div>
         <span class="menu-text">Sản phẩm</span>
       </router-link>
+
+      <template v-if="isAdmin">
+        <!-- Quản lý người dùng -->
+        <router-link to="/admin/users" class="menu-item" active-class="active">
+          <div class="menu-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <span class="menu-text">Người dùng</span>
+        </router-link>
+        
+        <!-- Thống kê -->
+        <router-link to="/admin/statistics" class="menu-item" active-class="active">
+          <div class="menu-icon">
+            <i class="fas fa-chart-bar"></i>
+          </div>
+          <span class="menu-text">Thống kê</span>
+        </router-link>
+      </template>
       
       <!-- Thêm các menu item khác ở đây nếu cần -->
     </div>
@@ -69,6 +87,12 @@ export default {
     return {
       userName: "Admin"
     };
+  },
+  computed: {
+    isAdmin() {
+      const currentUser = AuthenticationService.getCurrentUser();
+      return currentUser && currentUser.role === 'admin';
+    }
   },
   created() {
     // Lấy thông tin người dùng hiện tại từ Authentication Service
