@@ -23,7 +23,10 @@
         <p class="book-price">{{ formatPrice(book.price) }}</p>
         <div class="action-buttons">
           <button class="edit-button" aria-label="Edit book" @click.stop="handleEdit">
-            <div v-html="editIcon"></div>
+            <div class="edit-icon-wrapper">
+              <i class="fas fa-edit"></i>
+              <span>Sửa</span>
+            </div>
           </button>
           <!-- Thay đổi nút delete -->
           <button class="delete-button" aria-label="Delete book" @click.stop="handleDeleteBook(book)">
@@ -242,21 +245,35 @@ export default {
 }
 
 .edit-button {
-  display: flex;
-  width: 40px;
-  height: 24px;
-  padding: 3px 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 8px;
   background-color: #d4d2d2;
-  cursor: pointer;
   border: none;
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
   transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .edit-button:hover {
   background-color: #bdbdbd;
+}
+
+.edit-icon-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+@media (max-width: 768px) {
+  .edit-button span {
+    display: none;
+  }
+  
+  .edit-button {
+    padding: 5px 8px;
+  }
 }
 
 .delete-button {
