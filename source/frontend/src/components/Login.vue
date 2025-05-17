@@ -209,6 +209,48 @@ async handleSubmit() {
       message: error.response?.data?.message || 'Thông tin đăng nhập không chính xác'
     };
   }
+},
+async handleLogin() {
+  try {
+    this.loading = true;
+    const response = await AuthenticationService.login(this.credentials);
+    
+    if (response.data.success) {
+      const userData = response.data.user;
+      AuthenticationService.setUser(userData);
+      
+      // Hiển thị thông báo đăng nhập thành công
+      eventBus.emit('show-alert', {
+        show: true,
+        type: 'success',
+        title: 'Đăng nhập thành công',
+        message: 'Chào mừng bạn đã quay trở lại với BookVerse!',
+        autoClose: true
+      });
+      
+      // Kiểm tra redirect URL từ query parameter
+      const redirectPath = this.$route.query.redirect;
+      
+      // Kiểm tra role của người dùng và điều hướng phù hợp
+      if (userData.role === 'staff' || userData.role === 'admin') {
+        // Nếu là staff hoặc admin, điều hướng đến trang quản lý
+        this.$router.push('/staff');
+      } else if (redirectPath) {
+        // Nếu có URL chuyển hướng, đi đến URL đó
+        this.$router.push(redirectPath);
+      } else {
+        // Mặc định, về trang chủ
+        this.$router.push('/');
+      }
+    } else {
+      this.error = response.data.message || 'Đăng nhập thất bại';
+    }
+  } catch (error) {
+    console.error('Lỗi đăng nhập:', error);
+    this.error = error.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại sau.';
+  } finally {
+    this.loading = false;
+  }
 }
   }
 }

@@ -5,8 +5,8 @@ export default {
     getAllBooks(page = 1, limit = 10, filters = {}, sortOption = 'default') {
         // Kiểm tra tham số đầu vào
         if (isNaN(page) || page <= 0) {
-            console.error('Page không hợp lệ:', page);
-            page = 1;
+        console.error('Page không hợp lệ:', page);
+        page = 1;
         }
         
         if (isNaN(limit) || limit <= 0) {
@@ -46,6 +46,15 @@ export default {
         
         if (filters.searchQuery) {
             params.search = filters.searchQuery;
+        }
+        
+        // Thêm hỗ trợ lọc sản phẩm mới nhập
+        if (filters.recentlyAdded) {
+            params.recentlyAdded = true;
+        }
+        
+        if (filters.startDate) {
+            params.startDate = filters.startDate;
         }
         
         console.log(`Gọi API lấy danh sách sách với params:`, params);
@@ -176,17 +185,42 @@ export default {
     },
     // Thêm sách mới (chỉ admin/staff)
     createBook(bookData) {
-        return Api().post('book/', bookData);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Token không hợp lệ hoặc không tồn tại');
+            return Promise.reject(new Error('Token không hợp lệ hoặc không tồn tại'));
+        }
+
+        console.log('Tạo sách mới với dữ liệu: ', bookData);
+
+        return Api().post('book/', bookData, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Cập nhật thông tin sách (chỉ admin/staff)
     updateBook(id, bookData) {
-        return Api().put(`book/${id}`, bookData);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Token không hợp lệ hoặc không tồn tại');
+            return Promise.reject(new Error('Token không hợp lệ hoặc không tồn tại'));
+        }
+        return Api().put(`book/${id}`, bookData, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Xóa sách (chỉ admin/staff)
     deleteBook(id) {
-        return Api().delete(`book/${id}`);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Token không hợp lệ hoặc không tồn tại');
+            return Promise.reject(new Error('Token không hợp lệ hoặc không tồn tại'));
+        }
+        
+        return Api().delete(`book/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
 
     // Lấy sách liên quan
@@ -275,5 +309,18 @@ getRelatedBooks(bookId, limit = 20) {
                 
                 throw error;
             });
+    },
+    // Upload ảnh sách
+    uploadImage(formData) {
+        const token = localStorage.getItem('token');
+        const headers = {
+            'Content-Type': 'multipart/form-data'
+        };
+        
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        return Api().post('upload/image', formData, { headers });
     }
 }

@@ -47,16 +47,43 @@ export default {
     
     // Lấy tất cả đánh giá của một sách
     getAllReviews(bookId) {
+        // Lấy token nếu đã đăng nhập
+        const token = localStorage.getItem('token');
+        
+        // Kiểm tra nếu có token, thêm vào header
+        if (token) {
+            return Api().get(`review/${bookId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        }
+        
+        // Nếu không có token, gọi API bình thường
         return Api().get(`review/${bookId}`);
     },
     
     // Ẩn đánh giá (chỉ staff)
     hideReview(reviewId) {
-        return Api().patch(`review/hide/${reviewId}`);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Token không tồn tại - Người dùng chưa đăng nhập');
+            return Promise.reject(new Error('Authentication token not found'));
+        }
+        
+        return Api().patch(`review/hide/${reviewId}`, {}, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
-    
+
     // Hiện đánh giá (chỉ staff)
     unhideReview(reviewId) {
-        return Api().patch(`review/unhide/${reviewId}`);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Token không tồn tại - Người dùng chưa đăng nhập');
+            return Promise.reject(new Error('Authentication token not found'));
+        }
+        
+        return Api().patch(`review/unhide/${reviewId}`, {}, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     }
 }

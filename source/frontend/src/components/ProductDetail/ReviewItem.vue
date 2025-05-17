@@ -1,5 +1,5 @@
 <template>
-    <article class="review-item">
+    <article class="review-item" :class="{'review-hidden': localReview.hidden}">
       <!-- Header chứa avatar và thông tin người dùng -->
       <div class="review-header">
         <!-- Avatar -->
@@ -163,7 +163,7 @@ export default {
       
       if (this.isLoggedIn) {
         this.currentUser = AuthenticationService.getCurrentUser();
-        this.isStaff = this.currentUser && (this.currentUser.role === 'staff');
+        this.isStaff = this.currentUser && (this.currentUser.role === 'staff' || this.currentUser.role === 'admin');
       }
       
       document.addEventListener('click', this.closeOptionsMenu);
@@ -778,5 +778,21 @@ export default {
       font-size: 12px;
     }
   }
-  
+  .review-hidden {
+  opacity: 0.7;
+  border: 1px dashed #e53935;
+  position: relative;
+}
+
+.hidden-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #e53935;
+  color: white;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: bold;
+}
 </style>
