@@ -3,7 +3,15 @@ import Api from '@/services/Api';
 export default {
     // Lấy thông tin của tất cả người dùng (chỉ admin)
     getAllCustomers() {
-        return Api().get('user/customers');
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Token không hợp lệ hoặc không tồn tại');
+            return Promise.reject(new Error('Token không hợp lệ hoặc không tồn tại'));
+        }
+        
+        return Api().get('user/customer', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Lấy thông tin của tất cả nhân viên (chỉ admin)

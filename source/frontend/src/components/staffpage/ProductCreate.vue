@@ -37,7 +37,7 @@
           </div>
         </div>
 
-        <!-- Phần tải lên hình ảnh -->
+        <!-- Phần tải lên hình ảnh
         <div class="upload-section">
           <input
             type="file"
@@ -50,7 +50,7 @@
           <button class="upload-button" @click="$refs.fileInput.click()">
             <i class="fas fa-cloud-upload-alt"></i> Tải lên hình ảnh
           </button>
-        </div>
+        </div> -->
 
         <!-- Phần thêm URL hình ảnh -->
         <div class="image-url-input">

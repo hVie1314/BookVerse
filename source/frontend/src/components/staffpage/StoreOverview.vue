@@ -7,7 +7,10 @@
       <!--Thống kê số khách hàng-->
       <article class="statistics-card customer-card">
         <div class="card-content">
-          <span class="stat-number">12</span>
+          <span class="stat-number" v-if="customersLoading">
+            <i class="fas fa-spinner fa-spin"></i>
+          </span>
+          <span class="stat-number" v-else>{{ totalCustomers }}</span>
           <div class="card-details">
             <img
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/cc42ed88fc5bdc8d58afee0898732ff14d9ea292"
@@ -49,17 +52,21 @@
 
 <script>
 import BookService from '@/services/BookService';
+import UserService from '@/services/UserService';
 
 export default {
   name: 'StoreOverview',
   data() {
     return {
       totalBooks: 0,
-      loading: true
+      loading: true,
+      totalCustomers: 0,
+      customersLoading: true
     };
   },
   created() {
     this.fetchTotalBooks();
+    this.fetchTotalCustomers();
   },
   methods: {
     async fetchTotalBooks() {
@@ -80,6 +87,31 @@ export default {
         this.totalBooks = 0;
       } finally {
         this.loading = false;
+      }
+    },
+    async fetchTotalCustomers() {
+      try {
+        this.customersLoading = true;
+        const response = await UserService.getAllCustomers();
+        
+        console.log('Customer response:', response);
+        
+        // Kiểm tra đúng cấu trúc phản hồi từ API
+        if (response.data && response.data.success && Array.isArray(response.data.data)) {
+          // Lấy mảng khách hàng từ response.data.data
+          this.totalCustomers = response.data.data.length || 0;
+        } else if (response.data && Array.isArray(response.data)) {
+          // Trường hợp API trả về mảng trực tiếp (như trong log của bạn)
+          this.totalCustomers = response.data.length || 0;
+        } else {
+          console.error('Không nhận được dữ liệu khách hàng hợp lệ', response.data);
+          this.totalCustomers = 0;
+        }
+      } catch (error) {
+        console.error('Lỗi khi lấy danh sách khách hàng:', error);
+        this.totalCustomers = 0;
+      } finally {
+        this.customersLoading = false;
       }
     }
   }
