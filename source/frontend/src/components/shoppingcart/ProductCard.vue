@@ -44,30 +44,31 @@ export default {
     },
   },
   methods: {
-    getImageSrc() {
-      // Lấy đường dẫn hình ảnh từ product hoặc product.book (nếu có)
-      let imageUrl = this.product.productId?.image || 
-                    this.product.book?.image || 
-                    this.product.image || 
-                    this.product.coverImage;
-      
-      // Nếu imageUrl là một chuỗi mảng (bắt đầu bằng [ và kết thúc bằng ])
-      if (imageUrl && typeof imageUrl === 'string' && 
-          imageUrl.startsWith('[') && imageUrl.endsWith(']')) {
-        try {
-          // Chuyển đổi chuỗi thành mảng JSON (thay thế dấu nháy đơn bằng dấu nháy kép)
-          const imageArray = JSON.parse(imageUrl.replace(/'/g, '"'));
-          // Lấy URL hình ảnh đầu tiên trong mảng
-          if (imageArray && imageArray.length > 0) {
-            imageUrl = imageArray[0];
-          }
-        } catch (error) {
-          console.error('Lỗi khi xử lý chuỗi hình ảnh:', error);
-        }
-      }
-      
-      return imageUrl || 'https://via.placeholder.com/150?text=No+Image';
-    },
+    getImageSrc(book) {
+  // Kiểm tra null/undefined
+  if (!book || !book.image) return '/images/top-week.jpg';
+  
+  // Nếu đã là URL hợp lệ, trả về trực tiếp
+  if (typeof book.image === 'string' && (book.image.startsWith('http') || book.image.startsWith('/'))) {
+    return book.image;
+  }
+  
+  // Xử lý chuỗi mảng
+  try {
+    if (typeof book.image === 'string' && book.image.includes('[')) {
+      const jsonStr = book.image.replace(/'/g, '"');
+      const images = JSON.parse(jsonStr);
+      return Array.isArray(images) && images.length > 0 
+        ? images[0] 
+        : '/images/top-week.jpg';
+    }
+  } catch (e) {
+    console.error('Lỗi xử lý chuỗi hình ảnh:', e, book.image);
+  }
+  
+  // Mặc định trả về hình ảnh gốc hoặc dự phòng
+  return book.image || '/images/top-week.jpg';
+},
     getTitle() {
       return this.product.book?.title || this.product.title || 'Không có tên sách';
     },

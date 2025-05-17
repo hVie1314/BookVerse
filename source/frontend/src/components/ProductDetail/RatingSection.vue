@@ -24,7 +24,7 @@
                    ]"
                 ></i>
               </div>
-              <p class="total-reviews">{{ totalReviews }} đánh giá</p>
+              <p class="total-reviews">{{ reviewCount }} đánh giá</p>
             </div>
           </div>
   
@@ -92,6 +92,10 @@ export default {
         bookId: {
             type: String,
             required: true
+        },
+        initialReviewCount: { // Thêm prop mới để nhận giá trị từ ProductInfo
+            type: Number,
+            default: 0
         }
     },
     data() {
@@ -105,6 +109,11 @@ export default {
             isLoggedIn: false,
             showReviewForm: false, // Biến để điều khiển hiển thị form viết đánh giá
         };
+    },
+    computed:{
+        reviewCount() {
+            return this.initialReviewCount || this.totalReviews;
+        }
     },
     created() {
         this.isLoggedIn = AuthenticationService.isLoggedIn();
@@ -127,13 +136,31 @@ export default {
                     const data = response.data.data;
                     this.averageRating = data.averageRating || 0;
                     this.totalReviews = data.totalReviews || 0;
-                    this.ratingStats = data.ratingStats || [];
+                    
+                    // Khởi tạo mảng ratingStats với đầy đủ 5 mức sao
+                    const statsMap = new Map();
+                    for (let i = 1; i <= 5; i++) {
+                        statsMap.set(i, { rating: i, count: 0 });
+                    }
+                    
+                    // Cập nhật số lượng từ dữ liệu API
+                    if (data.ratingStats && Array.isArray(data.ratingStats)) {
+                        data.ratingStats.forEach(stat => {
+                            if (statsMap.has(stat.rating)) {
+                                statsMap.set(stat.rating, stat);
+                            }
+                        });
+                    }
+                    
+                    // Chuyển Map thành Array để sử dụng trong component
+                    this.ratingStats = Array.from(statsMap.values()).sort((a, b) => b.rating - a.rating);
+                    
                     this.reviews = data.reviews || [];
                 } else {
                     this.error = 'Không thể tải dữ liệu đánh giá';
                 }
             } catch (error) {
-                // Cũng kiểm tra ở đây
+                // Xử lý lỗi
                 if (this._isDestroyed || this._isBeingDestroyed) return;
                 
                 console.error('Lỗi khi tải dữ liệu đánh giá:', error);
@@ -148,27 +175,19 @@ export default {
         // Phương thức mới tính phần trăm theo tổng số đánh giá
         getPercentage(star) {
             const item = this.ratingStats.find(r => r.rating === star);
-            if (!item || this.totalReviews === 0) return 0;
-            return (item.count / this.totalReviews) * 100;
+            if (!item || this.reviewCount === 0) return 0;
+            return (item.count / this.reviewCount) * 100;
         },
-        
-        // Phương thức cũ tính độ rộng thanh progress
-        getProgressWidth(count) {
-            if (!this.ratingStats.length) return '0%';
-            
-            // Tìm giá trị cao nhất trong ratingStats
-            const maxCount = Math.max(...this.ratingStats.map(stat => stat.count), 1);
-            
-            // Tính phần trăm dựa trên giá trị cao nhất
-            const percentage = (count / maxCount) * 100;
-            return `${percentage}%`;
-        },
+
         
         // Lấy số lượng đánh giá cho mỗi mức sao
         getRatingCount(star) {
-            const statItem = this.ratingStats.find(item => item.rating === star);
-            return statItem ? statItem.count : 0;
-        },
+    const statItem = this.ratingStats.find(item => item.rating === star);
+    const count = statItem ? statItem.count : 0;
+    
+    // Format số lượng để dễ đọc 
+    return new Intl.NumberFormat('vi-VN').format(count);
+},
         
         handleWriteReview() {
             // Vì đã kiểm tra isLoggedIn ở template, không cần kiểm tra lại ở đây

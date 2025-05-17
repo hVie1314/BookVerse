@@ -43,6 +43,7 @@
                 <RatingSection 
                     v-if="bookId" 
                     :bookId="bookId" 
+                    :initialReviewCount="book.reviews ? book.reviews.length : 0"
                     @review-added="handleReviewAdded" 
                 />
         
