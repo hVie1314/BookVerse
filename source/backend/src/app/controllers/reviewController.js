@@ -172,6 +172,14 @@ class ReviewController {
             { hidden: true },
             { new: true }
          );
+
+         const book = await Book.findById(updated.bookId);
+         if (!book) return next(new AppError(404, "BOOK_NOT_FOUND"));
+         // Remove review from book and update rating in one save
+         book.reviews = book.reviews.filter(r => String(r) !== String(updated._id));
+         book.rating = await bookService.reCalcBookRating(updated.bookId);
+         await book.save();
+
          if (!updated) return next(new AppError(404, "NOT_FOUND"));
          res.status(200).json({ review: updated });
       } catch (err) {
@@ -187,6 +195,14 @@ class ReviewController {
             { hidden: false },
             { new: true }
          );
+
+         const book = await Book.findById(updated.bookId);
+         if (!book) return next(new AppError(404, "BOOK_NOT_FOUND"));
+         // Add review to book and update rating in one save
+         book.reviews.push(updated._id);
+         book.rating = await bookService.reCalcBookRating(updated.bookId);
+         await book.save();
+
          if (!updated) return next(new AppError(404, "NOT_FOUND"));
          res.status(200).json({ review: updated });
       } catch (err) {
