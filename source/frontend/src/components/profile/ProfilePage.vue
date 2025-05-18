@@ -1,7 +1,7 @@
 <template>
-    <main class="profile-container">
+    <main class="profile-container" :class="{'staff-profile': isStaffMode}">
         <header class="profile-header">
-            <h1 class="profile-title">Hồ sơ cá nhân</h1>
+            <h1 class="profile-title">{{ isStaffMode ? 'Thông tin tài khoản' : 'Hồ sơ cá nhân' }}</h1>
             <img :src="userAvatar" alt="avatar" class="profile-avatar" />
         </header>
       
@@ -161,7 +161,11 @@ export default {
     maintainEditing: {
       type: Boolean,
       default: false
-    } 
+    },
+    isStaffMode: {
+      type: Boolean,
+      default: false
+    }
   },
   data() {
     return {
