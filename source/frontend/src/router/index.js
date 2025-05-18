@@ -15,6 +15,7 @@ const ProductManagement = () => import('../components/staffpage/ProductManagemen
 const StoreOverview = () => import('../components/staffpage/StoreOverview.vue')
 const StaffInfo = () => import('../components/profile/ProfileUser.vue')
 const UserEdit = () => import('../components/staffpage/usermanagement/UserEdit.vue') 
+const Dashboard = () => import('../components/staffpage/dashboard/Dashboard.vue')
 
 const routes = [
   {
@@ -108,6 +109,15 @@ const routes = [
         path: 'users',
         name: 'admin-users',
         component: UserEdit,
+        meta: { 
+          requiresAuth: true,
+          allowedRoles: ['admin'] 
+        }
+      },
+      {
+        path: 'statistics',
+        name: 'admin-statistics',
+        component: Dashboard,
         meta: { 
           requiresAuth: true,
           allowedRoles: ['admin'] 
