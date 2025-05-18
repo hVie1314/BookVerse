@@ -16,12 +16,28 @@ export default {
     
     // Lấy thông tin của tất cả nhân viên (chỉ admin)
     getAllStaffs() {
-        return Api().get('user/staffs');
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Token không hợp lệ hoặc không tồn tại');
+            return Promise.reject(new Error('Token không hợp lệ hoặc không tồn tại'));
+        }
+        
+        return Api().get('user/staff', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
-    
+
     // Lấy thông tin của tất cả admin (chỉ admin)
     getAllAdmins() {
-        return Api().get('user/admins');
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Token không hợp lệ hoặc không tồn tại');
+            return Promise.reject(new Error('Token không hợp lệ hoặc không tồn tại'));
+        }
+        
+        return Api().get('user/admin', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Lấy thông tin người dùng theo ID

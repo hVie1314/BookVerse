@@ -14,6 +14,7 @@ const StaffPage = () => import('../components/staffpage/StaffLayout.vue')
 const ProductManagement = () => import('../components/staffpage/ProductManagement.vue')
 const StoreOverview = () => import('../components/staffpage/StoreOverview.vue')
 const StaffInfo = () => import('../components/profile/ProfileUser.vue')
+const UserEdit = () => import('../components/staffpage/useredit/UserEdit.vue') 
 
 const routes = [
   {
@@ -97,6 +98,23 @@ const routes = [
       }
     ]
   }
+  ,
+  {
+    path: '/admin',
+    component: StaffPage,
+    meta: { requiresAuth: true, requiresAdmin: true },
+    children: [
+      {
+        path: 'users',
+        name: 'admin-users',
+        component: UserEdit,
+        meta: { 
+          requiresAuth: true,
+          allowedRoles: ['admin'] 
+        }
+      }
+    ]
+  }
 ]
 
 const router = createRouter({
@@ -113,7 +131,17 @@ router.beforeEach((to, from, next) => {
   if (to.path === '/' && isLoggedIn && currentUser && (currentUser.role === 'staff' || currentUser.role === 'admin')) {
     // Chuyển hướng đến trang staff
     next({ path: '/staff' })
-  } else if (to.matched.some(record => record.meta.requiresStaff)) {
+  } 
+  else if (to.matched.some(record => record.meta.requiresAdmin)) {
+    if (!isLoggedIn) {
+      next({ name: 'login', query: { redirect: to.fullPath } })
+    } else if (currentUser && currentUser.role === 'admin') {
+      next()
+    } else {
+      next({ name: 'home' })
+    }
+  }
+  else if (to.matched.some(record => record.meta.requiresStaff)) {
     // Nếu trang yêu cầu quyền Staff
     if (!isLoggedIn) {
       // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
