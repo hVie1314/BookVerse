@@ -24,7 +24,10 @@
       <button class="action-btn edit-btn" @click="$emit('edit')">
         <i class="fas fa-edit"></i>
       </button>
-      <button class="action-btn delete-btn" @click="$emit('delete')" v-if="user.role !== 'Admin'">
+      <button 
+        class="action-btn delete-btn" 
+        @click="$emit('delete')" 
+        v-if="user.role !== 'Admin' || (user.role === 'Admin' && user.id !== currentUserId)">
         <i class="fas fa-trash-alt"></i>
       </button>
     </div>
@@ -38,6 +41,10 @@ export default {
     user: {
       type: Object,
       required: true
+    },
+    currentUserId: {
+      type: String,
+      default: null
     }
   },
   computed: {
