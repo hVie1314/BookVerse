@@ -19,6 +19,7 @@
       v-for="user in users"
       :key="user.id"
       :user="user"
+      :currentUserId="currentUserId"
       @edit="$emit('edit-user', user)"
       @delete="$emit('delete-user', user)"
     />
@@ -27,6 +28,7 @@
 
 <script>
 import UserItem from './UserItem.vue';
+// import AuthenticationService from '@/services/AuthenticationService';
 
 export default {
   name: 'UserTable',
@@ -37,6 +39,28 @@ export default {
     users: {
       type: Array,
       default: () => []
+    }
+  },
+  data() {
+    return {
+      currentUserId: null
+    };
+  },
+  created() {
+    // Lấy ID người dùng hiện tại từ localStorage hoặc store
+    this.getCurrentUserId();
+  },
+  methods: {
+    getCurrentUserId() {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          this.currentUserId = user._id || user.id;
+        } catch (error) {
+          console.error('Lỗi khi parse dữ liệu người dùng:', error);
+        }
+      }
     }
   },
   emits: ['edit-user', 'delete-user']

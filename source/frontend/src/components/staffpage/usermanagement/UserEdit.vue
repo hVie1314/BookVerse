@@ -32,6 +32,23 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal chỉnh sửa người dùng -->
+    <transition name="fade">
+      <div v-if="showEditModal" class="modal-overlay" @click.self="cancelEdit">
+        <transition name="slide-up">
+          <div v-if="showEditModal" class="edit-modal">
+            <UserProfile 
+              v-if="selectedUser"
+              :userData="selectedUser"
+              @cancel="cancelEdit"
+              @save="saveUserChanges"
+              @delete="handleDeleteFromEdit"
+            />
+          </div>
+        </transition>
+      </div>
+    </transition>
   </section>
 </template>
 
@@ -39,6 +56,7 @@
 import UserHeader from './UserHeader.vue';
 import SearchFilter from './SearchFilter.vue';
 import UserTable from './UserTable.vue';
+import UserProfile from './useredit/UserProfile.vue';
 import UserService from '@/services/UserService';
 import eventBus from '@/eventBus.js';
 
@@ -47,7 +65,8 @@ export default {
   components: {
     UserHeader,
     SearchFilter,
-    UserTable
+    UserTable,
+    UserProfile
   },
   data() {
     return {
@@ -59,7 +78,9 @@ export default {
       searchQuery: '',
       currentFilter: 'all',
       showDeleteConfirm: false,
-      userToDelete: null
+      userToDelete: null,
+      showEditModal: false,  // Thêm thuộc tính này
+      selectedUser: null     // Thêm thuộc tính này
     };
   },
   created() {
@@ -159,15 +180,107 @@ export default {
     },
     
     handleEditUser(user) {
-      // Xử lý khi nhấn nút sửa
-      console.log('Sửa người dùng:', user);
-      // TODO: Implement edit user functionality
+      // Định dạng lại dữ liệu người dùng để phù hợp với UserProfile
+      this.selectedUser = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        address: user.rawData.address || '',
+        profileImage: user.avatar,
+        role: user.role,
+        joinDate: user.joinDate,
+        rawData: user.rawData
+      };
+      
+      this.showEditModal = true;
+      // Thêm class vào body để ngăn cuộn trang
+      document.body.classList.add('overlay-active');
     },
-    
+
+    cancelEdit() {
+      this.showEditModal = false;
+      this.selectedUser = null;
+      // Xóa class để cho phép cuộn lại
+      document.body.classList.remove('overlay-active');
+    },
+
+    async saveUserChanges(updatedUser) {
+      try {
+        this.loading = true;
+        
+        // Lưu trữ vai trò ban đầu để kiểm tra xem có thay đổi không
+        const originalRole = this.selectedUser.role;
+        const newRole = updatedUser.role;
+        
+        // Chuẩn bị dữ liệu cập nhật (không bao gồm role)
+        const userData = {
+          username: updatedUser.name,
+          email: updatedUser.email,
+          address: updatedUser.address,
+          avatar: updatedUser.profileImage
+        };
+        
+        // Gọi API cập nhật thông tin cơ bản
+        await UserService.updateUserInfo(updatedUser.id, userData);
+        
+        // Nếu vai trò đã thay đổi, cập nhật bằng API riêng
+        if (originalRole !== newRole) {
+          // Chuyển đổi từ tên hiển thị sang giá trị vai trò trong DB
+          let roleValue = newRole.toLowerCase();
+          if (roleValue === 'khách hàng') roleValue = 'user';
+          
+          await UserService.setRole(updatedUser.id, roleValue);
+        }
+        
+        // Cập nhật danh sách người dùng
+        await this.fetchAllUsers();
+        
+        // Hiển thị thông báo thành công
+        eventBus.emit('show-alert', {
+          show: true,
+          type: 'success',
+          title: 'Thành công',
+          message: `Đã cập nhật thông tin người dùng ${updatedUser.name} thành công`,
+          autoClose: true
+        });
+        
+        // Đóng modal
+        this.cancelEdit();
+      } catch (error) {
+        console.error('Lỗi khi cập nhật thông tin người dùng:', error);
+        
+        // Hiển thị thông báo lỗi chi tiết hơn
+        let errorMessage = 'Không thể cập nhật thông tin người dùng. Vui lòng thử lại sau.';
+        
+        if (error.response) {
+          if (error.response.status === 403) {
+            errorMessage = 'Bạn không có quyền thực hiện thao tác này.';
+          } else if (error.response.data && error.response.data.message) {
+            errorMessage = error.response.data.message;
+          }
+        }
+        
+        eventBus.emit('show-alert', {
+          show: true,
+          type: 'error',
+          title: 'Lỗi',
+          message: errorMessage,
+          autoClose: true
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
+
     handleDeleteUser(user) {
-      // Hiển thị modal xác nhận xóa
       this.userToDelete = user;
       this.showDeleteConfirm = true;
+    },
+    
+    handleDeleteFromEdit(user) {
+      this.userToDelete = user;
+      this.showDeleteConfirm = true;
+      this.showEditModal = false;
     },
     
     cancelDelete() {
@@ -179,6 +292,31 @@ export default {
       if (!this.userToDelete) return;
       
       try {
+        if (this.userToDelete.role === 'Admin') {
+          // Kiểm tra xem còn bao nhiêu Admin trong hệ thống
+          const admins = this.allUsers.filter(user => user.role === 'Admin');
+          
+          if (admins.length <= 1) {
+            eventBus.emit('show-alert', {
+              show: true,
+              type: 'error',
+              title: 'Lỗi',
+              message: 'Không thể xóa Admin duy nhất trong hệ thống!',
+              autoClose: true
+            });
+            this.showDeleteConfirm = false;
+            this.userToDelete = null;
+            return;
+          }
+          
+          // Hiển thị cảnh báo thêm
+          const confirmDelete = confirm(`Bạn đang xóa một tài khoản ADMIN! Hành động này có thể ảnh hưởng đến hệ thống. Bạn có chắc chắn muốn tiếp tục?`);
+          if (!confirmDelete) {
+            this.showDeleteConfirm = false;
+            this.userToDelete = null;
+            return;
+          }
+        }
         await UserService.deleteUser(this.userToDelete.id);
         
         // Cập nhật danh sách
@@ -317,5 +455,40 @@ export default {
   .user-edit {
     padding: 38px 20px;
   }
+}
+
+.edit-modal {
+  background-color: white;
+  border-radius: 10px;
+  width: 700px;
+  max-width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+  .edit-modal {
+    width: 95%;
+  }
+}
+
+:deep(body.overlay-active) {
+  overflow: hidden;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active, .slide-up-leave-active {
+  transition: transform 0.3s, opacity 0.3s;
+}
+.slide-up-enter-from, .slide-up-leave-to {
+  transform: translateY(30px);
+  opacity: 0;
 }
 </style>

@@ -14,7 +14,7 @@ const StaffPage = () => import('../components/staffpage/StaffLayout.vue')
 const ProductManagement = () => import('../components/staffpage/ProductManagement.vue')
 const StoreOverview = () => import('../components/staffpage/StoreOverview.vue')
 const StaffInfo = () => import('../components/profile/ProfileUser.vue')
-const UserEdit = () => import('../components/staffpage/useredit/UserEdit.vue') 
+const UserEdit = () => import('../components/staffpage/usermanagement/UserEdit.vue') 
 
 const routes = [
   {

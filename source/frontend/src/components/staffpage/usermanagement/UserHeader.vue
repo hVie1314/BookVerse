@@ -4,12 +4,6 @@
       <h1 class="header-title">Quản lý người dùng</h1>
       <p class="user-count">Tổng cộng: <span>{{ totalUsers }}</span> người dùng</p>
     </div>
-    <div class="header-right">
-      <button class="add-user-btn" @click="$emit('add-user')">
-        <i class="fas fa-plus"></i>
-        Thêm người dùng
-      </button>
-    </div>
   </div>
 </template>
 
