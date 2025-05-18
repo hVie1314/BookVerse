@@ -6,7 +6,7 @@
             :title="alert.title" 
             :message="alert.message" 
         />
-        <Nav />
+        <Nav v-if="!isStaffRoute" />
         <main class="profile-main">
             <div v-if="loading" class="loading-container">
                 <i class="fa-solid fa-spinner fa-spin"></i> Đang tải thông tin...
@@ -27,7 +27,7 @@
               @password-error="showPasswordError"
           />
         </main>
-        <Footer />
+        <Footer v-if="!isStaffRoute"  />
     </div>
 </template>
   
@@ -59,6 +59,12 @@ export default {
         message: ''
       },
       maintainEditing: false // Biến này sẽ được sử dụng để kiểm soát chế độ chỉnh sửa
+    }
+  },
+  computed: {
+    // Thêm computed property để kiểm tra xem đang ở route staff/info hay không
+    isStaffRoute() {
+      return this.$route.path.includes('/staff/info');
     }
   },
   created() {
@@ -289,6 +295,16 @@ export default {
 </script>
   
 <style scoped>
+
+.staff-mode {
+    background-color: transparent;
+    padding-left: 280px; /* Để không bị đè bởi sidebar */
+}
+
+.staff-layout {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
     .profile-user-container {
         width: 100%;
         display: flex;

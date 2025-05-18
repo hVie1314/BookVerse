@@ -13,7 +13,7 @@ const PaymentCallback = () => import('../components/payment/PaymentCallback.vue'
 const StaffPage = () => import('../components/staffpage/StaffLayout.vue')
 const ProductManagement = () => import('../components/staffpage/ProductManagement.vue')
 const StoreOverview = () => import('../components/staffpage/StoreOverview.vue')
-const StaffInfo = () => import('../components/staffpage/StaffInfo.vue')
+const StaffInfo = () => import('../components/profile/ProfileUser.vue')
 
 const routes = [
   {
@@ -89,7 +89,11 @@ const routes = [
       {
         path: 'info',
         name: 'staff-info',
-        component: StaffInfo
+        component: StaffInfo,
+        meta: { 
+          requiresAuth: true,
+          allowedRoles: ['staff', 'admin'] 
+        }
       }
     ]
   }
