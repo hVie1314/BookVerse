@@ -172,27 +172,52 @@
         }
       },
       async removeItem(productId) {
-        try {
-          this.loading = true;
-          const user = AuthenticationService.getCurrentUser();
-          
-          if (user && user.id) {
-            // Sử dụng phương thức mới thay vì updateUserCart với quantity=0
-            await CartService.removeFromUserCart(user.id, productId);
-            await this.fetchCartData();
-          } else {
-            const guestCartId = localStorage.getItem('guestCartId');
-            if (guestCartId) {
-              await CartService.removeFromGuestCart(guestCartId, productId);
-              await this.fetchCartData();
-            }
+      try {
+        console.log("ShoppingCart: Bắt đầu xóa sản phẩm", productId);
+        this.loading = true;
+        
+        const user = AuthenticationService.getCurrentUser();
+        
+        if (user && user.id) {
+          console.log("Xóa sản phẩm từ giỏ hàng người dùng", user.id);
+          await CartService.removeFromUserCart(user.id, productId);
+        } else {
+          const guestCartId = localStorage.getItem('guestCartId');
+          if (guestCartId) {
+            console.log("Xóa sản phẩm từ giỏ hàng khách", guestCartId);
+            await CartService.removeFromGuestCart(guestCartId, productId);
           }
-        } catch (error) {
-          console.error('Lỗi khi xóa sản phẩm:', error);
-        } finally {
-          this.loading = false;
         }
-      },
+        
+        // Tải lại dữ liệu giỏ hàng sau khi xóa
+        await this.fetchCartData();
+        
+        // Thông báo xóa thành công
+        eventBus.emit('show-alert', {
+          show: true,
+          type: 'success',
+          title: 'Thành công',
+          message: 'Đã xóa sản phẩm khỏi giỏ hàng',
+          autoClose: true
+        });
+      } catch (error) {
+        console.error('Lỗi khi xóa sản phẩm:', error);
+        if (error.response) {
+          console.error('Response error:', error.response.data);
+        }
+        
+        // Thông báo lỗi
+        eventBus.emit('show-alert', {
+          show: true,
+          type: 'error',
+          title: 'Lỗi',
+          message: 'Không thể xóa sản phẩm. Vui lòng thử lại sau.',
+          autoClose: true
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
 
       async createOrderWithPayment() {
         try {

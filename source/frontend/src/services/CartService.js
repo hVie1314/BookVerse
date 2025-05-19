@@ -235,12 +235,19 @@ async mergeGuestCartToUserCart(userId, cartId) {
 
     // Thêm phương thức mới để xóa sản phẩm khỏi giỏ hàng người dùng
     removeFromUserCart(userId, productId) {
-        return Api().put('cart/', { userId, productId, quantity: 0, isRemove: true });
+        console.log(`Xóa sản phẩm ${productId} khỏi giỏ hàng người dùng ${userId}`);
+        const token = localStorage.getItem('token');
+        return Api().put('cart/', 
+            { userId, productId, quantity: 0 }, 
+            { headers: { 'Authorization': `Bearer ${token}` }}
+        );
     },
 
-    // Thêm phương thức mới để xóa sản phẩm khỏi giỏ hàng khách
     removeFromGuestCart(cartId, productId) {
-        return Api().put('cart/guest', { cartId, productId, quantity: 0, isRemove: true });
+        console.log(`Xóa sản phẩm ${productId} khỏi giỏ hàng khách ${cartId}`);
+        return Api().put('cart/guest', 
+            { cartId, productId, quantity: 0 }
+        );
     },
 
     // Thêm phương thức này vào CartService.js
@@ -381,6 +388,6 @@ async getGuestCartItemsWithDetails(guestCartId) {
         }
         return cartId;
     }
-
+    
     
 }
