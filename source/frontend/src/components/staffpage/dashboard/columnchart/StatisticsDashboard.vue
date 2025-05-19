@@ -45,22 +45,14 @@
           </div>
         </div>
       </div>
-      <button 
-        @click="loadChartData" 
-        class="refresh-button pulse-on-hover"
-        :disabled="isLoading"
-      >
-        <span class="refresh-icon" :class="{ 'is-refreshing': isLoading }">↻</span>
-        <span>Làm mới</span>
-      </button>
     </div>
 
     <transition name="fade">
       <div class="legend animate-item">
-        <div class="legend-item pulse-on-hover" @mouseover="highlightDataset(0)" @mouseout="resetHighlight">
+        <div class="legend-item">
           <span class="legend-color" style="background-color: #a86a2a;"></span> Tổng doanh thu
         </div>
-        <div class="legend-item pulse-on-hover" @mouseover="highlightDataset(1)" @mouseout="resetHighlight">
+        <div class="legend-item">
           <span class="legend-color" style="background-color: black;"></span> Tổng số lượng đơn hàng
         </div>
       </div>
@@ -138,7 +130,8 @@ export default {
       showDataSummary: false,
       totalRevenue: 0,
       totalOrders: 0,
-      activeDatasetIndex: null
+      isUnmounting: false,  // Thêm biến này
+      animationFrames: []   
     };
   },
   mounted() {
@@ -152,7 +145,34 @@ export default {
     // Thêm hiệu ứng nền động
     this.animateBackgroundElements();
   },
+  beforeUnmount() {
+    this.isUnmounting = true;
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
+  },
   methods: {
+    addAnimationFrame(callback) {
+      if (this.isUnmounting) return;
+      const id = requestAnimationFrame(callback);
+      this.animationFrames.push(id);
+      return null;
+    },
+    
+    clearAnimationFrames() {
+      if (this.animationFrames && this.animationFrames.length) {
+        this.animationFrames.forEach(id => {
+          try {
+            if (id) cancelAnimationFrame(id);
+          } catch (e) {
+            console.warn('Lỗi khi hủy animation frame:', e);
+          }
+        });
+        this.animationFrames = [];
+      }
+    },
+
     activateDateInput(refName) {
       if (this.$refs[refName]) {
         // Chỉ focus input để mở date picker, không gọi click()
@@ -188,46 +208,21 @@ export default {
       });
     },
     
-    // Làm nổi bật dữ liệu khi hover vào legend
-    highlightDataset(index) {
-      if (!this.chart) return;
-      
-      this.activeDatasetIndex = index;
-      
-      this.chart.data.datasets.forEach((dataset, i) => {
-        if (i === index) {
-          dataset.backgroundColor = i === 0 ? '#c17b2b' : 'rgba(0, 0, 0, 0.9)';
-          dataset.borderColor = i === 0 ? '#c17b2b' : 'rgba(0, 0, 0, 0.9)';
-          dataset.borderWidth = i === 1 ? 3 : 1;
-        } else {
-          dataset.backgroundColor = i === 0 ? 'rgba(168, 106, 42, 0.5)' : 'rgba(0, 0, 0, 0.3)';
-          dataset.borderColor = i === 0 ? 'rgba(168, 106, 42, 0.5)' : 'rgba(0, 0, 0, 0.3)';
-          dataset.borderWidth = i === 1 ? 2 : 1;
-        }
-      });
-      
-      this.chart.update();
-    },
-    
-    // Khôi phục hiển thị mặc định khi không hover
-    resetHighlight() {
-      if (!this.chart) return;
-      
-      this.activeDatasetIndex = null;
-      
-      this.chart.data.datasets.forEach((dataset, i) => {
-        dataset.backgroundColor = i === 0 ? '#a86a2a' : 'black';
-        dataset.borderColor = i === 0 ? '#a86a2a' : 'black'; 
-        dataset.borderWidth = i === 1 ? 2 : 1;
-      });
-      
-      this.chart.update();
-    },
     
     async loadChartData() {
+      if (this.isLoading || this.isUnmounting) return;
       try {
         this.isLoading = true;
         this.showDataSummary = false;
+
+        if (this.chart) {
+          try {
+            this.chart.destroy();
+            this.chart = null;
+          } catch (e) {
+            console.warn('Lỗi khi hủy biểu đồ trước khi tải dữ liệu mới:', e);
+          }
+        }
         
         // Parse date ranges
         const [startYear, startMonth] = this.startDate.split('-').map(Number);
@@ -306,12 +301,17 @@ export default {
         this.totalRevenue = totalRev.toFixed(2);
         this.totalOrders = totalOrd;
         
-        this.renderChart(labels, revenueValues, orderValues);
-        
         // Hiển thị tóm tắt sau khi hiển thị chart
-        setTimeout(() => {
-          this.showDataSummary = true;
-        }, 1000);
+        if (!this.isUnmounting) {
+          this.renderChart(labels, revenueValues, orderValues);
+          
+          // Đợi biểu đồ render xong mới hiển thị summary
+          setTimeout(() => {
+            if (!this.isUnmounting) {
+              this.showDataSummary = true;
+            }
+          }, 1000);
+        }
         
       } catch (error) {
         console.error('Lỗi khi tải dữ liệu biểu đồ:', error);
@@ -338,129 +338,185 @@ export default {
     },
     
     renderChart(labels, revenueData, orderData) {
-      if (this.chart) {
-        this.chart.destroy();
+  if (this.isUnmounting) return;
+  
+  // Hủy biểu đồ cũ một cách an toàn trước khi tạo mới
+  if (this.chart) {
+    try {
+      // Tắt tất cả animations trước khi hủy
+      if (this.chart.options) {
+        this.chart.options.animation = false;
       }
-      
-      const ctx = this.$refs.revenueChart.getContext('2d');
-      
-      // Calculate maximum values for y-axis scales
-      const maxRevenue = Math.ceil(Math.max(...revenueData, 5) / 5) * 5;
-      const maxOrders = Math.ceil(Math.max(...orderData, 5) / 5) * 5;
-      
-      this.chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              type: 'bar',
-              label: 'Tổng doanh thu',
-              data: revenueData,
-              backgroundColor: '#a86a2a',
-              yAxisID: 'y',
-              borderWidth: 1,
-              borderRadius: 4,
-              borderColor: '#a86a2a'
-            },
-            {
-              type: 'line',
-              label: 'Tổng số lượng đơn hàng',
-              data: orderData,
-              borderColor: 'black',
-              backgroundColor: 'black',
-              fill: false,
-              tension: 0.3,
-              yAxisID: 'y1',
-              borderWidth: 2,
-              pointBackgroundColor: 'black',
-              pointBorderColor: 'white',
-              pointRadius: 4,
-              pointHoverRadius: 6
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: {
-            duration: 1500,
-            easing: 'easeOutQuart'
-          },
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
-          hover: {
-            mode: 'nearest',
-            intersect: true
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: maxRevenue,
-              title: {
-                display: true,
-                text: 'Doanh thu (triệu VNĐ)',
-                font: {
-                  weight: 'bold'
-                }
-              },
-              ticks: {
-                callback: (value) => value + ' triệu'
-              }
-            },
-            y1: {
-              beginAtZero: true,
-              position: 'right',
-              max: maxOrders,
-              title: {
-                display: true,
-                text: 'Số lượng đơn hàng',
-                font: {
-                  weight: 'bold'
-                }
-              },
-              grid: {
-                drawOnChartArea: false
-              }
-            },
-            x: {
-              ticks: {
-                maxRotation: 45,
-                minRotation: 45
-              }
-            }
-          },
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              enabled: true,
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              titleColor: '#333',
-              bodyColor: '#333',
-              borderColor: '#aaa',
-              borderWidth: 1,
-              cornerRadius: 8,
-              padding: 12,
-              boxPadding: 6,
-              usePointStyle: true,
-              callbacks: {
-                label: (tooltipItem) => {
-                  const label = tooltipItem.dataset.label || '';
-                  const val = tooltipItem.raw;
-                  return label === 'Tổng doanh thu' 
-                    ? `${label}: ${val} triệu VNĐ` 
-                    : `${label}: ${val} đơn hàng`;
-                }
-              }
-            }
+      this.chart.destroy();
+    } catch (e) {
+      console.warn('Lỗi khi hủy biểu đồ cũ:', e);
+    }
+    this.chart = null;
+  }
+  
+  // Sử dụng promise để tạo thời gian ngắn sau khi hủy biểu đồ cũ
+  return new Promise(resolve => {
+    // Đợi 50ms để đảm bảo DOM có thời gian refresh
+    setTimeout(() => {
+      this.$nextTick(() => {
+        if (this.isUnmounting) {
+          resolve();
+          return;
+        }
+        
+        if (!this.$refs.revenueChart || !document.contains(this.$refs.revenueChart)) {
+          console.warn('Canvas không tồn tại hoặc không còn trong DOM, không thể tạo biểu đồ');
+          resolve();
+          return;
+        }
+        
+        try {
+          const canvas = this.$refs.revenueChart;
+          // Cải thiện: Đảm bảo canvas có kích thước hợp lệ
+          if (canvas.width === 0 || canvas.height === 0) {
+            // Đặt kích thước tối thiểu cho canvas
+            canvas.width = canvas.clientWidth || 300;
+            canvas.height = canvas.clientHeight || 150;
           }
+          
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            console.warn('Không thể lấy context 2d từ canvas');
+            resolve();
+            return;
+          }
+          
+          if (this.isUnmounting) {
+            resolve();
+            return;
+          }
+          
+          // Calculate maximum values for y-axis scales
+          const maxRevenue = Math.ceil(Math.max(...revenueData, 5) / 5) * 5;
+          const maxOrders = Math.ceil(Math.max(...orderData, 5) / 5) * 5;
+          
+          this.chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  type: 'bar',
+                  label: 'Tổng doanh thu',
+                  data: revenueData,
+                  backgroundColor: '#a86a2a',
+                  yAxisID: 'y',
+                  borderWidth: 1,
+                  borderRadius: 4,
+                  borderColor: '#a86a2a'
+                },
+                {
+                  type: 'line',
+                  label: 'Tổng số lượng đơn hàng',
+                  data: orderData,
+                  borderColor: 'black',
+                  backgroundColor: 'black',
+                  fill: false,
+                  tension: 0.3,
+                  yAxisID: 'y1',
+                  borderWidth: 2,
+                  pointBackgroundColor: 'black',
+                  pointBorderColor: 'white',
+                  pointRadius: 4,
+                  pointHoverRadius: 6
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              animation: {
+                duration: 1500,
+                easing: 'easeOutQuart'
+              },
+              interaction: {
+                mode: 'index',
+                intersect: false,
+              },
+              hover: {
+                mode: 'nearest',
+                intersect: true
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: maxRevenue,
+                  title: {
+                    display: true,
+                    text: 'Doanh thu (triệu VNĐ)',
+                    font: {
+                      weight: 'bold'
+                    }
+                  },
+                  ticks: {
+                    callback: (value) => value + ' triệu'
+                  }
+                },
+                y1: {
+                  beginAtZero: true,
+                  position: 'right',
+                  max: maxOrders,
+                  title: {
+                    display: true,
+                    text: 'Số lượng đơn hàng',
+                    font: {
+                      weight: 'bold'
+                    }
+                  },
+                  grid: {
+                    drawOnChartArea: false
+                  }
+                },
+                x: {
+                  ticks: {
+                    maxRotation: 45,
+                    minRotation: 45
+                  }
+                }
+              },
+              plugins: {
+                legend: {
+                  display: false
+                },
+                tooltip: {
+                  enabled: true,
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  titleColor: '#333',
+                  bodyColor: '#333',
+                  borderColor: '#aaa',
+                  borderWidth: 1,
+                  cornerRadius: 8,
+                  padding: 12,
+                  boxPadding: 6,
+                  usePointStyle: true,
+                  callbacks: {
+                    label: (tooltipItem) => {
+                      const label = tooltipItem.dataset.label || '';
+                      const val = tooltipItem.raw;
+                      return label === 'Tổng doanh thu' 
+                        ? `${label}: ${val} triệu VNĐ` 
+                        : `${label}: ${val} đơn hàng`;
+                    }
+                  }
+                }
+              }
+            }
+          });
+          
+          resolve();
+        } catch (error) {
+          console.error('Lỗi khi tạo biểu đồ:', error);
+          resolve();
         }
       });
-    }
+    }, 50);
+  });
+}
   }
 }
 </script>
@@ -641,20 +697,23 @@ export default {
 .filters {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-end; /* Thay đổi từ center thành flex-end để đẩy sang phải */
   gap: 20px;
-  margin-bottom: 15px;
+  margin: 0 0 15px 0; /* Xóa margin auto để không còn căn giữa */
+  max-width: 100%; /* Cho phép sử dụng toàn bộ chiều rộng có sẵn */
 }
 
 .filter-item {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1; /* Cho phép các filter-item mở rộng đều nhau */
 }
 
 .date-select {
   position: relative;
-  cursor: pointer; /* Thêm cursor pointer cho toàn bộ vùng */
+  cursor: pointer;
+  flex: 1; /* Cho phép date-select mở rộng */
 }
 
 .date-select input {
@@ -684,6 +743,12 @@ export default {
   position: relative;
   z-index: 1;
   transition: all 0.3s ease;
+}
+
+.selected-date {
+  padding: 6px 10px; /* Tăng padding một chút */
+  width: auto; /* Thay đổi width cố định thành auto */
+  min-width: 140px; /* Thêm min-width thay vì width cố định */
 }
 
 .selected-date:hover {
