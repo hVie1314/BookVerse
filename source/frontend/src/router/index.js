@@ -13,7 +13,9 @@ const PaymentCallback = () => import('../components/payment/PaymentCallback.vue'
 const StaffPage = () => import('../components/staffpage/StaffLayout.vue')
 const ProductManagement = () => import('../components/staffpage/ProductManagement.vue')
 const StoreOverview = () => import('../components/staffpage/StoreOverview.vue')
-const StaffInfo = () => import('../components/staffpage/StaffInfo.vue')
+const StaffInfo = () => import('../components/profile/ProfileUser.vue')
+const UserEdit = () => import('../components/staffpage/usermanagement/UserEdit.vue') 
+const Dashboard = () => import('../components/staffpage/dashboard/Dashboard.vue')
 
 const routes = [
   {
@@ -89,7 +91,37 @@ const routes = [
       {
         path: 'info',
         name: 'staff-info',
-        component: StaffInfo
+        component: StaffInfo,
+        meta: { 
+          requiresAuth: true,
+          allowedRoles: ['staff', 'admin'] 
+        }
+      }
+    ]
+  }
+  ,
+  {
+    path: '/admin',
+    component: StaffPage,
+    meta: { requiresAuth: true, requiresAdmin: true },
+    children: [
+      {
+        path: 'users',
+        name: 'admin-users',
+        component: UserEdit,
+        meta: { 
+          requiresAuth: true,
+          allowedRoles: ['admin'] 
+        }
+      },
+      {
+        path: 'statistics',
+        name: 'admin-statistics',
+        component: Dashboard,
+        meta: { 
+          requiresAuth: true,
+          allowedRoles: ['admin'] 
+        }
       }
     ]
   }
@@ -109,7 +141,17 @@ router.beforeEach((to, from, next) => {
   if (to.path === '/' && isLoggedIn && currentUser && (currentUser.role === 'staff' || currentUser.role === 'admin')) {
     // Chuyển hướng đến trang staff
     next({ path: '/staff' })
-  } else if (to.matched.some(record => record.meta.requiresStaff)) {
+  } 
+  else if (to.matched.some(record => record.meta.requiresAdmin)) {
+    if (!isLoggedIn) {
+      next({ name: 'login', query: { redirect: to.fullPath } })
+    } else if (currentUser && currentUser.role === 'admin') {
+      next()
+    } else {
+      next({ name: 'home' })
+    }
+  }
+  else if (to.matched.some(record => record.meta.requiresStaff)) {
     // Nếu trang yêu cầu quyền Staff
     if (!isLoggedIn) {
       // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập

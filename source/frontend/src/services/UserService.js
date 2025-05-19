@@ -16,12 +16,28 @@ export default {
     
     // Lấy thông tin của tất cả nhân viên (chỉ admin)
     getAllStaffs() {
-        return Api().get('user/staffs');
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Token không hợp lệ hoặc không tồn tại');
+            return Promise.reject(new Error('Token không hợp lệ hoặc không tồn tại'));
+        }
+        
+        return Api().get('user/staff', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
-    
+
     // Lấy thông tin của tất cả admin (chỉ admin)
     getAllAdmins() {
-        return Api().get('user/admins');
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('Token không hợp lệ hoặc không tồn tại');
+            return Promise.reject(new Error('Token không hợp lệ hoặc không tồn tại'));
+        }
+        
+        return Api().get('user/admin', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
     },
     
     // Lấy thông tin người dùng theo ID
@@ -43,8 +59,8 @@ export default {
             return Promise.reject(new Error('Authentication token not found'));
         }
         
-        // Chỉ gửi các trường được phép cập nhật theo backend
-        const allowedFields = ['username', 'password', 'oldPassword', 'address', 'avatar'];
+        // Thêm trường role vào danh sách trường được phép cập nhật
+        const allowedFields = ['username', 'password', 'oldPassword', 'address', 'avatar', 'role'];
         const filteredData = {};
         
         Object.keys(userData).forEach(key => {
@@ -64,6 +80,22 @@ export default {
         }).catch(error => {
             console.error('Lỗi khi cập nhật thông tin:', error.response?.data || error.message);
             // Throw lại lỗi để component cha xử lý
+            throw error;
+        });
+    },
+
+    setRole(userId, role) {
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            console.error('Token không tồn tại - Người dùng chưa đăng nhập');
+            return Promise.reject(new Error('Authentication token not found'));
+        }
+        
+        return Api().post('user/set-role', { userId, role }, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        }).catch(error => {
+            console.error('Lỗi khi cập nhật vai trò:', error.response?.data || error.message);
             throw error;
         });
     },
