@@ -11,30 +11,38 @@
     <div class="filters animate-item">
       <div class="filter-item">
         <label for="from">Từ:</label>
-        <div class="date-select">
+        <div class="date-select" @click.stop="activateDateInput('fromInput')">
           <input 
             type="month" 
             id="from" 
+            ref="fromInput"
             v-model="startDate" 
             @change="loadChartData"
             :min="minDate"
             :max="endDate"
           >
-          <div class="selected-date pulse-on-hover">{{ formatMonthYear(startDate) }}</div>
+          <div class="selected-date pulse-on-hover">
+            {{ formatMonthYear(startDate) }}
+            <span class="dropdown-icon">▼</span>
+          </div>
         </div>
       </div>
       <div class="filter-item">
         <label for="to">Đến:</label>
-        <div class="date-select">
+        <div class="date-select" @click.stop="activateDateInput('toInput')">
           <input 
             type="month" 
             id="to" 
+            ref="toInput"
             v-model="endDate" 
             @change="loadChartData"
             :min="startDate"
             :max="maxDate"
           >
-          <div class="selected-date pulse-on-hover">{{ formatMonthYear(endDate) }}</div>
+          <div class="selected-date pulse-on-hover">
+            {{ formatMonthYear(endDate) }}
+            <span class="dropdown-icon">▼</span>
+          </div>
         </div>
       </div>
       <button 
@@ -145,6 +153,17 @@ export default {
     this.animateBackgroundElements();
   },
   methods: {
+    activateDateInput(refName) {
+      if (this.$refs[refName]) {
+        // Chỉ focus input để mở date picker, không gọi click()
+        this.$refs[refName].focus();
+        
+        // Thêm cách xử lý trực tiếp để mở date picker thay vì gọi sự kiện click
+        if (this.$refs[refName].showPicker) {
+          this.$refs[refName].showPicker();
+        }
+      }
+    },
     // Định dạng hiển thị tháng/năm theo tiếng Việt
     formatMonthYear(dateString) {
       if (!dateString) return '';
@@ -635,6 +654,7 @@ export default {
 
 .date-select {
   position: relative;
+  cursor: pointer; /* Thêm cursor pointer cho toàn bộ vùng */
 }
 
 .date-select input {
@@ -642,7 +662,6 @@ export default {
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
-  width: 140px;
   opacity: 0;
   position: absolute;
   top: 0;
@@ -650,7 +669,7 @@ export default {
   height: 100%;
   width: 100%;
   cursor: pointer;
-  z-index: 2;
+  z-index: 3;
 }
 
 .selected-date {
@@ -671,8 +690,7 @@ export default {
   border-color: #a86a2a;
 }
 
-.selected-date::after {
-  content: "▼";
+.dropdown-icon {
   font-size: 10px;
   color: #666;
   margin-left: auto;
