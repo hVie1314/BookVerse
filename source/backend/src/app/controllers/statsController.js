@@ -63,11 +63,6 @@ class StatsController {
                 return next(new AppError(404, 'NOT_FOUND', 'Year or Month cannot be in the future'));
             }
 
-            // Check if the year is before the website was created
-            if (year < 2025 || (year == 2025 && month < 4)) {
-                return next(new AppError(404, 'BAD_REQUEST', 'Year is before the website was created'));
-            }
-
             // Get stats for the current month
             const currentMonthStats = await StatsController.getMonthlyStats(month, year, next);
             
