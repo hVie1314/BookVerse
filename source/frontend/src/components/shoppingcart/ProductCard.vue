@@ -35,6 +35,7 @@
 </template>
 
 <script>
+import eventBus from '@/eventBus.js';// Đảm bảo bạn đã tạo eventBus
 export default {
   name: "ProductCard",
   props: {
@@ -44,31 +45,52 @@ export default {
     },
   },
   methods: {
-    getImageSrc(book) {
-  // Kiểm tra null/undefined
-  if (!book || !book.image) return '/images/top-week.jpg';
-  
-  // Nếu đã là URL hợp lệ, trả về trực tiếp
-  if (typeof book.image === 'string' && (book.image.startsWith('http') || book.image.startsWith('/'))) {
-    return book.image;
-  }
-  
-  // Xử lý chuỗi mảng
-  try {
-    if (typeof book.image === 'string' && book.image.includes('[')) {
-      const jsonStr = book.image.replace(/'/g, '"');
-      const images = JSON.parse(jsonStr);
-      return Array.isArray(images) && images.length > 0 
-        ? images[0] 
-        : '/images/top-week.jpg';
-    }
-  } catch (e) {
-    console.error('Lỗi xử lý chuỗi hình ảnh:', e, book.image);
-  }
-  
-  // Mặc định trả về hình ảnh gốc hoặc dự phòng
-  return book.image || '/images/top-week.jpg';
-},
+    getImageSrc() {
+      try {
+        // Đầu tiên kiểm tra trong product.book nếu có
+        if (this.product.book) {
+          const bookImage = this.product.book.image;
+          
+          // Nếu image là URL trực tiếp
+          if (typeof bookImage === 'string') {
+            if (bookImage.startsWith('http') || bookImage.startsWith('/')) {
+              return bookImage;
+            }
+            
+            // Nếu image là chuỗi JSON
+            if (bookImage.includes('[') && bookImage.includes(']')) {
+              const jsonStr = bookImage.replace(/'/g, '"');
+              const images = JSON.parse(jsonStr);
+              return Array.isArray(images) && images.length > 0 ? images[0] : '/images/top-week.jpeg';
+            }
+          }
+        }
+        
+        // Kiểm tra trong product trực tiếp
+        if (this.product.image) {
+          const productImage = this.product.image;
+          
+          // Xử lý tương tự như trên
+          if (typeof productImage === 'string') {
+            if (productImage.startsWith('http') || productImage.startsWith('/')) {
+              return productImage;
+            }
+            
+            if (productImage.includes('[') && productImage.includes(']')) {
+              const jsonStr = productImage.replace(/'/g, '"');
+              const images = JSON.parse(jsonStr);
+              return Array.isArray(images) && images.length > 0 ? images[0] : '/images/top-week.jpeg';
+            }
+          }
+        }
+        
+        // Trường hợp mặc định
+        return this.product.rawImage || '/images/top-week.jpeg';
+      } catch (err) {
+        console.error('Lỗi xử lý ảnh:', err);
+        return '/images/top-week.jpeg';
+      }
+    },
     getTitle() {
       return this.product.book?.title || this.product.title || 'Không có tên sách';
     },
@@ -91,9 +113,45 @@ export default {
       }
     },
     removeItem() {
-      if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
-        this.$emit('remove', this.product.cartItemId || this.product._id);
-      }
+      const productId = this.product.cartItemId || this.product._id;
+      const productName = this.getTitle();
+      
+      // Đơn giản hóa bằng cách sử dụng confirm của browser
+      // if (window.confirm(`Bạn có chắc muốn xóa "${productName}" khỏi giỏ hàng?`)) {
+      //   console.log("Xóa sản phẩm với ID:", productId);
+      //   this.$emit('remove', productId);
+      // }
+      // Đăng ký lắng nghe sự kiện trước khi hiển thị alert
+      const handleConfirm = () => {
+        console.log("ProductCard: Confirm xóa sản phẩm", productId);
+        this.$emit('remove', productId);
+        // Hủy đăng ký sau khi xử lý
+        eventBus.off('confirm', handleConfirm);
+        eventBus.off('cancel', handleCancel);
+      };
+      
+      const handleCancel = () => {
+        console.log("ProductCard: Cancel xóa sản phẩm");
+        // Chỉ cần hủy đăng ký
+        eventBus.off('confirm', handleConfirm);
+        eventBus.off('cancel', handleCancel);
+      };
+      
+      // Đăng ký lắng nghe sự kiện
+      eventBus.on('confirm', handleConfirm);
+      eventBus.on('cancel', handleCancel);
+      
+      // Hiển thị alert
+      eventBus.emit('show-alert', {
+        show: true,
+        type: 'error',
+        title: 'Xác nhận xóa sản phẩm',
+        message: `Bạn có chắc muốn xóa "${productName}" khỏi giỏ hàng?`,
+        autoClose: false,
+        showChoices: true,
+        confirmText: 'Xóa',
+        cancelText: 'Hủy'
+      });
     },
     formatPrice(price) {
       // Đảm bảo price là một số
