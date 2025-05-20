@@ -97,6 +97,15 @@ export default {
     },
     mounted() {
         this.checkWishlistStatus();
+        
+        // Lắng nghe sự kiện cập nhật danh sách yêu thích
+        eventBus.on('wishlist-updated', this.checkWishlistStatus);
+        eventBus.on('wishlist-loaded', () => this.checkWishlistStatus());
+    },
+    beforeUnmount() {
+        // Hủy đăng ký sự kiện khi component bị hủy
+        eventBus.off('wishlist-updated', this.checkWishlistStatus);
+        eventBus.off('wishlist-loaded', this.checkWishlistStatus);
     },
     methods: {
         async checkWishlistStatus() {
