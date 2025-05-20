@@ -40,6 +40,10 @@ export default {
         return Api().post('wishlist/guest', { 
             wishlistId, 
             productId 
+        }).then(response => {
+            // Luôn lưu vào localStorage khi thành công
+            this.saveGuestWishlistItemToLocal(wishlistId, productId);
+            return response;
         }).catch(error => {
             // Xử lý trường hợp API không tồn tại hoặc lỗi
             if (error.response && error.response.status === 404) {

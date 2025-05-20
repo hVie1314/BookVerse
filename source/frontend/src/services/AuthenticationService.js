@@ -132,23 +132,11 @@ export default {
     
     // Xác thực OTP
     verifyOtp(email, otp) {
-        console.log('Gửi yêu cầu xác thực OTP:', { email, otp });
-        return Api().post('auth/verify-otp-and-change-password', { 
-            email, 
-            otp,
-            newPassword: 'temporary123' // Mật khẩu tạm thời, sẽ được đổi lại ở bước tiếp theo
-        });
+        return Api().post('auth/verify-otp', { email, otp });
     },
     
     // Đặt lại mật khẩu
     resetPassword(email, newPassword) {
-        console.log('Đặt lại mật khẩu cho email:', email);
-        // Cần lấy OTP từ localStorage nếu đã lưu trước đó
-        const otp = localStorage.getItem('reset_password_otp');
-        if (!otp) {
-            return Promise.reject(new Error('Không tìm thấy mã OTP. Vui lòng thực hiện lại từ đầu.'));
-        }
-        
-        return Api().post('auth/verify-otp-and-change-password', { email, otp, newPassword });
+        return Api().post('auth/reset-password', { email, newPassword });
     }
 }

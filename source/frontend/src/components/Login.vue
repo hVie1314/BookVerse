@@ -157,8 +157,12 @@ async handleSubmit() {
             }
 
             try {
-              await WishlistService.mergeWishlistAfterLogin(String(tokenUserId));
-              console.log('Đã merge danh sách yêu thích của khách vào tài khoản');
+              const result = await WishlistService.mergeWishlistAfterLogin(String(tokenUserId));
+              if (result.data && result.data.message === 'Wishlist trống, không cần merge') {
+                console.log('Không có danh sách yêu thích cần merge');
+              } else {
+                console.log('Đã merge danh sách yêu thích của khách vào tài khoản');
+              }
             } catch (wishlistMergeError) {
               console.error('Lỗi khi merge danh sách yêu thích:', wishlistMergeError);
               // Tiếp tục quá trình đăng nhập ngay cả khi merge wishlist thất bại

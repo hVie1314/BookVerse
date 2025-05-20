@@ -51,10 +51,6 @@ export default {
       type: Object,
       required: true,
     },
-    isSelected: {
-      type: Boolean,
-      default: false
-    }
   },
   methods: {
     toggleSelection() {
@@ -202,7 +198,7 @@ export default {
 }
 
 .product-info {
-  width: 55%; /* Tương ứng với product-label */
+  width: 60%; /* Tương ứng với product-label */
   display: flex;
   align-items: center;
 }
@@ -363,19 +359,5 @@ export default {
 
 .product-image {
   transition: transform 0.2s ease;
-}
-
-.checkbox-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 15px;
-}
-
-.product-checkbox {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  accent-color: #724e4e;
 }
 </style>
