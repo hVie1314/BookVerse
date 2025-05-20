@@ -257,4 +257,22 @@ export default {
 .body{
   font-family: "Montserrat", sans-serif;
 }
+
+.Vue-Toastification__container {
+  z-index: 9999 !important;
+}
+
+.Vue-Toastification__container.top-right, 
+.Vue-Toastification__container.top-center, 
+.Vue-Toastification__container.top-left {
+  top: 85px !important; /* Điều chỉnh bằng chiều cao của navbar */
+}
+
+@media (max-width: 991px) {
+  .Vue-Toastification__container.top-right, 
+  .Vue-Toastification__container.top-center, 
+  .Vue-Toastification__container.top-left {
+    top: 55px !important; /* Chiều cao navbar trên thiết bị nhỏ hơn */
+  }
+}
 </style>

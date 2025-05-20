@@ -2,7 +2,9 @@ import Api from '@/services/Api';
 import AuthenticationService from './AuthenticationService';
 import eventBus from '@/eventBus.js';
 import { v4 as uuidv4 } from 'uuid';
+import { useToast } from 'vue-toastification';
 
+const toast = useToast();
 export default {
     // Thêm sản phẩm vào wishlist người dùng
     addToUserWishlist(userId, productId) {
@@ -147,12 +149,8 @@ export default {
             const token = localStorage.getItem('token');
             
             if (!token) {
-                eventBus.emit('show-alert', {
-                    show: true,
-                    type: 'error',
-                    title: 'Lỗi xác thực',
-                    message: 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại',
-                    autoClose: true
+                toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", {
+                    timeout: 2500
                 });
                 
                 return Promise.reject(new Error('Authentication token not found'));
@@ -161,16 +159,15 @@ export default {
             return this.addToUserWishlist(userId, productId)
                 .then(response => {
                     eventBus.emit('wishlist-updated');
+                    toast.success("Đã thêm sản phẩm vào danh sách yêu thích", {
+                        timeout: 2500
+                    });
                     return response;
                 })
                 .catch(error => {
                     if (error.response && error.response.status === 401) {
-                        eventBus.emit('show-alert', {
-                            show: true,
-                            type: 'error',
-                            title: 'Lỗi xác thực',
-                            message: 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại',
-                            autoClose: true
+                        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", {
+                            timeout: 2500
                         });
                     }
                     return Promise.reject(error);
@@ -180,6 +177,9 @@ export default {
             return this.addToGuestWishlist(wishlistId, productId)
                 .then(response => {
                     eventBus.emit('wishlist-updated');
+                    toast.success("Đã thêm sản phẩm vào danh sách yêu thích", {
+                        timeout: 2500
+                    });
                     return response;
                 });
         }
@@ -192,6 +192,9 @@ export default {
             return this.removeFromUserWishlist(userId, productId)
                 .then(response => {
                     eventBus.emit('wishlist-updated');
+                    toast.success("Đã xóa sản phẩm khỏi danh sách yêu thích", {
+                        timeout: 2500
+                    });
                     return response;
                 });
         } else {
@@ -199,6 +202,9 @@ export default {
             return this.removeFromGuestWishlist(wishlistId, productId)
                 .then(response => {
                     eventBus.emit('wishlist-updated');
+                    toast.success("Đã xóa sản phẩm khỏi danh sách yêu thích", {
+                        timeout: 2500
+                    });
                     return response;
                 });
         }
@@ -281,63 +287,121 @@ export default {
     },
 
     // Phương thức merge - cập nhật để xử lý tốt hơn với API lỗi
-    mergeWishlistAfterLogin(userId) {
+    async mergeWishlistAfterLogin(userId) {
         const guestWishlistId = localStorage.getItem('guestWishlistId');
         
         if (!guestWishlistId) {
-            return Promise.resolve();
+            console.log('Không tìm thấy guestWishlistId, không cần merge');
+            return Promise.resolve({ data: { success: true, message: 'Không có wishlist guest để merge' } });
         }
         
-        // Lấy danh sách từ localStorage để đảm bảo dữ liệu được merge ngay cả khi API lỗi
+        // Lấy danh sách từ localStorage
         const localItems = this.getGuestWishlistFromLocal(guestWishlistId);
         
-        return this.mergeGuestWishlistToUserWishlist(userId, guestWishlistId)
-            .then(response => {
-                // Xóa wishlistId và dữ liệu của khách sau khi merge thành công
+        try {
+            // Kiểm tra danh sách từ API trước
+            const guestWishlistResponse = await this.getGuestWishlist(guestWishlistId);
+            
+            // Kiểm tra xem wishlist có trống không
+            if ((!guestWishlistResponse.data || !guestWishlistResponse.data.success || 
+                !guestWishlistResponse.data.data || !guestWishlistResponse.data.data.products || 
+                guestWishlistResponse.data.data.products.length === 0) && localItems.length === 0) {
+                
+                console.log('Wishlist guest trống hoặc không tồn tại, không cần merge');
+                // Xóa wishlistId từ localStorage và trả về thành công
                 localStorage.removeItem('guestWishlistId');
                 localStorage.removeItem(`wishlist_${guestWishlistId}`);
-                eventBus.emit('wishlist-updated');
-                return response;
-            })
-            .catch(error => {
-                console.error('Lỗi khi merge wishlist qua API:', error);
-                
-                // Nếu API lỗi, thực hiện merge thủ công
-                if (localItems.length > 0) {
-                    console.log('Thực hiện merge thủ công với', localItems.length, 'sản phẩm');
+                return { data: { success: true, message: 'Wishlist trống, không cần merge' } };
+            }
+            
+            // Tiếp tục với merge qua API
+            return this.mergeGuestWishlistToUserWishlist(userId, guestWishlistId)
+                .then(response => {
+                    // Xóa wishlistId và dữ liệu của khách sau khi merge thành công
+                    localStorage.removeItem('guestWishlistId');
+                    localStorage.removeItem(`wishlist_${guestWishlistId}`);
+                    eventBus.emit('wishlist-updated');
+                    return response;
+                })
+                .catch(error => {
+                    console.error('Lỗi khi merge wishlist qua API:', error);
                     
-                    // Merge từng sản phẩm vào wishlist người dùng
-                    const addPromises = localItems.map(productId => 
-                        this.addToUserWishlist(userId, productId).catch(e => {
-                            console.log('Lỗi khi thêm sản phẩm vào wishlist:', e);
-                            return null;
-                        })
-                    );
-                    
-                    return Promise.all(addPromises).then(() => {
-                        // Xóa wishlist khách sau khi merge thủ công
-                        localStorage.removeItem('guestWishlistId');
-                        localStorage.removeItem(`wishlist_${guestWishlistId}`);
-                        eventBus.emit('wishlist-updated');
+                    // Nếu API lỗi, thực hiện merge thủ công
+                    if (localItems.length > 0) {
+                        console.log('Thực hiện merge thủ công với', localItems.length, 'sản phẩm');
                         
-                        return { 
-                            data: { 
-                                success: true, 
-                                message: 'Đã merge wishlist thủ công' 
-                            } 
-                        };
-                    });
-                }
+                        // Merge từng sản phẩm vào wishlist người dùng
+                        const addPromises = localItems.map(productId => 
+                            this.addToUserWishlist(userId, productId).catch(e => {
+                                console.log('Lỗi khi thêm sản phẩm vào wishlist:', e);
+                                return null;
+                            })
+                        );
+                        
+                        return Promise.all(addPromises).then(() => {
+                            // Xóa wishlist khách sau khi merge thủ công
+                            localStorage.removeItem('guestWishlistId');
+                            localStorage.removeItem(`wishlist_${guestWishlistId}`);
+                            eventBus.emit('wishlist-updated');
+                            
+                            return { 
+                                data: { 
+                                    success: true, 
+                                    message: 'Đã merge wishlist thủ công' 
+                                } 
+                            };
+                        });
+                    }
+                    
+                    // Nếu không có sản phẩm trong localStorage, bỏ qua
+                    localStorage.removeItem('guestWishlistId');
+                    return { 
+                        data: { 
+                            success: true, 
+                            message: 'Không có sản phẩm để merge' 
+                        } 
+                    };
+                });
+        } catch (error) {
+            console.error('Lỗi khi kiểm tra wishlist guest:', error);
+            
+            // Nếu có lỗi khi kiểm tra API nhưng vẫn có dữ liệu trong localStorage
+            if (localItems.length > 0) {
+                console.log('Thực hiện merge thủ công với', localItems.length, 'sản phẩm từ localStorage');
                 
-                // Nếu không có sản phẩm trong localStorage, bỏ qua
-                localStorage.removeItem('guestWishlistId');
-                return { 
-                    data: { 
-                        success: true, 
-                        message: 'Không có sản phẩm để merge' 
-                    } 
-                };
-            });
+                const addPromises = localItems.map(productId => 
+                    this.addToUserWishlist(userId, productId).catch(e => {
+                        console.log('Lỗi khi thêm sản phẩm vào wishlist:', e);
+                        return null;
+                    })
+                );
+                
+                return Promise.all(addPromises).then(() => {
+                    localStorage.removeItem('guestWishlistId');
+                    localStorage.removeItem(`wishlist_${guestWishlistId}`);
+                    eventBus.emit('wishlist-updated');
+                    
+                    return { 
+                        data: { 
+                            success: true, 
+                            message: 'Đã merge wishlist thủ công từ localStorage' 
+                        } 
+                    };
+                });
+            }
+            
+            // Xóa guestWishlistId để tránh lỗi lặp lại
+            localStorage.removeItem('guestWishlistId');
+            localStorage.removeItem(`wishlist_${guestWishlistId}`);
+            
+            // Trả về thành công mặc dù có lỗi
+            return { 
+                data: { 
+                    success: true, 
+                    message: 'Đã xóa guestWishlistId do lỗi' 
+                } 
+            };
+        }
     },
 
 }

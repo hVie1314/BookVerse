@@ -192,14 +192,6 @@
         // Tải lại dữ liệu giỏ hàng sau khi xóa
         await this.fetchCartData();
         
-        // Thông báo xóa thành công
-        eventBus.emit('show-alert', {
-          show: true,
-          type: 'success',
-          title: 'Thành công',
-          message: 'Đã xóa sản phẩm khỏi giỏ hàng',
-          autoClose: true
-        });
       } catch (error) {
         console.error('Lỗi khi xóa sản phẩm:', error);
         if (error.response) {

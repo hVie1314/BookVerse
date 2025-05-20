@@ -2,29 +2,43 @@ import Api from '@/services/Api';
 import AuthenticationService from './AuthenticationService';
 import eventBus from '@/eventBus.js';
 import BookService from './BookService';
+import {useToast} from 'vue-toastification';
+
+const toast = useToast();
 export default {
 
     // Phương thức chung để thêm vào giỏ hàng
     // Trong CartService.js - Phương thức addToCart
-    addToCart({ bookId, quantity = 1 }) {
-        // Kiểm tra người dùng đã đăng nhập chưa
-        if (AuthenticationService.isLoggedIn()) {
-            const user = AuthenticationService.getCurrentUser();
-            return this.addToUserCart(user.id, bookId, quantity);
-        } else {
-        // Lấy cartId từ localStorage nếu đã có
-            let cartId = localStorage.getItem('guestCartId');
-            if (!cartId) {
-                // Tạo cartId mới nếu chưa có
-                cartId = 'guest_' + Date.now();
-                localStorage.setItem('guestCartId', cartId);
+    async addToCart({ bookId, quantity = 1 }) {
+        try {
+            if (AuthenticationService.isLoggedIn()) {
+                const userId = AuthenticationService.getCurrentUser().id;
+                console.log(`Thêm sách ${bookId} vào giỏ hàng người dùng ${userId}`);
+                await this.addToUserCart(userId, bookId, quantity);
+            } else {
+                console.log(`Thêm sách ${bookId} vào giỏ hàng khách`);
+                const guestCartId = this.ensureGuestCartId();
+                await this.addToGuestCart(guestCartId, bookId, quantity);
             }
             
-            // Thêm debug log
-            // console.log("Using guest cart ID for adding item:", cartId);
-            // console.log("Adding book ID:", bookId, "with quantity:", quantity);
+            // Phát sự kiện cập nhật giỏ hàng
+            eventBus.emit('cart-updated');
             
-            return this.addToGuestCart(cartId, bookId, quantity);
+            // Hiển thị toast thành công
+            toast.success("Đã thêm sản phẩm vào giỏ hàng", {
+                timeout: 2500
+            });
+            
+            return true;
+        } catch (error) {
+            console.error('Lỗi khi thêm vào giỏ hàng:', error);
+            
+            // Hiển thị toast lỗi
+            toast.error("Không thể thêm sản phẩm vào giỏ hàng", {
+                timeout: 2500
+            });
+            
+            throw error;
         }
     },
     
@@ -87,81 +101,79 @@ export default {
 
     // Gộp giỏ hàng khách vào giỏ hàng người dùng sau khi đăng nhập
     // Gộp giỏ hàng khách vào giỏ hàng người dùng sau khi đăng nhập
-// Gộp giỏ hàng khách vào giỏ hàng người dùng sau khi đăng nhập
-// Gộp giỏ hàng khách vào giỏ hàng người dùng sau khi đăng nhập
-async mergeGuestCartToUserCart(userId, cartId) {
-    // Đảm bảo userId là string và đúng định dạng
-    const userIdString = String(userId).trim();
-    
-    console.log(`Kiểm tra giỏ hàng guest ${cartId} trước khi merge`);
-    
-    // Kiểm tra xem giỏ hàng guest có sản phẩm không
-    try {
-        // Lấy thông tin giỏ hàng guest trước
-        const guestCartResponse = await this.getGuestCart(cartId);
+    async mergeGuestCartToUserCart(userId, cartId) {
+        // Đảm bảo userId là string và đúng định dạng
+        const userIdString = String(userId).trim();
         
-        if (!guestCartResponse.data || !guestCartResponse.data.success || 
-            !guestCartResponse.data.data || !guestCartResponse.data.data.products || 
-            guestCartResponse.data.data.products.length === 0) {
+        console.log(`Kiểm tra giỏ hàng guest ${cartId} trước khi merge`);
+        
+        // Kiểm tra xem giỏ hàng guest có sản phẩm không
+        try {
+            // Lấy thông tin giỏ hàng guest trước
+            const guestCartResponse = await this.getGuestCart(cartId);
             
-            console.log('Giỏ hàng guest trống hoặc không tồn tại, không cần merge');
-            // Xóa cartId từ localStorage và trả về thành công
-            localStorage.removeItem('guestCartId');
-            return { data: { success: true, message: 'Giỏ hàng trống, không cần merge' } };
-        }
-        
-        console.log(`Merge giỏ hàng guest ${cartId} cho user ${userIdString} với ${guestCartResponse.data.data.products.length} sản phẩm`);
-        
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.error('Không tìm thấy token - cần đăng nhập lại');
-            return Promise.reject(new Error('Authentication token not found'));
-        }
-        
-        const headers = {
-            'Authorization': `Bearer ${token}`
-        };
-        
-        // Cấu trúc lại request body để phù hợp với backend
-        const requestData = {
-            userId: userIdString,
-            cartId: cartId
-        };
-        
-        console.log('Gửi yêu cầu merge với dữ liệu:', requestData);
-        
-        // Kiểm tra xem API endpoint chính xác là gì - sửa thành 'cart/merge'
-        return Api().post('cart/merge', requestData, { headers })
-            .then(response => {
-                console.log('Merge cart response:', response.data);
-                eventBus.emit('cart-updated');
+            if (!guestCartResponse.data || !guestCartResponse.data.success || 
+                !guestCartResponse.data.data || !guestCartResponse.data.data.products || 
+                guestCartResponse.data.data.products.length === 0) {
+                
+                console.log('Giỏ hàng guest trống hoặc không tồn tại, không cần merge');
+                // Xóa cartId từ localStorage và trả về thành công
                 localStorage.removeItem('guestCartId');
-                return response;
-            })
-            .catch(error => {
-                console.error('Error details:', {
-                    status: error.response?.status,
-                    data: error.response?.data,
-                    headers: error.response?.headers
-                });
-                
-                if (error.response?.status === 404) {
-                    console.log('API merge không tồn tại, xóa guestCartId');
+                return { data: { success: true, message: 'Giỏ hàng trống, không cần merge' } };
+            }
+            
+            console.log(`Merge giỏ hàng guest ${cartId} cho user ${userIdString} với ${guestCartResponse.data.data.products.length} sản phẩm`);
+            
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('Không tìm thấy token - cần đăng nhập lại');
+                return Promise.reject(new Error('Authentication token not found'));
+            }
+            
+            const headers = {
+                'Authorization': `Bearer ${token}`
+            };
+            
+            // Cấu trúc lại request body để phù hợp với backend
+            const requestData = {
+                userId: userIdString,
+                cartId: cartId
+            };
+            
+            console.log('Gửi yêu cầu merge với dữ liệu:', requestData);
+            
+            // Kiểm tra xem API endpoint chính xác là gì - sửa thành 'cart/merge'
+            return Api().post('cart/merge', requestData, { headers })
+                .then(response => {
+                    console.log('Merge cart response:', response.data);
+                    eventBus.emit('cart-updated');
                     localStorage.removeItem('guestCartId');
-                    // Trả về response giả lập thành công
-                    return { data: { success: true, message: 'Đã xóa giỏ hàng guest' } };
-                }
-                
-                throw error;
-            });
-    } catch (error) {
-        console.error('Lỗi khi kiểm tra giỏ hàng guest:', error);
-        // Xóa guestCartId để tránh lỗi lặp lại
-        localStorage.removeItem('guestCartId');
-        // Trả về thành công mặc dù có lỗi
-        return { data: { success: true, message: 'Đã xóa guestCartId do lỗi' } };
-    }
-},
+                    return response;
+                })
+                .catch(error => {
+                    console.error('Error details:', {
+                        status: error.response?.status,
+                        data: error.response?.data,
+                        headers: error.response?.headers
+                    });
+                    
+                    if (error.response?.status === 404) {
+                        console.log('API merge không tồn tại, xóa guestCartId');
+                        localStorage.removeItem('guestCartId');
+                        // Trả về response giả lập thành công
+                        return { data: { success: true, message: 'Đã xóa giỏ hàng guest' } };
+                    }
+                    
+                    throw error;
+                });
+        } catch (error) {
+            console.error('Lỗi khi kiểm tra giỏ hàng guest:', error);
+            // Xóa guestCartId để tránh lỗi lặp lại
+            localStorage.removeItem('guestCartId');
+            // Trả về thành công mặc dù có lỗi
+            return { data: { success: true, message: 'Đã xóa guestCartId do lỗi' } };
+        }
+    },
     //////////////////////////
     // Lấy chi tiết đầy đủ của tất cả sản phẩm trong giỏ hàng
     // Lấy chi tiết đầy đủ của tất cả sản phẩm trong giỏ hàng
@@ -237,6 +249,9 @@ async mergeGuestCartToUserCart(userId, cartId) {
     removeFromUserCart(userId, productId) {
         console.log(`Xóa sản phẩm ${productId} khỏi giỏ hàng người dùng ${userId}`);
         const token = localStorage.getItem('token');
+        toast.success("Đã xóa sản phẩm khỏi giỏ hàng", {
+            timeout: 2500
+        });
         return Api().put('cart/', 
             { userId, productId, quantity: 0 }, 
             { headers: { 'Authorization': `Bearer ${token}` }}
