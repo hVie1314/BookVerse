@@ -124,6 +124,23 @@ const routes = [
         }
       }
     ]
+  },
+  {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: () => import('../components/ForgotPassword.vue')
+  },
+  {
+    path: '/verify-otp/:email?',
+    name: 'verify-otp',
+    component: () => import('../components/VerifyOTP.vue'),
+    props: true
+  },
+  {
+    path: '/reset-password/:email?',
+    name: 'reset-password',
+    component: () => import('../components/ResetPassword.vue'),
+    props: true
   }
 ]
 
