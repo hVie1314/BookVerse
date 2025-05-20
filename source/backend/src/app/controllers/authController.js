@@ -79,6 +79,10 @@ class AuthController {
                return next(new AppError(400, "INVALID_CREDENTIALS"));
             }
 
+            // update last login time
+            user.lastLogin = new Date();
+            user.save()
+
             // create token
             const accessToken = jwt.sign({
                id: user._id,
