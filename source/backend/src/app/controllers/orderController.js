@@ -129,6 +129,28 @@ class OrderController {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
         }
     }
+
+    // [POST] /order/statistics
+    async getOrderStatistics(req, res, next) {
+        try {
+            const totalOrders = await Order.countDocuments();
+            const successfulOrders = await Order.countDocuments({ orderStatus: 'success' });
+            const cancelledOrders = await Order.countDocuments({ orderStatus: 'cancelled' });
+            const pendingOrders = await Order.countDocuments({ orderStatus: 'pending' });
+
+            const statistics = {
+                totalOrders,
+                successfulOrders,
+                cancelledOrders,
+                pendingOrders
+            };
+
+            res.status(200).json(statistics);
+
+        } catch (err) {
+            next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching order statistics'));
+        }
+    }
     
 }
 
