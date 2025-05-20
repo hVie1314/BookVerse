@@ -12,6 +12,7 @@ const BookSchema = new mongoose.Schema({
     rating: { type: Number, default: 0 },
     image: { type: String, default: '' },
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 }, {
     timestamps: true,
 });
