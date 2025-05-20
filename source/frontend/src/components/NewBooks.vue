@@ -35,6 +35,7 @@
                         :author="book.author"
                         :cartText="'Thêm vào giỏ'"
                         :sold="String(book.sold)"
+                        :product="book"
                     />
                 </div>
             </div>

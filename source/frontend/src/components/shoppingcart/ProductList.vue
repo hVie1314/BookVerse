@@ -56,6 +56,12 @@ export default {
       default: 0
     }
   },
+  emits: [
+    'update-quantity',
+    'remove-item',
+    'remove-selected',
+    'selection-changed'
+  ],
   data() {
     return {
       selectedItems: []

@@ -10,8 +10,17 @@ export default {
             return Promise.reject(new Error('Authentication token not found'));
         }
         
+        // Log chi tiết dữ liệu gửi đi
+        console.log('Dữ liệu đơn hàng gửi đến API:', JSON.stringify(orderData, null, 2));
+        
         return Api().post('order/create', orderData, {
             headers: { 'Authorization': `Bearer ${token}` }
+        }).then(response => {
+            console.log('API response:', response.data);
+            return response;
+        }).catch(error => {
+            console.error('API error:', error.response?.data || error.message);
+            throw error;
         });
     },
 
