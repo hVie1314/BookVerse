@@ -3,18 +3,39 @@
     <div class="cart-divider"></div>
     <div class="cart-summary">
       <p class="cart-count">Bạn có {{ itemCount }} sản phẩm trong giỏ hàng</p>
+      
+      <!-- Add select all checkbox -->
+      <div class="select-all-container" v-if="products.length > 0">
+        <input 
+          type="checkbox" 
+          id="selectAll" 
+          class="select-all-checkbox" 
+          :checked="allSelected"
+          @change="toggleSelectAll"
+        />
+        <div for="selectAll" class="select-all-label">Chọn tất cả</div>
+      </div>
     </div>
+    
     <div v-if="products.length === 0" class="empty-cart">
       <p>Giỏ hàng của bạn đang trống hãy <span class="shop-link" @click="$router.push('/')">mua sắm</span> đi nào.</p>
     </div>
+    
     <ProductCard
       v-for="product in products"
       :key="product._id"
       :product="product"
+      :isSelected="selectedItems.includes(product.cartItemId || product._id)"
       @update-quantity="updateProductQuantity"
       @remove="removeProduct"
+      @toggle-selection="toggleProductSelection"
     />
   </section>
+  <div class="cart-actions" v-if="selectedItems.length > 0">
+    <button class="remove-selected-btn" @click="removeSelectedItems">
+      <i class="fa-solid fa-trash"></i> Xóa đã chọn ({{ selectedItems.length }})
+    </button>
+  </div>
 </template>
 
 <script>
@@ -35,14 +56,64 @@ export default {
       default: 0
     }
   },
+  data() {
+    return {
+      selectedItems: []
+    };
+  },
+  computed: {
+    allSelected() {
+      return this.products.length > 0 && this.selectedItems.length === this.products.length;
+    }
+  },
   methods: {
     updateProductQuantity(productId, quantity) {
       this.$emit('update-quantity', productId, quantity);
     },
     removeProduct(productId) {
       this.$emit('remove-item', productId);
+      // Remove from selected items if it was selected
+      this.selectedItems = this.selectedItems.filter(id => id !== productId);
+    },
+    toggleProductSelection(productId) {
+      if (this.selectedItems.includes(productId)) {
+        this.selectedItems = this.selectedItems.filter(id => id !== productId);
+      } else {
+        this.selectedItems.push(productId);
+      }
+      this.$emit('selection-changed', this.selectedItems);
+    },
+    toggleSelectAll() {
+      if (this.allSelected) {
+        // Deselect all
+        this.selectedItems = [];
+      } else {
+        // Select all
+        this.selectedItems = this.products.map(product => product.cartItemId || product._id);
+      }
+      this.$emit('selection-changed', this.selectedItems);
+    },
+    removeSelectedItems() {
+      if (this.selectedItems.length === 0) return;
+      
+      // Confirm before deleting multiple items
+      if (confirm(`Bạn có chắc muốn xóa ${this.selectedItems.length} sản phẩm đã chọn khỏi giỏ hàng?`)) {
+        this.$emit('remove-selected', this.selectedItems);
+      }
     }
   },
+  watch: {
+    // Reset selected items when products change
+    products: {
+      handler(newProducts) {
+        // Keep only selected items that are still in the cart
+        const validIds = newProducts.map(product => product.cartItemId || product._id);
+        this.selectedItems = this.selectedItems.filter(id => validIds.includes(id));
+        this.$emit('selection-changed', this.selectedItems);
+      },
+      deep: true
+    }
+  }
 };
 </script>
 
@@ -82,6 +153,9 @@ export default {
   font-size: inherit;
   font-weight: inherit;
   transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .select-all:hover {
@@ -139,5 +213,47 @@ export default {
 
 .shop-link:hover::after {
   width: 100%;
+}
+
+.select-all-checkbox {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  cursor: pointer;
+  accent-color: #724e4e;
+}
+
+.select-all-label {
+  color: #724e4e;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+.cart-actions {
+  display: flex;
+  margin-top: 10px;
+}
+
+.remove-selected-btn {
+  background-color: #f8d7da;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.remove-selected-btn:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+.select-all-container{
+  display: flex;
+  /* margin-bottom: 10px; */
 }
 </style>

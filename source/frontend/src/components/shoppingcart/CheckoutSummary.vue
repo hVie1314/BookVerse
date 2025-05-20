@@ -2,7 +2,13 @@
   <aside class="checkout-summary">
     <div class="summary-content">
       <div class="summary-details">
-        <!-- Cấu trúc đơn giản hơn, dễ căn chỉnh -->
+        <!-- Thêm thông tin về sản phẩm đã chọn -->
+        <div class="summary-item selected-items-info">
+          <span class="summary-label">Đã chọn:</span>
+          <span class="summary-value">{{ selectedCount }}/{{ totalCount }} sản phẩm</span>
+        </div>
+        
+        <!-- Existing summary items -->
         <div class="summary-item">
           <span class="summary-label">Tổng tiền hàng: </span>
           <span class="summary-value">{{ formatPrice(totalPrice) }}</span>
@@ -17,7 +23,11 @@
           <p class="total-value">{{ formatPrice(totalPrice + shippingFee) }}</p>
         </div>
       </div>
-      <button class="checkout-button" @click="checkout">ĐẶT HÀNG</button>
+      
+      <!-- Button shows count of selected items -->
+      <button class="checkout-button" @click="checkout" :disabled="selectedCount === 0">
+        ĐẶT HÀNG ({{ selectedCount }})
+      </button>
     </div>
   </aside>
 </template>
@@ -27,6 +37,14 @@ export default {
   name: "CheckoutSummary",
   props: {
     totalPrice: {
+      type: Number,
+      default: 0
+    },
+    selectedCount: {
+      type: Number,
+      default: 0
+    },
+    totalCount: {
       type: Number,
       default: 0
     }
@@ -225,5 +243,16 @@ export default {
     margin-top: 15px; /* Giảm margin */
     padding: 15px; /* Giảm padding */
   }
+}
+
+.selected-items-info {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* Disable button when no items selected */
+.checkout-button:disabled {
+  background-color: #a89393;
+  cursor: not-allowed;
 }
 </style>

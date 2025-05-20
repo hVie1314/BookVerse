@@ -1,33 +1,37 @@
 <template>
-    <div class="page-container">
-      <Nav />
-      <main class="shopping-cart">
-        <div class="shopping-cart-container">
-          <CartHeader />
-          <section class="cart-content" v-if="!loading">
-            <ProductList
-              :products="cartItems" 
-              :itemCount="cartItems.length"
-              @update-quantity="updateQuantity"
-              @remove-item="removeItem"
+  <div class="page-container">
+    <Nav />
+    <main class="shopping-cart">
+      <div class="shopping-cart-container">
+        <CartHeader />
+        <section class="cart-content" v-if="!loading">
+          <ProductList
+            :products="cartItems" 
+            :itemCount="cartItems.length"
+            @update-quantity="updateQuantity"
+            @remove-item="removeItem"
+            @remove-selected="removeSelectedItems"
+            @selection-changed="updateSelectedItems"
+          />
+          <div class="checkout-summary-container">
+            <CheckoutSummary
+              :totalPrice="calculatedSelectedTotal" 
+              :selectedCount="selectedItems.length"
+              :totalCount="cartItems.length"
+              @checkout="proceedToCheckout" 
             />
-            <div class="checkout-summary-container">
-              <CheckoutSummary
-                :totalPrice="calculatedTotalPrice" 
-                @checkout="proceedToCheckout" 
-              />
-            </div>
-          </section>
-          <div v-else class="loading-container">
-            <p>Đang tải giỏ hàng...</p>
           </div>
+        </section>
+        <div v-else class="loading-container">
+          <p>Đang tải giỏ hàng...</p>
         </div>
-      </main>
-      <footer-form />
-    </div>
+      </div>
+    </main>
+    <footer-form />
+  </div>
 </template>
     
-  <script>
+<script>
   import Nav from "../navbar/Nav.vue";
   import CartHeader from "./CartHeader.vue";
   import ProductList from "./ProductList.vue";
@@ -52,7 +56,8 @@
         cartItems: [],
         totalPrice: 0,
         loading: true,
-        error: null
+        error: null,
+        selectedItems: [],
       };
     },
     mounted() {
@@ -66,6 +71,23 @@
           const price = item.book?.price || item.price || 0;
           return total + (price * item.quantity);
         }, 0);
+      },
+      calculatedSelectedTotal() {
+        // Only calculate total for selected items
+        return this.cartItems.reduce((total, item) => {
+          const itemId = item.cartItemId || item._id;
+          if (this.selectedItems.includes(itemId)) {
+            const price = item.book?.price || item.price || 0;
+            return total + (price * item.quantity);
+          }
+          return total;
+        }, 0);
+      },
+      selectedProducts() {
+        // Return only the selected cart items
+        return this.cartItems.filter(item => 
+          this.selectedItems.includes(item.cartItemId || item._id)
+        );
       }
     },
     created() {
@@ -78,6 +100,9 @@
       eventBus.off('cart-updated', this.fetchCartData);
     },
     methods: {
+      updateSelectedItems(selectedIds) {
+        this.selectedItems = selectedIds;
+      },
       async fetchCartData() {
         try {
             this.loading = true;
@@ -213,17 +238,27 @@
 
       async createOrderWithPayment() {
         try {
+          if (this.selectedItems.length === 0) {
+            eventBus.emit('show-alert', {
+              show: true,
+              type: 'error',
+              title: 'Không có sản phẩm được chọn',
+              message: 'Vui lòng chọn ít nhất một sản phẩm để đặt hàng',
+              autoClose: true
+            });
+            return;
+          }
           // Hiển thị trạng thái loading
           this.loading = true;
           
           // 1. Tạo đơn hàng trước
           const orderData = {
             userId: AuthenticationService.getCurrentUser().id,
-            items: this.cartItems.map(item => ({
+            items: this.selectedProducts.map(item => ({
               bookId: item._id,
               quantity: item.quantity
             })),
-            totalAmount: this.totalPrice,
+            totalAmount: this.calculatedSelectedTotal,
             paymentMethod: 'MOMO'
           };
           
@@ -320,18 +355,28 @@
 
       async createOrderWithoutPayment() {
         try {
+          if (this.selectedItems.length === 0) {
+            eventBus.emit('show-alert', {
+              show: true,
+              type: 'error',
+              title: 'Không có sản phẩm được chọn',
+              message: 'Vui lòng chọn ít nhất một sản phẩm để đặt hàng',
+              autoClose: true
+            });
+            return;
+          }
           // Hiển thị trạng thái loading
           this.loading = true;
           
           // Tạo dữ liệu đơn hàng
           const orderData = {
             userId: AuthenticationService.getCurrentUser().id,
-            items: this.cartItems.map(item => ({
-              bookId: item._id, // Thay đổi productId thành bookId
+            items: this.selectedProducts.map(item => ({
+              bookId: item._id,
               quantity: item.quantity
             })),
-            totalAmount: this.totalPrice,
-            paymentMethod: 'COD' // Thay đổi thành paymentMethod với giá trị phù hợp
+            totalAmount: this.calculatedSelectedTotal,
+            paymentMethod: 'COD'
           };
           
           console.log('Đang tạo đơn hàng chưa thanh toán với dữ liệu:', orderData);
@@ -425,6 +470,17 @@
           });
           return;
         }
+
+        if (this.selectedItems.length === 0) {
+          eventBus.emit('show-alert', {
+            show: true,
+            type: 'error',
+            title: 'Không có sản phẩm được chọn',
+            message: 'Vui lòng chọn ít nhất một sản phẩm để đặt hàng',
+            autoClose: true
+          });
+          return;
+        }
         
         // Kiểm tra đăng nhập
         const user = AuthenticationService.getCurrentUser();
@@ -496,6 +552,57 @@
         if (summaryContainer && summaryContainer.parentNode) {
           summaryContainer.parentNode.insertBefore(ghostElement, summaryContainer);
           observer.observe(ghostElement);
+        }
+      },
+
+      async removeSelectedItems(selectedIds) {
+        try {
+          this.loading = true;
+          
+          const user = AuthenticationService.getCurrentUser();
+          
+          if (user && user.id) {
+            // Remove each selected item from user cart
+            for (const productId of selectedIds) {
+              await CartService.removeFromUserCart(user.id, productId);
+            }
+          } else {
+            const guestCartId = localStorage.getItem('guestCartId');
+            if (guestCartId) {
+              // Remove each selected item from guest cart
+              for (const productId of selectedIds) {
+                await CartService.removeFromGuestCart(guestCartId, productId);
+              }
+            }
+          }
+          
+          // Clear selected items
+          this.selectedItems = [];
+          
+          // Reload cart data
+          await this.fetchCartData();
+          
+          // Show success message
+          eventBus.emit('show-alert', {
+            show: true,
+            type: 'success',
+            title: 'Thành công',
+            message: 'Đã xóa các sản phẩm đã chọn khỏi giỏ hàng',
+            autoClose: true
+          });
+        } catch (error) {
+          console.error('Lỗi khi xóa sản phẩm đã chọn:', error);
+          
+          // Show error message
+          eventBus.emit('show-alert', {
+            show: true,
+            type: 'error',
+            title: 'Lỗi',
+            message: 'Không thể xóa sản phẩm. Vui lòng thử lại sau.',
+            autoClose: true
+          });
+        } finally {
+          this.loading = false;
         }
       }
     },

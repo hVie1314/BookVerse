@@ -1,6 +1,14 @@
 <!-- filepath: d:\Prj\BookVerse\source\frontend\src\components\shoppingcart\ProductCard.vue -->
 <template>
   <article class="product-card">
+    <div class="checkbox-container">
+      <input 
+        type="checkbox" 
+        class="product-checkbox" 
+        :checked="isSelected" 
+        @change="toggleSelection"
+      />
+    </div>
     <div class="product-info">
       <!-- Thêm router-link cho hình ảnh sản phẩm -->
       <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-image-link">
@@ -43,8 +51,15 @@ export default {
       type: Object,
       required: true,
     },
+    isSelected: {
+      type: Boolean,
+      default: false
+    }
   },
   methods: {
+    toggleSelection() {
+      this.$emit('toggle-selection', this.product.cartItemId || this.product._id);
+    },
     getImageSrc() {
       try {
         // Đầu tiên kiểm tra trong product.book nếu có
@@ -187,7 +202,7 @@ export default {
 }
 
 .product-info {
-  width: 60%; /* Tương ứng với product-label */
+  width: 55%; /* Tương ứng với product-label */
   display: flex;
   align-items: center;
 }
@@ -348,5 +363,19 @@ export default {
 
 .product-image {
   transition: transform 0.2s ease;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+}
+
+.product-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #724e4e;
 }
 </style>
