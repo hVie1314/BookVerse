@@ -8,5 +8,6 @@ router.post('/create', authMiddleware.verifyToken, authMiddleware.verifyUser, or
 router.get('/history/:userId', authMiddleware.verifyToken, authMiddleware.verifyUserOrAdmin, orderController.getAllOrdersOfUser);
 router.get('/details/:id', authMiddleware.verifyToken, authMiddleware.verifyUserOrAdmin, orderController.getOrderById);
 router.post('/cancel/:id', authMiddleware.verifyToken, authMiddleware.verifyUserOrAdmin, orderController.cancelOrder);     
+router.get('/statistics', authMiddleware.verifyToken, authMiddleware.verifyAdmin, orderController.getOrderStatistics);
 
 module.exports = router;
