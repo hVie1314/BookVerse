@@ -38,6 +38,7 @@ import AuthenticationService from '@/services/AuthenticationService';
 import eventBus from './eventBus';
 import Alert from '@/components/Alert.vue';
 import CartService from '@/services/CartService';
+import WishlistService from '@/services/WishlistService';
 export default {
   name: 'App',
   components: {
@@ -123,6 +124,38 @@ export default {
     if (!AuthenticationService.isLoggedIn()) {
         CartService.ensureGuestCartId();
     }
+
+    if (AuthenticationService.isLoggedIn()) {
+        WishlistService.getWishlist()
+            .then(response => {
+                eventBus.emit('wishlist-loaded', response.data);
+            })
+            .catch(error => console.error('Lỗi tải danh sách yêu thích:', error));
+    }
+    
+    // Khi người dùng đăng nhập, tải lại danh sách yêu thích
+    eventBus.on('user-logged-in', () => {
+      const userId = AuthenticationService.getCurrentUser()?.id;
+      if (userId) {
+          WishlistService.getUserWishlist(userId)
+              .then(response => {
+                  console.log('Đã tải danh sách yêu thích sau đăng nhập');
+                  
+                  // Tạo sự kiện với dữ liệu đã chuẩn hóa
+                  if (response.data && response.data.data && response.data.data.wishlist) {
+                      eventBus.emit('wishlist-loaded', {
+                          success: true,
+                          data: {
+                              products: response.data.data.wishlist.products || []
+                          }
+                      });
+                  } else {
+                      eventBus.emit('wishlist-loaded', response.data);
+                  }
+              })
+              .catch(error => console.error('Lỗi tải danh sách yêu thích sau đăng nhập:', error));
+      }
+  });
   },
   beforeUnmount() {
     // Clean up listener
