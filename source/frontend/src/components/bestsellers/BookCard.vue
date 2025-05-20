@@ -87,6 +87,14 @@ export default {
         isWishlistPage: {
             type: Boolean,
             default: false
+        },
+        product: {
+            type: Object,
+            required: false,
+        },
+        isSelected: {
+            type: Boolean,
+            default: false
         }
     },
     data() {

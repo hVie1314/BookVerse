@@ -84,11 +84,16 @@
         }, 0);
       },
       selectedProducts() {
-        // Return only the selected cart items
-        return this.cartItems.filter(item => 
-          this.selectedItems.includes(item.cartItemId || item._id)
-        );
-      }
+        // Return only the selected cart items with more detailed logging
+        const selected = this.cartItems.filter(item => {
+          const itemId = item.cartItemId || item._id;
+          const isSelected = this.selectedItems.includes(itemId);
+          console.log(`Item ${itemId}: ${isSelected ? 'selected' : 'not selected'}`);
+          return isSelected;
+        });
+        console.log('Total selected products:', selected.length);
+        return selected;
+      } 
     },
     created() {
       this.fetchCartData();
@@ -254,10 +259,17 @@
           // 1. Tạo đơn hàng trước
           const orderData = {
             userId: AuthenticationService.getCurrentUser().id,
-            items: this.selectedProducts.map(item => ({
-              bookId: item._id,
-              quantity: item.quantity
-            })),
+            items: this.selectedProducts.map(item => {
+              // Kiểm tra cấu trúc của từng sản phẩm
+              console.log('Chi tiết sản phẩm trong đơn hàng:', item);
+              
+              // Thử lấy ID từ nhiều nguồn có thể có
+              const bookId = item._id || item.bookId || (item.book && item.book._id);
+              return {
+                bookId: bookId,
+                quantity: item.quantity
+              };
+            }),
             totalAmount: this.calculatedSelectedTotal,
             paymentMethod: 'MOMO'
           };
@@ -317,7 +329,24 @@
           }
         } catch (error) {
           console.error('Lỗi khi tạo đơn hàng và thanh toán:', error);
-          
+          if (error.response && error.response.data && error.response.data.errorCode === 'MISSING_ADDRESS') {
+            eventBus.emit('show-alert', {
+              show: true,
+              type: 'warning',
+              title: 'Thiếu thông tin địa chỉ',
+              message: 'Vui lòng cập nhật địa chỉ giao hàng trong hồ sơ của bạn trước khi đặt hàng.',
+              autoClose: true,
+              duration: 5000,
+              textAlign: 'center'
+            });
+            
+            // Chuyển hướng đến trang cập nhật hồ sơ sau 2 giây
+            setTimeout(() => {
+              this.$router.push('/profile');
+            }, 2000);
+            
+            return;
+          }
           // Fallback cho môi trường development
           if (process.env.NODE_ENV === 'development') {
             console.log('Đang sử dụng fallback trong môi trường development');
@@ -411,7 +440,24 @@
           }
         } catch (error) {
         console.error('Lỗi khi tạo đơn hàng:', error);
-        
+        if (error.response && error.response.data && error.response.data.errorCode === 'MISSING_ADDRESS') {
+          eventBus.emit('show-alert', {
+            show: true,
+            type: 'warning',
+            title: 'Thiếu thông tin địa chỉ',
+            message: 'Vui lòng cập nhật địa chỉ giao hàng trong hồ sơ của bạn trước khi đặt hàng.',
+            autoClose: true,
+            duration: 5000,
+            textAlign: 'center'
+          });
+          
+          // Chuyển hướng đến trang cập nhật hồ sơ sau 2 giây
+          setTimeout(() => {
+            this.$router.push('/profile');
+          }, 2000);
+          
+          return;
+        }
         // Fallback: Mô phỏng thành công nếu API không hoạt động trong môi trường development
         if (process.env.NODE_ENV === 'development') {
           console.log('Sử dụng fallback để mô phỏng tạo đơn hàng thành công');

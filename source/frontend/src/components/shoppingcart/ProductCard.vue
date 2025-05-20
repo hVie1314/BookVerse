@@ -51,6 +51,10 @@ export default {
       type: Object,
       required: true,
     },
+    isSelected: {
+      type: Boolean,
+      default: false
+    }
   },
   methods: {
     toggleSelection() {
