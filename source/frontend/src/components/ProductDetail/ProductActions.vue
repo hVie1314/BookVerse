@@ -33,6 +33,7 @@
     import WishlistService from '@/services/WishlistService';
     import eventBus from '@/eventBus.js';
     import AuthenticationService from '@/services/AuthenticationService';
+    import { useToast } from 'vue-toastification';
     export default {
     name: 'ProductActions',
     props: {
@@ -44,6 +45,11 @@
             type: Number,
             default: 1
         }
+    },
+    setup() {
+        // Khởi tạo toast trong setup hook
+        const toast = useToast();
+        return { toast }; // Trả về toast cho template sử dụng
     },
     data() {
         return {
@@ -109,26 +115,13 @@
                     bookId: this.book._id || this.book.id, 
                     quantity: this.quantity 
                 });
-                
-                eventBus.emit('show-alert', {
-                    show: true,
-                    type: 'success',
-                    title: 'Thành công',
-                    message: 'Đã thêm sản phẩm vào giỏ hàng',
-                    autoClose: true,
-                    duration: 3000
-                });
+
                 
                 eventBus.emit('cart-updated');
             } catch (error) {
                 console.error('Lỗi khi thêm vào giỏ hàng:', error);
-                eventBus.emit('show-alert', {
-                    show: true,
-                    type: 'error',
-                    title: 'Lỗi',
-                    message: 'Không thể thêm sản phẩm vào giỏ hàng',
-                    autoClose: true,
-                    duration: 3000
+                this.toast.error("Không thể thêm sản phẩm vào giỏ hàng", {
+                    timeout: 2500
                 });
             }
         },
@@ -143,13 +136,8 @@
                     await WishlistService.removeFromWishlist(bookId);
                     this.isInWishlist = false;
                     
-                    eventBus.emit('show-alert', {
-                        show: true,
-                        type: 'success',
-                        title: 'Thành công',
-                        message: 'Đã xóa sản phẩm khỏi danh sách yêu thích',
-                        autoClose: true,
-                        duration: 3000
+                    this.toast.success("Đã xóa sản phẩm khỏi danh sách yêu thích", {
+                        timeout: 2500
                     });
                 } else {
                     // Nếu chưa có, thêm vào wishlist
@@ -162,14 +150,6 @@
                     
                     this.isInWishlist = true;
                     
-                    eventBus.emit('show-alert', {
-                        show: true,
-                        type: 'success',
-                        title: 'Thành công',
-                        message: 'Đã thêm sản phẩm vào danh sách yêu thích',
-                        autoClose: true,
-                        duration: 3000
-                    });
                 }
                 
                 // Phát sự kiện để cập nhật UI wishlist
@@ -188,13 +168,8 @@
                     }
                 }
                 
-                eventBus.emit('show-alert', {
-                    show: true,
-                    type: 'error',
-                    title: 'Lỗi',
-                    message: errorMessage,
-                    autoClose: true,
-                    duration: 3000
+                this.toast.error(errorMessage, {
+                    timeout: 2500
                 });
             }
         },
