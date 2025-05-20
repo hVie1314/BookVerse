@@ -8,7 +8,7 @@ router.get('/customer', authMiddleware.verifyToken, authMiddleware.verifyStaffOr
 router.get('/staff', authMiddleware.verifyToken, authMiddleware.verifyAdmin, userController.getAllStaff);
 router.get('/admin', authMiddleware.verifyToken, authMiddleware.verifyAdmin, userController.getAllAdmin);
 router.get('/:userId', authMiddleware.verifyToken, authMiddleware.verifyUserOrAdmin, userController.getUserById);
-router.put('/:userId', authMiddleware.verifyToken, authMiddleware.verifyUser, userController.updateUserInfo);
+router.put('/:userId', authMiddleware.verifyToken, authMiddleware.verifyUserOrAdmin, userController.updateUserInfo);
 router.delete('/:userId', authMiddleware.verifyToken, authMiddleware.verifyAdmin, userController.deleteUser);
 router.post('/set-role', authMiddleware.verifyToken, authMiddleware.verifyAdmin, userController.setRole);
 
