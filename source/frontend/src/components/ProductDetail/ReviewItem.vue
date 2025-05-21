@@ -341,6 +341,14 @@ export default {
           try {
             // Gọi API để xóa đánh giá
             await ReviewService.deleteReview(this.review.id);
+
+            this.showConfirmDelete = false;
+            
+            try {
+              eventBus.emit('close-alert');
+            } catch (error) {
+              console.error('Error when emitting close-alert:', error);
+            }
             
             // Thông báo thành công
             this.toast.success("Đã xóa đánh giá thành công!", {
@@ -348,10 +356,13 @@ export default {
             });
             
             // Phát sự kiện để cập nhật danh sách đánh giá
-            this.$emit('review-deleted');
+            this.$emit('review-deleted', this.review.id);
             
           } catch (error) {
             console.error('Lỗi khi xóa đánh giá:', error);
+            
+            // Đóng hộp thoại xác nhận ngay cả khi có lỗi (thêm dòng này)
+            eventBus.emit('close-alert');
             
             // Thông báo lỗi
             this.toast.error("Không thể xóa đánh giá. Vui lòng thử lại sau.", {

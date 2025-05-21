@@ -106,6 +106,7 @@
       <UserMenu v-if="showUserMenu" @close="showUserMenu = false" />
     </div>
   </header>
+  <i ref="cartIcon" class="fa-regular fa-cart-shopping fa-xl"></i>
 </template>
 
 <script>
@@ -139,10 +140,13 @@ export default {
     // Kiểm tra trạng thái đăng nhập khi component được tạo
     this.isLoggedIn = AuthenticationService.isLoggedIn();
     eventBus.on('logout', this.handleLogoutEvent);
+    this.cartAnimationHandler = () => this.animateCartIcon();
+    eventBus.on('cart-animation', this.cartAnimationHandler);
   },
   beforeUnmount() {
     // Loại bỏ listener khi component được hủy để tránh memory leak
     eventBus.off('cart-updated', this.getCartItemCount);
+    eventBus.off('cart-animation', this.cartAnimationHandler);
   },
   mounted() {
     // Kiểm tra trạng thái đăng nhập khi component được gắn vào DOM
@@ -157,6 +161,27 @@ export default {
     this.checkLoginStatus();
   },
   methods: {
+   animateCartIcon() {
+      // Lấy ra icon giỏ hàng trong thanh navigation
+      const cartIcon = document.querySelector('.icon-container .fa-cart-shopping');
+      if (!cartIcon) {
+        console.log('Không tìm thấy icon giỏ hàng!');
+        return;
+      }
+      
+      // Xóa class fa-shake nếu đã có
+      cartIcon.classList.remove('fa-shake');
+      
+      // Thêm class fa-shake để tạo hiệu ứng rung
+      setTimeout(() => {
+        cartIcon.classList.add('fa-shake');
+        
+        // Đặt timer để xóa hiệu ứng sau 2 giây
+        setTimeout(() => {
+          cartIcon.classList.remove('fa-shake');
+        }, 2000);
+      }, 10);
+    },
       navigateToWishlist() {
           this.$router.push({
               name: 'category',
