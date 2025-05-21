@@ -137,22 +137,83 @@
                 this.isInWishlist = false;
             }
         },
+
+        animateToCart() {
+            // Tìm hình ảnh sách từ trang chi tiết
+            const bookImage = document.querySelector('.product-detail-image');
+            // Tìm icon giỏ hàng trong navbar
+            const cartIcon = document.querySelector('.fa-cart-shopping');
+            
+            if (!bookImage || !cartIcon) return;
+            
+            // Lấy vị trí và kích thước của hình ảnh sách
+            const bookRect = bookImage.getBoundingClientRect();
+            // Lấy vị trí của icon giỏ hàng
+            const cartRect = cartIcon.getBoundingClientRect();
+            
+            // Tạo một phần tử ảnh mới để làm hiệu ứng
+            const flyingImage = document.createElement('img');
+            flyingImage.src = bookImage.src;
+            flyingImage.style.position = 'fixed';
+            flyingImage.style.zIndex = '9999';
+            flyingImage.style.left = `${bookRect.left}px`;
+            flyingImage.style.top = `${bookRect.top}px`;
+            flyingImage.style.width = '100px';
+            flyingImage.style.height = '130px';
+            flyingImage.style.objectFit = 'contain';
+            flyingImage.style.borderRadius = '8px';
+            flyingImage.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+            flyingImage.style.transition = 'all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            flyingImage.style.opacity = '1';
+            
+            // Thêm phần tử vào body
+            document.body.appendChild(flyingImage);
+            
+            // Thiết lập timeout để kích hoạt hiệu ứng bay sau khi phần tử được thêm vào DOM
+            setTimeout(() => {
+                flyingImage.style.left = `${cartRect.left}px`;
+                flyingImage.style.top = `${cartRect.top}px`;
+                flyingImage.style.width = '20px';
+                flyingImage.style.height = '20px';
+                flyingImage.style.opacity = '0.5';
+                flyingImage.style.transform = 'rotate(360deg)';
+            }, 50);
+            
+            // Xóa phần tử sau khi hoàn thành hiệu ứng
+            setTimeout(() => {
+                if (document.body.contains(flyingImage)) {
+                    document.body.removeChild(flyingImage);
+                }
+            }, 1050);
+        },
         async addToCart() {
             try {
+                // Hiệu ứng bay vào giỏ hàng
+                this.animateToCart();
+                
+                // Bọc emit trong try-catch riêng để có thể xử lý lỗi nhưng vẫn tiếp tục
+                try {
+                eventBus.emit('cart-animation');
+                } catch (err) {
+                console.error('Lỗi khi emit cart-animation:', err);
+                // Vẫn tiếp tục thực hiện chức năng thêm vào giỏ hàng
+                }
+                
+                // Thêm vào giỏ hàng thông qua API
                 await CartService.addToCart({ 
                     bookId: this.book._id || this.book.id, 
                     quantity: this.quantity 
                 });
-
                 
+                // Cập nhật số lượng giỏ hàng
                 eventBus.emit('cart-updated');
             } catch (error) {
                 console.error('Lỗi khi thêm vào giỏ hàng:', error);
                 this.toast.error("Không thể thêm sản phẩm vào giỏ hàng", {
-                    timeout: 2500
+                timeout: 2500
                 });
             }
-        },
+            },
         
         async addToFavorites() {
             try {

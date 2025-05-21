@@ -156,6 +156,9 @@ export default {
               .catch(error => console.error('Lỗi tải danh sách yêu thích sau đăng nhập:', error));
       }
   });
+    eventBus.on('close-alert', () => {
+      this.globalAlert.show = false; // Sửa từ this.alert thành this.globalAlert
+    });
   },
   beforeUnmount() {
     // Clean up listener
@@ -163,6 +166,7 @@ export default {
     eventBus.off('show-alert');
     eventBus.off('confirm');
     eventBus.off('cancel');
+    eventBus.off('close-alert', this.closeAlertHandler);
   },
   methods: {
     handleLogoutEvent() {
