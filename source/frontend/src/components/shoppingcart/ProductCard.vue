@@ -1,17 +1,22 @@
 <!-- filepath: d:\Prj\BookVerse\source\frontend\src\components\shoppingcart\ProductCard.vue -->
 <template>
-  <article class="product-card">
+  <article 
+    class="product-card" 
+    :class="{ 'product-card-selected': isSelected }"
+    @click="cardClick"
+  >
     <div class="checkbox-container">
       <input 
         type="checkbox" 
         class="product-checkbox" 
         :checked="isSelected" 
         @change="toggleSelection"
+        @click.stop
       />
     </div>
-    <div class="product-info">
+    <div class="product-info" @click.stop>
       <!-- Thêm router-link cho hình ảnh sản phẩm -->
-      <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-image-link">
+      <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-image-link" @click.stop>
         <img 
           :src="getImageSrc()" 
           :alt="product.title || product.name" 
@@ -22,20 +27,20 @@
       
       <div class="product-details">
         <!-- Thêm router-link cho thông tin sản phẩm -->
-        <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-text-link">
+        <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-text-link" @click.stop>
           <h3 class="product-name">{{ getTitle() }}</h3>
           <p class="product-description">{{ getAuthor() }}</p>
         </router-link>
       </div>
     </div>
-    <div class="quantity-controls">
-      <button class="quantity-btn" @click="decreaseQuantity">-</button>
+    <div class="quantity-controls" @click.stop>
+      <button class="quantity-btn" @click.stop="decreaseQuantity">-</button>
       <span class="quantity-value">{{ product.quantity }}</span>
-      <button class="quantity-btn" @click="increaseQuantity">+</button>
+      <button class="quantity-btn" @click.stop="increaseQuantity">+</button>
     </div>
-    <div class="price-info">
+    <div class="price-info" @click.stop>
       <span class="price-value">{{ formatPrice(getPrice()) }}</span>
-      <button class="remove-button" @click="removeItem">
+      <button class="remove-button" @click.stop="removeItem">
         <i class="fa-solid fa-trash"></i>
       </button>
     </div>
@@ -57,6 +62,11 @@ export default {
     }
   },
   methods: {
+    cardClick() {
+      // Đơn giản là toggle trạng thái chọn khi click vào card
+      this.toggleSelection();
+    },
+
     toggleSelection() {
       this.$emit('toggle-selection', this.product.cartItemId || this.product._id);
     },
@@ -363,5 +373,30 @@ export default {
 
 .product-image {
   transition: transform 0.2s ease;
+}
+
+.product-card-selected {
+  background-color: rgba(77, 41, 0, 0.05); /* Màu nền nhẹ khi được chọn */
+  border-left: 4px solid #4D2900; /* Viền bên trái */
+  transform: translateY(-2px); /* Hiệu ứng nhấc lên nhẹ */
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1); /* Đổ bóng đậm hơn */
+}
+
+/* Chỉnh sửa style cho checkbox để nổi bật hơn */
+.checkbox-container {
+  margin-right: 15px;
+}
+
+.product-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #4D2900; /* Màu khi checkbox được chọn */
+}
+
+/* Đảm bảo cursor là pointer để người dùng biết có thể click */
+.product-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 </style>
