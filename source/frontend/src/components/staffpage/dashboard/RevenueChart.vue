@@ -11,7 +11,7 @@ export default {
   name: 'RevenueChart',
   components: {
     StatisticsDashboard
-  }
+  },
 };
 </script>
 
