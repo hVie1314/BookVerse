@@ -10,6 +10,7 @@
             :price="formatPrice(book.price)"
             :originalPrice="book.originalPrice ? formatPrice(book.originalPrice) : ''"
             :sold="book.sold || 0"
+            :rating="book.rating || 0"
             cartText="Thêm vào giỏ"
             :isWishlistPage="isWishlistPage"
             @remove-from-wishlist="handleRemoveFromWishlist"

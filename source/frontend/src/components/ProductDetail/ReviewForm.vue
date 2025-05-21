@@ -42,6 +42,7 @@
   
   <script>
   import ReviewService from '@/services/ReviewService';
+  import {useToast} from 'vue-toastification';
   
   export default {
     name: 'ReviewForm',
@@ -59,6 +60,10 @@
         loading: false,
         error: null
       };
+    },
+    setup() {
+      const toast = useToast();
+      return { toast };
     },
     computed: {
       isValidForm() {
@@ -85,6 +90,10 @@
           };
           
           await ReviewService.addReview(this.bookId, reviewData);
+          this.toast.success("Đã gửi đánh giá thành công!", {
+            timeout: 3000,
+            closeOnClick: true
+          });
           this.$emit('submit-success');
         } catch (error) {
           console.error('Lỗi khi gửi đánh giá:', error);
