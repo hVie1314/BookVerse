@@ -19,8 +19,8 @@
             />
             <h2 class="stat-title">KHÁCH HÀNG</h2>
             <p class="stat-description">
-              Đã có hơn 7000 lượt mua từ những khách hàng yêu sách. Từ học sinh,
-              sinh viên đến người đi làm - ai cũng tìm thấy điều mình cần.
+              Đã có {{ totalSuccessfulOrders || 0 }} lượt mua thành công từ những khách hàng yêu sách. 
+              Từ học sinh, sinh viên đến người đi làm - ai cũng tìm thấy điều mình cần.
             </p>
           </div>
         </div>
@@ -53,6 +53,7 @@
 <script>
 import BookService from '@/services/BookService';
 import UserService from '@/services/UserService';
+import OrderService from '@/services/OrderService';
 
 export default {
   name: 'StoreOverview',
@@ -61,14 +62,31 @@ export default {
       totalBooks: 0,
       loading: true,
       totalCustomers: 0,
-      customersLoading: true
+      customersLoading: true,
+      totalSuccessfulOrders: 0,
     };
   },
   created() {
     this.fetchTotalBooks();
     this.fetchTotalCustomers();
+    this.fetchSuccessfulOrders();
   },
   methods: {
+    async fetchSuccessfulOrders() {
+      try {
+        const response = await OrderService.getOrderStatistics();
+        if (response.data && response.data.success) {
+          this.totalSuccessfulOrders = response.data.data.successfulOrders || 0;
+          console.log('Số đơn hàng thành công:', this.totalSuccessfulOrders);
+        } else {
+          console.warn('Không nhận được dữ liệu thống kê đơn hàng hợp lệ');
+          this.totalSuccessfulOrders = 0;
+        }
+      } catch (error) {
+        console.error('Lỗi khi lấy thống kê đơn hàng:', error);
+        this.totalSuccessfulOrders = 0;
+      }
+    },
     async fetchTotalBooks() {
       try {
         this.loading = true;
@@ -160,6 +178,8 @@ export default {
 
 .customer-card {
   background-color: #fff;
+  /* border: 2px solid #4D2900; */
+  /* box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25); */
 }
 
 .product-card {
@@ -244,6 +264,10 @@ export default {
   .stat-description {
     font-size: 18px;
   }
+}
+
+.product-card {
+  /* border: 2px solid #4D2900; Đổi độ dày viền từ 1px thành 2px */
 }
 </style>
   

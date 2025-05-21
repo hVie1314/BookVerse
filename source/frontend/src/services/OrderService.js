@@ -158,5 +158,22 @@ export default {
         });
     },
 
-    
+    getOrderStatistics() {
+        const token = localStorage.getItem('token');
+        const headers = {};
+        
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        return Api().get('order/statistics', { headers })
+            .then(response => {
+                console.log('Thống kê đơn hàng:', response.data);
+                return response;
+            })
+            .catch(error => {
+                console.error('Lỗi khi lấy thống kê đơn hàng:', error.response?.data || error.message);
+                throw error;
+            });
+    },
 }
