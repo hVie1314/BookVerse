@@ -149,6 +149,9 @@
                     
                     return processedItem;
                   });
+
+                 // Thay thế đoạn code sort hiện tại với đoạn code sau
+                  cartData.items = cartData.items.reverse();
                   
                   console.log("Processed cart items:", cartData.items);
                 }
@@ -158,15 +161,23 @@
             } else {
                 // Lấy giỏ hàng khách (logic không thay đổi)
                 const guestCartId = localStorage.getItem('guestCartId');
-                if (guestCartId) {
-                    const guestCartData = await CartService.getGuestCartItemsWithDetails(guestCartId);
-                    this.cartItems = guestCartData.items || [];
-                    this.totalPrice = guestCartData.totalPrice || 0;
-                } else {
-                    this.cartItems = [];
-                    this.totalPrice = 0;
-                }
+            if (guestCartId) {
+              const guestCartData = await CartService.getGuestCartItemsWithDetails(guestCartId);
+              
+              // Sắp xếp tương tự như trên
+              
+              if (guestCartData.items && guestCartData.items.length > 0) {
+                // Đơn giản chỉ đảo ngược mảng để sản phẩm mới nhất lên đầu
+                guestCartData.items = guestCartData.items.reverse();
+              }
+              
+              this.cartItems = guestCartData.items || [];
+              this.totalPrice = guestCartData.totalPrice || 0;
+            } else {
+              this.cartItems = [];
+              this.totalPrice = 0;
             }
+          }
         } catch (error) {
           if (error.response && error.response.status === 401) {
           // Xóa thông tin đăng nhập nếu bị lỗi 401
@@ -305,9 +316,7 @@
               
               console.log('URL thanh toán MoMo:', paymentUrl);
               
-              // 4. Xóa giỏ hàng sau khi tạo đơn hàng thành công
-              const userId = AuthenticationService.getCurrentUser().id;
-              await CartService.clearUserCart(userId);
+              
               eventBus.emit('cart-updated');
               
               // 5. Lưu orderId để kiểm tra sau này
@@ -417,8 +426,6 @@
           // Kiểm tra response
           if (response.data && (response.data.success || response.data._id)) {
             // Xóa giỏ hàng
-            const userId = AuthenticationService.getCurrentUser().id;
-            await CartService.clearUserCart(userId);
             
             // Phát sự kiện để cập nhật số lượng giỏ hàng
             eventBus.emit('cart-updated');

@@ -170,9 +170,11 @@
                                 order.items = enrichedItems;
                             }
                         }
+
+                        const reversedOrders = [...orders].reverse();
                         
-                        this.orders = orders;
-                        this.filteredOrders = [...this.orders];
+                        this.orders = reversedOrders;
+                        this.filteredOrders = [...reversedOrders];
                     } else {
                         console.error('Lỗi khi lấy đơn hàng:', response.data);
                         this.orders = [];

@@ -53,7 +53,7 @@
     },
     data() {
         return {
-            isInWishlist: false
+            isInWishlist: false,
         }
     },
     mounted() {
@@ -80,28 +80,56 @@
                     const userId = AuthenticationService.getCurrentUser().id;
                     const bookId = this.book._id || this.book.id;
                     
+                    // Log IDs để debug
+                    console.log('Kiểm tra sách ID:', bookId);
+                    
                     const response = await WishlistService.getUserWishlist(userId);
                     
-                    if (response.data && response.data.success && response.data.data) {
-                        const wishlistItems = response.data.data.products || [];
-                        
-                        // Cải thiện cách so sánh
-                        this.isInWishlist = wishlistItems.some(item => {
-                            if (typeof item.productId === 'string') {
-                                return item.productId === bookId;
-                            }
-                            
-                            if (item.productId && item.productId._id) {
-                                return item.productId._id === bookId;
-                            }
-                            
-                            if (item.productId && item.productId.toString) {
-                                return item.productId.toString() === bookId.toString();
-                            }
-                            
-                            return false;
-                        });
+                    // Log response để debug
+                    console.log('WishlistService response:', response.data);
+                    
+                    // Xử lý linh hoạt hơn với nhiều cấu trúc dữ liệu có thể có
+                    let wishlistItems = [];
+                    if (response.data && response.data.success) {
+                        if (response.data.data && response.data.data.products) {
+                            wishlistItems = response.data.data.products;
+                        } else if (response.data.data && response.data.data.wishlist && response.data.data.wishlist.products) {
+                            wishlistItems = response.data.data.wishlist.products;
+                        } else if (response.data.products) {
+                            wishlistItems = response.data.products;
+                        } else if (response.data.wishlist && response.data.wishlist.products) {
+                            wishlistItems = response.data.wishlist.products;
+                        }
                     }
+                    
+                    console.log('Danh sách sản phẩm yêu thích:', wishlistItems);
+                    
+                    // Chuẩn hóa bookId để so sánh
+                    const normalizedBookId = String(bookId).trim();
+                    
+                    // Tìm kiếm sản phẩm trong danh sách yêu thích
+                    this.isInWishlist = wishlistItems.some(item => {
+                        // Xử lý nhiều trường hợp productId khác nhau
+                        let itemId = '';
+                        
+                        if (typeof item.productId === 'string') {
+                            itemId = item.productId;
+                        } else if (item.productId && item.productId._id) {
+                            itemId = item.productId._id;
+                        } else if (item.productId && typeof item.productId.toString === 'function') {
+                            itemId = item.productId.toString();
+                        } else if (item._id) {
+                            itemId = item._id;
+                        } else if (item.id) {
+                            itemId = item.id;
+                        }
+                        
+                        // Chuẩn hóa itemId và so sánh
+                        return String(itemId).trim() === normalizedBookId;
+                    });
+                    
+                    console.log('Kết quả kiểm tra trong wishlist:', this.isInWishlist);
+                    
                 } catch (error) {
                     console.error('Lỗi khi kiểm tra trạng thái wishlist:', error);
                 }
@@ -140,17 +168,21 @@
                         timeout: 2500
                     });
                 } else {
-                    // Nếu chưa có, thêm vào wishlist
-                    const response = await WishlistService.addToWishlist(bookId);
-                    
-                    // Kiểm tra phản hồi từ API 
-                    if (!response.data || !response.data.success) {
-                        throw new Error('Thêm vào yêu thích không thành công');
-                    }
-                    
-                    this.isInWishlist = true;
-                    
+                // Nếu chưa có, thêm vào wishlist
+                const response = await WishlistService.addToWishlist(bookId);
+                
+                // Kiểm tra phản hồi từ API 
+                if (!response.data || !response.data.success) {
+                    throw new Error('Thêm vào yêu thích không thành công');
                 }
+                
+                this.isInWishlist = true;
+                
+                // Thêm dòng này để hiển thị thông báo
+                this.toast.success("Đã thêm sản phẩm vào danh sách yêu thích", {
+                    timeout: 2500
+                });
+            }
                 
                 // Phát sự kiện để cập nhật UI wishlist
                 eventBus.emit('wishlist-updated');

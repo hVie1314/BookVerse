@@ -1,5 +1,6 @@
 <template>
     <article class="book-card" @click="navigateToDetail">
+        <!-- Nút xóa sách khỏi danh sách yêu thích (hiện có) -->
         <button 
             v-if="isWishlistPage" 
             class="remove-wishlist-button" 
@@ -8,6 +9,16 @@
         >
             <i class="fa-solid fa-trash"></i>
         </button>
+
+        <!-- Thêm biểu tượng trái tim ở góc trái trên cùng -->
+        <button 
+            class="wishlist-button" 
+            @click.stop="addToFavorites"
+            title="Thêm vào danh sách yêu thích"
+        >
+            <i :class="['fa-heart', isInWishlist ? 'fa-solid liked' : 'fa-regular']"></i>
+        </button>
+
         <img 
             :src="image" 
             :alt="title" 
@@ -21,13 +32,18 @@
             </div>
             <h3 class="book-title">{{ title }}</h3>
             <p class="book-author">{{ author }}</p>
-            <div class="footer-card-container">
-                <button class="cart-button" @click.stop="addToCart">{{ cartText }}</button>
-                <i 
-                    :class="['fa-heart fa-2xl', isInWishlist ? 'fa-solid liked' : 'fa-regular']" 
-                    @click.stop="addToFavorites"
-                ></i>
+            
+            <!-- Thêm hiển thị sao đánh giá - chỉ hiển thị khi rating > 0 -->
+            <div v-if="rating > 0" class="book-rating">
+                <div class="star-rating">
+                    <i v-for="index in 5" :key="index" 
+                       :class="[index <= Math.floor(rating) ? 'fas fa-star filled-star' : 'far fa-star empty-star']">
+                    </i>
+                </div>
+                <span class="rating-count">({{ rating }})</span>
             </div>
+            
+            <!-- Phần hiển thị số lượng đã bán -->
             <div class="book-sold">
                 <div class="sold-title">
                     Đã bán 
@@ -95,7 +111,11 @@ export default {
         isSelected: {
             type: Boolean,
             default: false
-        }
+        },
+        rating: {
+            type: Number,
+            default: 0
+        },
     },
     data() {
         return {
@@ -468,6 +488,80 @@ export default {
     opacity: 1;
 }
 
+.wishlist-button {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 35px; /* Tăng từ 28px lên 35px */
+    height: 35px; /* Tăng từ 28px lên 35px */
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
 
+.wishlist-button:hover {
+    background-color: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.wishlist-button .fa-heart {
+    font-size: 18px; /* Tăng từ 14px lên 18px */
+    color: #4d2900;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.wishlist-button .fa-heart.liked {
+    color: #e74c3c;
+    opacity: 1;
+}
+
+.wishlist-button:hover .fa-heart {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Giữ lại CSS hiện có cho remove-wishlist-button */
+.remove-wishlist-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    /* CSS hiện có... */
+}
+
+.book-rating {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    margin-bottom: 3px;
+}
+
+.star-rating {
+    display: flex;
+    gap: 2px;
+}
+
+.filled-star {
+    color: #FFD700; /* Màu vàng */
+    font-size: 12px;
+}
+
+.empty-star {
+    color: #D3D3D3; /* Màu xám nhạt */
+    font-size: 12px;
+}
+
+.rating-count {
+    font-size: 12px;
+    color: #8b7b6a;
+    margin-left: 5px;
+}
 </style>
   

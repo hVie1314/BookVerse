@@ -131,6 +131,7 @@
 import AuthenticationService from '@/services/AuthenticationService';
 import ReviewService from '@/services/ReviewService';
 import eventBus from '@/eventBus.js';
+import { useToast } from 'vue-toastification';
 
 export default {
     name: 'ReviewItem',
@@ -152,6 +153,12 @@ export default {
           editContent: '',
           localReview: null // đánh giá hiện tại.
         };
+    },
+    setup() {
+      const toast = useToast();
+      return {
+        toast
+      };
     },
     created() {
       this.localReview = { 
@@ -247,22 +254,14 @@ export default {
               comment: this.editContent
             });
             
-            eventBus.emit('show-alert', {
-              show: true,
-              type: 'success',
-              title: 'Thành công',
-              message: 'Đã cập nhật đánh giá thành công',
-              autoClose: true
+            this.toast.success("Đã cập nhật đánh giá thành công!", {
+              timeout: 3000
             });
             
           } catch (error) {
             console.error('Lỗi khi cập nhật đánh giá:', error);
-            eventBus.emit('show-alert', {
-              show: true,
-              type: 'error',
-              title: 'Lỗi',
-              message: 'Không thể cập nhật đánh giá. Vui lòng thử lại sau.',
-              autoClose: true
+            this.toast.error("Không thể cập nhật đánh giá. Vui lòng thử lại sau.", {
+              timeout: 3000
             });
           }
         },
@@ -344,12 +343,8 @@ export default {
             await ReviewService.deleteReview(this.review.id);
             
             // Thông báo thành công
-            eventBus.emit('show-alert', {
-              show: true,
-              type: 'success',
-              title: 'Thành công',
-              message: 'Đã xóa đánh giá thành công',
-              autoClose: true
+            this.toast.success("Đã xóa đánh giá thành công!", {
+              timeout: 3000
             });
             
             // Phát sự kiện để cập nhật danh sách đánh giá
@@ -359,12 +354,8 @@ export default {
             console.error('Lỗi khi xóa đánh giá:', error);
             
             // Thông báo lỗi
-            eventBus.emit('show-alert', {
-              show: true,
-              type: 'error',
-              title: 'Lỗi',
-              message: 'Không thể xóa đánh giá. Vui lòng thử lại sau.',
-              autoClose: true
+            this.toast.error("Không thể xóa đánh giá. Vui lòng thử lại sau.", {
+              timeout: 3000
             });
           }
         }

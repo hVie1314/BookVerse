@@ -288,14 +288,12 @@ export default {
       },
       async getCartItemCount() {
         try {
-          let cartData;
-          if (this.isLoggedIn) {
-            const userData = AuthenticationService.getCurrentUser();
-            
-            if (userData) {
-              const response = await CartService.getUserCart(userData.id);
-              cartData = response.data;
-            }
+          let cartData = null;
+          
+          if (AuthenticationService.isLoggedIn()) {
+            const userId = AuthenticationService.getCurrentUser().id;
+            const response = await CartService.getUserCart(userId);
+            cartData = response.data;
           } else {
             const guestCartId = localStorage.getItem('guestCartId');
             if (guestCartId) {
@@ -306,15 +304,15 @@ export default {
           
           // Kiểm tra nhiều cấu trúc dữ liệu có thể có
           if (cartData && cartData.items && Array.isArray(cartData.items)) {
-            this.cartItemCount = cartData.items.reduce((total, item) => total + item.quantity, 0);
+            // Đếm số lượng sản phẩm riêng biệt, không phải tổng số lượng
+            this.cartItemCount = cartData.items.length;
           } else if (cartData && cartData.products && Array.isArray(cartData.products)) {
-            this.cartItemCount = cartData.products.reduce((total, item) => total + item.quantity, 0);
+            this.cartItemCount = cartData.products.length;
           } else if (cartData && cartData.cart && cartData.cart.items) {
-            this.cartItemCount = cartData.cart.items.reduce((total, item) => total + item.quantity, 0);
+            this.cartItemCount = cartData.cart.items.length;
           } else if (cartData && cartData.data && cartData.data.products && Array.isArray(cartData.data.products)) {
-          // Thêm điều kiện này để kiểm tra cấu trúc thực tế
-            this.cartItemCount = cartData.data.products.reduce((total, item) => total + item.quantity, 0);
-        }   else {
+            this.cartItemCount = cartData.data.products.length;
+          } else {
             this.cartItemCount = 0;
             console.log("No items in cart or invalid cart data structure:", cartData);
           }
