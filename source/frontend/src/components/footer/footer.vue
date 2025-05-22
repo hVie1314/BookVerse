@@ -11,20 +11,20 @@
                     <div class="footer-column-wrapper">
                       <FooterColumn title="Tài khoản">
                         <div>
-                          <span class="text-white">Đăng nhập/ Tạo mới tài khoản</span>
+                         <router-link to="/login" class="footer-link">Đăng nhập/ Tạo mới tài khoản</router-link>
                         </div>
                         <div>
-                          <span class="text-white">Thay đổi địa chỉ khách hàng</span>
+                          <router-link to="/profile" class="footer-link">Thay đổi địa chỉ khách hàng</router-link>
                         </div>
                         <div>
-                          <span class="text-white">Lịch sử mua hàng</span>
+                           <router-link to="/my-orders" class="footer-link">Lịch sử mua hàng</router-link>
                         </div>
                       </FooterColumn>
                     </div>
                     <div class="footer-column-wrapper">
                       <FooterColumn title="Dịch vụ">
                         <div>
-                          <span class="text-white">Mua bán trực tuyến</span>
+                          <router-link to="/category" class="footer-link">Mua bán trực tuyến</router-link>
                         </div>
                         <div>
                           <span class="text-white">Chính sách bảo mật thanh toán</span>
@@ -151,6 +151,12 @@
     /* margin-top: 71px; */
     /* margin-right: 187px; */
   }
+
+  .policy-text {
+    text-align: center;
+    color: white;
+    margin-top: 20px;
+  }
   
   .footer-contact-section {
     display: flex;
@@ -213,6 +219,52 @@
       width: 100%;
       margin-top: 40px;
     }
+  }
+
+  .footer-link {
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+  }
+
+  .footer-link:hover {
+    color: #f0f0f0;
+  }
+
+  .footer-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: white;
+    transition: width 0.3s ease;
+  }
+
+  .footer-link:hover::after {
+    width: 100%;
+  }
+
+  .footer-link-inline {
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+    cursor: pointer;
+  }
+
+  .footer-link-inline:hover {
+    color: #f0f0f0;
+    text-decoration: underline;
+  }
+
+  :deep(.text-white) {
+    padding: 5px 0;
+    transition: all 0.3s ease;
   }
   </style>
   

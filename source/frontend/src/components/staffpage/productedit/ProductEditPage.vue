@@ -238,7 +238,8 @@
         <!-- Sử dụng ReviewList từ ProductDetail -->
         <ReviewList 
           :bookId="book._id" 
-          class="edit-review-list" 
+          class="edit-review-list"
+          :hideHiddenReviews="true"  
         />
       </div>
     </template>

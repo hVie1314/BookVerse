@@ -1,7 +1,15 @@
 <template>
-  <article class="stats-card">
+  <article class="stats-card" :class="{'has-trend': trendValue}">
     <h3 class="card-title">{{ title }}</h3>
     <p class="card-value">{{ value }}</p>
+    
+    <!-- Hiển thị thông tin khách hàng mới (nếu có) -->
+    <div v-if="newCustomerStat && chartType === 'user'" class="new-customer-info">
+      <div class="new-stat-item">
+        <span class="stat-indicator" :style="{ backgroundColor: newCustomerStat.color }"></span>
+        <span><strong>{{ newCustomerStat.value }}</strong><span>{{ newCustomerStat.label }}</span></span>
+      </div>
+    </div>
     
     <!-- Trend icon ở góc phải trên cùng -->
     <div v-if="trendValue" class="trend-container">
@@ -20,8 +28,8 @@
       </div>
     </div>
     
-    <!-- Biểu đồ hình tròn CSS -->
-    <div v-if="chartType !== 'revenue'" class="chart-wrapper">
+    <!-- Biểu đồ hình tròn CSS (chỉ hiển thị cho stats) -->
+    <div v-if="chartType !== 'revenue' && stats && stats.length" class="chart-wrapper">
       <div class="pie-chart" :style="getPieChartStyle()">
         <!-- Thêm donut center -->
         <div class="donut-center"></div>
@@ -45,6 +53,10 @@ export default {
     stats: {
       type: Array,
       default: () => []
+    },
+    newCustomerStat: { // Thêm prop mới cho khách hàng mới
+      type: Object,
+      default: null
     },
     trendValue: {
       type: String,
@@ -242,5 +254,47 @@ export default {
   .trend-value {
     font-size: 20px;
   }
+}
+
+.new-customer-info {
+  position: absolute;
+  top: 20px;
+  right: 20px; /* Thay đổi từ left: 20px thành right: 20px */
+  background-color: rgba(255, 255, 255, 0.9); /* Làm đậm nền để dễ đọc hơn */
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 5;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4d2900;
+  border: 1px solid #eee;
+}
+
+.new-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Tăng khoảng cách giữa indicator và text */
+}
+
+.new-stat-item .stat-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%; /* Làm tròn indicator */
+}
+
+/* Đảm bảo trend-icon không xung đột với thông tin khách hàng mới */
+.trend-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+}
+
+/* Khi cả hai cùng xuất hiện (dành cho tương lai) */
+.stats-card.has-trend .new-customer-info {
+  right: 90px; /* Đẩy sang trái nếu có trend icon */
 }
 </style>

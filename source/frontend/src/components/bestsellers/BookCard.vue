@@ -45,12 +45,25 @@
             
             <!-- Phần hiển thị số lượng đã bán -->
             <div class="book-sold">
-                <div class="sold-title">
-                    Đã bán 
-                </div>
-                <div class="sold-text">
-                    {{ sold }}
-                </div>
+                <template v-if="showProgressBar">
+                    <!-- Hiển thị progress bar với số lượng đã bán bên trong -->
+                    <div class="progress-container">
+                        <div class="progress-info-container">
+                            <div class="progress-bar" :style="`width: ${calculateProgressWidth()}%`">
+                                <span class="sold-text">Đã bán {{ sold }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
+                    <!-- Hiển thị số lượng đã bán kiểu cũ -->
+                    <div class="sold-title">
+                        Đã bán 
+                    </div>
+                    <div class="sold-text">
+                        {{ sold }}
+                    </div>
+                </template>
             </div>
         </div>
     </article>
@@ -116,6 +129,10 @@ export default {
             type: Number,
             default: 0
         },
+        showProgressBar: {
+            type: Boolean,
+            default: false
+        }
     },
     data() {
         return {
@@ -136,6 +153,14 @@ export default {
         eventBus.off('wishlist-loaded', this.checkWishlistStatus);
     },
     methods: {
+        calculateProgressWidth() {
+            // Tính toán dựa trên số lượng đã bán với tối đa 1000 cuốn
+            const soldCount = parseInt(this.sold) || 0;
+            // Tính phần trăm: số lượng đã bán / 1000 * 100
+            // Đảm bảo tối thiểu 10% để hiển thị được text "Đã bán X"
+            const percentage = Math.max(10, Math.min((soldCount / 1000) * 100, 100));
+            return percentage;
+        },
         async checkWishlistStatus() {
             try {
                 const isInWishlist = await WishlistService.checkProductInWishlist(this.bookId);
@@ -562,6 +587,50 @@ export default {
     font-size: 12px;
     color: #8b7b6a;
     margin-left: 5px;
+}
+
+/* Thêm styles mới cho progress bar */
+.progress-container {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.progress-info-container {
+    width: 100%;
+    border-radius: 15px;
+    background-color: #f2f2f2;
+    height: 20px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    border-radius: 15px;
+    background-color: rgba(76, 41, 0, 0.8);
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 90px;
+    transition: width 0.5s ease;
+}
+
+.progress-bar .sold-text {
+    color: #ffffff;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    padding: 0 10px;
+    white-space: nowrap;
+}
+
+.book-card:hover .progress-bar {
+    background-color: rgba(117, 94, 71, 0.9);
+}
+
+/* Điều chỉnh style cho trường hợp có progress bar */
+.book-sold {
+    width: 100%;
+    margin-top: 10px;
 }
 </style>
   

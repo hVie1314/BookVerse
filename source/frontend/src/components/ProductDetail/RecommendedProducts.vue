@@ -218,6 +218,7 @@ extractFirstImageUrl(imageString) {
         width: 100%;
         display: flex;
         flex-direction: column;
+        margin-bottom: 20px;
         align-items: center;
         position: relative; /* Thêm position relative để định vị các nút control */
         padding: 0 20px; /* Tạo không gian cho các nút control nằm một nửa bên ngoài */

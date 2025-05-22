@@ -11,7 +11,7 @@
                 {{ error }}
             </section>
             
-            <section v-else class="product-section">
+            <section v-else-if="book && book.title" class="product-section">
                 <div class="product-detail-container">
                     <figure class="product-image-detail-column">
                         <div class="image-container">
@@ -58,6 +58,9 @@
                 <h2 class="recommended-title">Gợi ý sản phẩm</h2>
                 
                 <RecommendedProducts :currentBookId="book._id || book.id" />
+            </section>
+            <section v-else class="error-message">
+                Không tìm thấy thông tin sách
             </section>
         </main>
         
@@ -159,7 +162,9 @@
                         } else {
                             this.error = 'Không tìm thấy thông tin sách';
                         }
-                        
+                        console.log('Dữ liệu sách nhận được:', this.book);
+                        console.log('Tiêu đề:', this.book.title);
+                        console.log('Tác giả:', this.book.author);
                         // Process images after setting book data
                         this.processBookImages();
                     } else {
@@ -347,7 +352,8 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        min-height: 100vh; /* Đảm bảo trang chiếm toàn bộ chiều cao màn hình */
+        justify-content: space-between; /* Thêm dòng này */
+        min-height: 100vh;
         width: 100%;
         background-color: rgb(244, 235, 225);
     }

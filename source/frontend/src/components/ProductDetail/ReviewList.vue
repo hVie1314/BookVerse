@@ -1,29 +1,30 @@
 <template>
-    <section class="reviews-list">
-      <div v-if="loading" class="loading-message">
-        <p>Đang tải đánh giá...</p>
-      </div>
-      
-      <div v-else-if="error" class="error-message">
-        <p>{{ error }}</p>
-      </div>
-      
-      <div v-else-if="formattedReviews.length === 0" class="no-reviews-message">
-        <p>Chưa có đánh giá nào cho sản phẩm này</p>
-      </div>
-      
-      <template v-else>
-        <ReviewItem
-          v-for="(review, index) in formattedReviews"
-          :key="`review-${index}`"
-          :review="review"
-          @review-updated="updateReview"
-          @visibility-changed="updateReviewVisibility"
-          @review-deleted="fetchReviews"
-        />
-      </template>
-    </section>
-  </template>
+  <section class="reviews-list">
+    <div v-if="loading" class="loading-message">
+      <p>Đang tải đánh giá...</p>
+    </div>
+    
+    <div v-else-if="error" class="error-message">
+      <p>{{ error }}</p>
+    </div>
+    
+    <!-- Sửa đổi này: Kiểm tra filteredReviews thay vì formattedReviews -->
+    <div v-else-if="filteredReviews.length === 0" class="no-reviews-message">
+      <p>Chưa có đánh giá nào cho sản phẩm này</p>
+    </div>
+    
+    <template v-else>
+      <ReviewItem
+        v-for="(review, index) in filteredReviews"
+        :key="`review-${index}`"
+        :review="review"
+        @review-updated="updateReview"
+        @visibility-changed="updateReviewVisibility"
+        @review-deleted="fetchReviews"
+      />
+    </template>
+  </section>
+</template>
   
   <script>
   import ReviewItem from './ReviewItem.vue';
@@ -43,6 +44,10 @@
       bookId: {
         type: String,
         default: ''
+      },
+      hideHiddenReviews: {
+        type: Boolean,
+        default: false
       }
     },
     data() {
@@ -55,34 +60,40 @@
     },
     computed: {
       formattedReviews() {
-        // Lấy thông tin người dùng hiện tại
+        // Phần code hiện tại giữ nguyên
         const currentUser = this.currentUser || {};
         const isStaff = currentUser.role === 'staff' || currentUser.role === 'admin';
         
-        // Nếu có reviews từ props, sử dụng chúng
         if (this.reviews && this.reviews.length > 0) {
-          // Nếu là staff, hiển thị tất cả reviews (kể cả đã ẩn)
-          // Nếu không phải staff, chỉ hiển thị reviews chưa bị ẩn
           const filteredReviews = isStaff 
             ? this.reviews 
             : this.reviews.filter(review => !review.hidden);
           
           return filteredReviews.map(review => ({
             ...review,
-            // Thêm indicator cho đánh giá đã ẩn
             hidden: review.hidden || false,
-            isHidden: review.hidden || false // thêm trường này để dễ nhận biết
+            isHidden: review.hidden || false
           }));
         }
         
-        // Tương tự cho fetchedReviews
         const filteredReviews = isStaff 
           ? this.fetchedReviews 
           : this.fetchedReviews.filter(review => !review.hidden);
         
         return filteredReviews;
-      }
       },
+
+      filteredReviews() {
+      // Nếu prop hideHiddenReviews = true, không hiển thị đánh giá đã ẩn
+        if (this.hideHiddenReviews) {
+          return this.formattedReviews.filter(review => !review.hidden);
+        }
+        
+        // Nếu không có yêu cầu đặc biệt, trả về formattedReviews như trước
+        return this.formattedReviews;
+      }
+    },
+
     created() {
       // Nếu không có reviews từ props và có bookId, thì fetch từ API
       if (AuthenticationService.isLoggedIn()) {
