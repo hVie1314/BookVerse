@@ -210,7 +210,7 @@
             } catch (error) {
                 console.error('Lỗi khi thêm vào giỏ hàng:', error);
                 this.toast.error("Không thể thêm sản phẩm vào giỏ hàng", {
-                timeout: 2500
+                timeout: 1500
                 });
             }
             },
@@ -255,7 +255,7 @@
                 }
                 
                 this.toast.error(errorMessage, {
-                    timeout: 2500
+                    timeout: 1500
                 });
             }
         },

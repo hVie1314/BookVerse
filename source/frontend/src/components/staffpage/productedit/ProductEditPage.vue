@@ -621,7 +621,7 @@ export default {
 
         // Thông báo thành công
         this.toast.success("Cập nhật sách thành công!", {
-          timeout: 2000,
+          timeout: 1500,
           closeOnClick: true,
         });
 
@@ -630,7 +630,7 @@ export default {
       } catch (error) {
         console.error("Lỗi khi cập nhật sách:", error);
         this.toast.error("Cập nhật sách thất bại!", {
-          timeout: 2000,
+          timeout: 1500,
           closeOnClick: true,
         });
       } finally {

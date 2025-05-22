@@ -343,71 +343,45 @@
                         autoClose: false
                     });
                     
-                    // 1. Tạo đơn hàng mới dựa trên đơn hàng cũ
-                    const order = this.orders.find(o => o._id === orderId);
-                    if (!order) {
-                        throw new Error('Không tìm thấy thông tin đơn hàng');
-                    }
+                    // Sử dụng trực tiếp orderId hiện tại thay vì tạo đơn hàng mới
+                    console.log('Tạo yêu cầu thanh toán cho đơn hàng hiện tại:', orderId);
                     
-                    const orderData = {
-                        userId: AuthenticationService.getCurrentUser().id,
-                        items: order.items.map(item => ({
-                            bookId: item.bookId,
-                            quantity: item.quantity
-                        })),
-                        totalAmount: order.totalAmount,
-                        paymentMethod: 'MOMO',
-                        isReorder: true, // Đánh dấu đây là đơn hàng tạo lại
-                        originalOrderId: orderId // Tham chiếu đến đơn hàng gốc
-                    };
+                    // Tạo yêu cầu thanh toán MoMo trực tiếp với đơn hàng hiện tại
+                    const paymentResponse = await OrderService.createMomoPayment(orderId, amount);
+                    console.log('Kết quả tạo thanh toán MoMo:', paymentResponse.data);
                     
-                    console.log('Tạo đơn hàng mới từ đơn hàng cũ:', orderData);
-                    
-                    // 2. Gọi API tạo đơn hàng mới
-                    const orderResponse = await OrderService.createOrder(orderData);
-                    console.log('Kết quả tạo đơn hàng:', orderResponse.data);
-                    
-                    if (orderResponse.data && (orderResponse.data.success || orderResponse.data._id)) {
-                        // 3. Lấy ID đơn hàng mới
-                        const newOrderId = orderResponse.data._id || 
-                            orderResponse.data.data?._id || 
-                            orderResponse.data.data?.order?._id;
-                            
-                        console.log('OrderId mới:', newOrderId);
+                    if (paymentResponse.data && 
+                        (paymentResponse.data.payUrl || 
+                        paymentResponse.data.url || 
+                        (paymentResponse.data.data && paymentResponse.data.data.url))
+                    ) {
+                        // Lấy URL thanh toán từ bất kỳ trường nào có giá trị
+                        const paymentUrl = paymentResponse.data.payUrl || 
+                                        paymentResponse.data.url || 
+                                        (paymentResponse.data.data && paymentResponse.data.data.url);
                         
-                        // 4. Tạo yêu cầu thanh toán với đơn hàng mới
-                        const paymentResponse = await OrderService.createMomoPayment(newOrderId, amount);
+                        console.log('URL thanh toán MoMo:', paymentUrl);
                         
-                        if (paymentResponse.data && 
-                            (paymentResponse.data.payUrl || 
-                            paymentResponse.data.url || 
-                            (paymentResponse.data.data && paymentResponse.data.data.url))
-                        ) {
-                            // Lấy URL thanh toán từ bất kỳ trường nào có giá trị
-                            const paymentUrl = paymentResponse.data.payUrl || 
-                                            paymentResponse.data.url || 
-                                            (paymentResponse.data.data && paymentResponse.data.data.url);
-                            
-                            console.log('URL thanh toán MoMo:', paymentUrl);
-                            
-                            // Lưu orderId mới để kiểm tra sau này
-                            localStorage.setItem('pendingOrderId', newOrderId);
-                            
-                            // Chuyển hướng đến trang thanh toán MoMo THỰC SỰ như trong ShoppingCart
-                            window.location.href = paymentUrl;
-                            return;
+                        // Lưu orderId hiện tại để kiểm tra sau này
+                        localStorage.setItem('pendingOrderId', orderId);
+                        
+                        // Cập nhật trạng thái thanh toán của đơn hàng hiện tại (nếu cần)
+                        const orderIndex = this.orders.findIndex(order => order._id === orderId);
+                        if (orderIndex !== -1) {
+                            this.orders[orderIndex] = {
+                                ...this.orders[orderIndex],
+                                paymentMethod: 'MOMO'
+                            };
                         }
+                        
+                        // Chuyển hướng đến trang thanh toán MoMo
+                        window.location.href = paymentUrl;
+                        return;
                     }
                     
-                    throw new Error('Không thể tạo đơn hàng hoặc thanh toán');
+                    throw new Error('Không thể tạo yêu cầu thanh toán');
                 } catch (error) {
                     console.error('Lỗi khi thanh toán:', error);
-                    
-                    // Nếu đang trong môi trường development, sử dụng fallback
-                    if (process.env.NODE_ENV === 'development') {
-                        console.log('Đang sử dụng fallback trong môi trường development');
-                        // Phần fallback giữ nguyên...
-                    }
                     
                     eventBus.emit('show-alert', {
                         show: true,
@@ -513,7 +487,7 @@
                 // Hiển thị thông báo thành công
                 this.toast.success('Đơn hàng đã được hủy thành công!', {
                     position: 'top-right',
-                    timeout: 5000,
+                    timeout: 1500,
                     closeOnClick: true,
                     pauseOnHover: true,
                     draggable: true,

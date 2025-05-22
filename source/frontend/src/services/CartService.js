@@ -26,7 +26,7 @@ export default {
             
             // Hiển thị toast thành công
             toast.success("Đã thêm sản phẩm vào giỏ hàng", {
-                timeout: 2500
+                timeout: 1500
             });
             
             return true;
@@ -35,7 +35,7 @@ export default {
             
             // Hiển thị toast lỗi
             toast.error("Không thể thêm sản phẩm vào giỏ hàng", {
-                timeout: 2500
+                timeout: 1500
             });
             
             throw error;
@@ -250,7 +250,7 @@ export default {
         console.log(`Xóa sản phẩm ${productId} khỏi giỏ hàng người dùng ${userId}`);
         const token = localStorage.getItem('token');
         toast.success("Đã xóa sản phẩm khỏi giỏ hàng", {
-            timeout: 2500
+            timeout: 1500
         });
         return Api().put('cart/', 
             { userId, productId, quantity: 0 }, 

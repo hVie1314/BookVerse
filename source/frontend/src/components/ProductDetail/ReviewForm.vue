@@ -91,7 +91,7 @@
           
           await ReviewService.addReview(this.bookId, reviewData);
           this.toast.success("Đã gửi đánh giá thành công!", {
-            timeout: 3000,
+            timeout: 1500,
             closeOnClick: true
           });
           this.$emit('submit-success');
