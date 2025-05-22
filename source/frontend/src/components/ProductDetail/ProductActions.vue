@@ -26,6 +26,10 @@
         <span class="favorite-text">{{ isInWishlist ? 'Đã yêu thích' : 'Yêu thích' }}</span>
     </button>
     </div>
+    <div v-if="isLoading" class="loading-overlay">
+    <div class="loading-spinner"></div>
+        <p>Đang xử lý...</p>
+    </div>
 </template>
   
 <script>
@@ -33,6 +37,7 @@
     import WishlistService from '@/services/WishlistService';
     import eventBus from '@/eventBus.js';
     import AuthenticationService from '@/services/AuthenticationService';
+    import OrderService from '@/services/OrderService';
     import { useToast } from 'vue-toastification';
     export default {
     name: 'ProductActions',
@@ -54,6 +59,7 @@
     data() {
         return {
             isInWishlist: false,
+            isLoading: false
         }
     },
     mounted() {
@@ -259,14 +265,244 @@
                 });
             }
         },
-        buyNow() {
-            // Đầu tiên thêm sản phẩm vào giỏ hàng
-            this.addToCart();
-            
-            // Sau đó chuyển hướng đến trang giỏ hàng
-            setTimeout(() => {
-                this.$router.push('/cart');
-            }, 300);
+        async buyNow() {
+            try {
+                // Kiểm tra đăng nhập
+                const user = AuthenticationService.getCurrentUser();
+                if (!user || !user.id) {
+                eventBus.emit('show-alert', {
+                    show: true,
+                    type: 'error',
+                    title: 'Thông báo',
+                    message: 'Vui lòng đăng nhập để mua sách',
+                    autoClose: true
+                });
+                return;
+                }
+                
+                // Hiển thị hộp thoại xác nhận với văn bản rõ ràng hơn
+                const handleConfirm = () => {
+                this.createOrderWithPayment();
+                // Hủy đăng ký sau khi xử lý
+                eventBus.off('confirm', handleConfirm);
+                };
+                
+                const handleCancel = () => {
+                this.createOrderWithoutPayment();
+                // Hủy đăng ký sau khi xử lý
+                eventBus.off('cancel', handleCancel);
+                };
+                
+                // Đăng ký lắng nghe sự kiện
+                eventBus.on('confirm', handleConfirm);
+                eventBus.on('cancel', handleCancel);
+                
+                // Hiển thị alert
+                eventBus.emit('show-alert', {
+                show: true,
+                type: 'success',
+                title: 'Xác nhận đặt hàng',
+                message: 'Bạn có muốn thanh toán đơn hàng luôn không?',
+                autoClose: false,
+                showChoices: true,
+                confirmText: 'Thanh toán ngay',
+                cancelText: 'Thanh toán sau'
+                });
+            } catch (error) {
+                console.error('Lỗi khi xử lý mua sách ngay:', error);
+                this.toast.error('Có lỗi xảy ra, vui lòng thử lại sau');
+            }
+        },
+
+        async createOrderWithPayment() {
+            try {
+                // Hiển thị trạng thái loading
+                this.isLoading = true;
+                eventBus.emit('show-alert', {
+                show: true,
+                type: 'warning',
+                title: 'Đang xử lý',
+                message: 'Đang tạo đơn hàng...',
+                autoClose: false
+                });
+                
+                // 1. Tạo đơn hàng trước
+                const bookId = this.book._id || this.book.id;
+                const totalAmount = this.book.price * this.quantity;
+                
+                const orderData = {
+                userId: AuthenticationService.getCurrentUser().id,
+                items: [{
+                    bookId: bookId,
+                    quantity: this.quantity
+                }],
+                totalAmount: totalAmount,
+                paymentMethod: 'MOMO'
+                };
+                
+                console.log('Đang tạo đơn hàng với MoMo:', orderData);
+                
+                // Tạo đơn hàng
+                const orderResponse = await OrderService.createOrder(orderData);
+                console.log('Kết quả tạo đơn hàng:', orderResponse.data);
+                
+                if (orderResponse.data && (orderResponse.data.success || orderResponse.data._id)) {
+                // 2. Lấy orderId từ response
+                const orderId = orderResponse.data._id || 
+                    orderResponse.data.data?._id || 
+                    orderResponse.data.data?.order?._id || 
+                    (orderResponse.data.order && orderResponse.data.order._id);
+
+                console.log('OrderId trích xuất:', orderId);
+                
+                // 3. Tạo yêu cầu thanh toán MoMo
+                const paymentResponse = await OrderService.createMomoPayment(orderId, totalAmount);
+                console.log('Kết quả tạo thanh toán MoMo:', paymentResponse.data);
+                
+                if (paymentResponse.data && 
+                        (paymentResponse.data.payUrl || 
+                        paymentResponse.data.url || 
+                        (paymentResponse.data.data && paymentResponse.data.data.url))
+                    ) {
+                    // Lấy URL thanh toán từ bất kỳ trường nào có giá trị
+                    const paymentUrl = paymentResponse.data.payUrl || 
+                                    paymentResponse.data.url || 
+                                    (paymentResponse.data.data && paymentResponse.data.data.url);
+                    
+                    console.log('URL thanh toán MoMo:', paymentUrl);
+                    
+                    // 4. Lưu orderId để kiểm tra sau này
+                    localStorage.setItem('pendingOrderId', orderId);
+                    
+                    // 5. Chuyển hướng người dùng đến trang thanh toán MoMo
+                    window.location.href = paymentUrl;
+                    return;
+                }
+                
+                // Nếu không có payUrl, hiển thị thông báo lỗi
+                eventBus.emit('show-alert', {
+                    show: true,
+                    type: 'error',
+                    title: 'Lỗi thanh toán',
+                    message: 'Không thể tạo liên kết thanh toán MoMo. Vui lòng thử lại sau.',
+                    autoClose: true
+                });
+                }
+            } catch (error) {
+                console.error('Lỗi khi tạo đơn hàng và thanh toán:', error);
+                if (error.response && error.response.data && error.response.data.errorCode === 'MISSING_ADDRESS') {
+                eventBus.emit('show-alert', {
+                    show: true,
+                    type: 'warning',
+                    title: 'Thiếu thông tin địa chỉ',
+                    message: 'Vui lòng cập nhật địa chỉ giao hàng trong hồ sơ trước khi đặt hàng.',
+                    autoClose: true,
+                    duration: 5000,
+                    textAlign: 'center'
+                });
+                
+                // Chuyển hướng đến trang cập nhật hồ sơ sau 2 giây
+                setTimeout(() => {
+                    this.$router.push('/profile');
+                }, 2000);
+                
+                return;
+                }
+                
+                // Hiển thị thông báo lỗi
+                eventBus.emit('show-alert', {
+                show: true,
+                type: 'error',
+                title: 'Đặt hàng thất bại',
+                message: 'Có lỗi xảy ra khi tạo đơn hàng, vui lòng thử lại sau',
+                autoClose: true
+                });
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        async createOrderWithoutPayment() {
+            try {
+                // Hiển thị trạng thái loading
+                this.isLoading = true;
+                eventBus.emit('show-alert', {
+                show: true,
+                type: 'warning',
+                title: 'Đang xử lý',
+                message: 'Đang tạo đơn hàng...',
+                autoClose: false
+                });
+                
+                // Tạo dữ liệu đơn hàng
+                const bookId = this.book._id || this.book.id;
+                const totalAmount = this.book.price * this.quantity;
+                
+                const orderData = {
+                userId: AuthenticationService.getCurrentUser().id,
+                items: [{
+                    bookId: bookId,
+                    quantity: this.quantity
+                }],
+                totalAmount: totalAmount,
+                paymentMethod: 'COD'
+                };
+                
+                console.log('Đang tạo đơn hàng chưa thanh toán với dữ liệu:', orderData);
+                
+                // Tạo đơn hàng
+                const response = await OrderService.createOrder(orderData);
+                console.log('Kết quả tạo đơn hàng:', response.data);
+                
+                // Kiểm tra response
+                if (response.data && (response.data.success || response.data._id)) {
+                // Hiển thị thông báo thành công
+                eventBus.emit('show-alert', {
+                    show: true,
+                    type: 'success',
+                    title: 'Đặt hàng thành công',
+                    message: 'Bạn đã đặt hàng thành công, vui lòng qua đơn hàng của tôi để xác nhận thanh toán.',
+                    autoClose: true,
+                    duration: 5000
+                });
+                
+                // Chuyển hướng đến trang đơn hàng
+                setTimeout(() => {
+                    this.$router.push('/my-orders');
+                }, 2000);
+                }
+            } catch (error) {
+                console.error('Lỗi khi tạo đơn hàng:', error);
+                if (error.response && error.response.data && error.response.data.errorCode === 'MISSING_ADDRESS') {
+                eventBus.emit('show-alert', {
+                    show: true,
+                    type: 'warning',
+                    title: 'Thiếu thông tin địa chỉ',
+                    message: 'Vui lòng cập nhật địa chỉ giao hàng trong hồ sơ trước khi đặt hàng.',
+                    autoClose: true,
+                    duration: 5000,
+                    textAlign: 'center'
+                });
+                
+                // Chuyển hướng đến trang cập nhật hồ sơ sau 2 giây
+                setTimeout(() => {
+                    this.$router.push('/profile');
+                }, 2000);
+                
+                return;
+                }
+                
+                // Hiển thị thông báo lỗi
+                eventBus.emit('show-alert', {
+                show: true,
+                type: 'error',
+                title: 'Đặt hàng thất bại',
+                message: 'Có lỗi xảy ra khi tạo đơn hàng, vui lòng thử lại sau',
+                autoClose: true
+                });
+            } finally {
+                this.isLoading = false;
+            }
         }
     }
 }
@@ -442,5 +678,33 @@
         align-self: stretch;
         margin: auto 0;
         width: 67px;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid rgba(76, 41, 0, 0.2);
+        border-top-color: #4c2900;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 15px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
 </style>
