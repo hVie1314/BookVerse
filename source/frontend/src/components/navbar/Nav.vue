@@ -91,7 +91,9 @@
         <div class="icon-container" @click="navigateToCart">
           <!-- <div class="cart-icon-container"> -->
           <i class="fa-regular fa-cart-shopping fa-xl"></i>
-          <div v-if="cartItemCount > 0" class="cart-badge">{{ cartItemCount }}</div>
+          <div class="cart-badge" v-if="cartItemCount > 0">
+            {{ displayCartCount }}
+          </div>
           <!-- </div> -->
           <span class="icon-label label-cart">Giỏ hàng</span>
         </div>
@@ -159,6 +161,12 @@ export default {
   activated() {
     // Kiểm tra trạng thái đăng nhập khi component được kích hoạt (nếu sử dụng keep-alive)
     this.checkLoginStatus();
+  },
+  computed: {
+    // Tính toán trạng thái hiển thị của menu người dùng
+    displayCartCount() {
+      return this.cartItemCount > 99 ? '99+' : this.cartItemCount;
+    }
   },
   methods: {
    animateCartIcon() {

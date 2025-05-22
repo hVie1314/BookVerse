@@ -225,9 +225,6 @@
                     await WishlistService.removeFromWishlist(bookId);
                     this.isInWishlist = false;
                     
-                    this.toast.success("Đã xóa sản phẩm khỏi danh sách yêu thích", {
-                        timeout: 2500
-                    });
                 } else {
                 // Nếu chưa có, thêm vào wishlist
                 const response = await WishlistService.addToWishlist(bookId);
@@ -239,10 +236,6 @@
                 
                 this.isInWishlist = true;
                 
-                // Thêm dòng này để hiển thị thông báo
-                this.toast.success("Đã thêm sản phẩm vào danh sách yêu thích", {
-                    timeout: 2500
-                });
             }
                 
                 // Phát sự kiện để cập nhật UI wishlist

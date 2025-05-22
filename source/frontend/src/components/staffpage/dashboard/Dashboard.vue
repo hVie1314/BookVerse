@@ -7,6 +7,7 @@
         title="Khách hàng"
         :value="formatNumberWithCommas(customerStats.totalCustomers)"
         :stats="customerStats.stats"
+        :newCustomerStat="customerStats.newCustomers"
         chartType="user"
       />
       <StatsCard
@@ -118,22 +119,51 @@ export default {
           const customers = customerResponse.data.data;
           const totalCustomers = customers.length;
           
-          // Phân loại khách hàng theo trạng thái hoạt động
-          const activeCustomers = customers.filter(customer => customer.lastLogin !== null);
+          // Lấy tháng và năm hiện tại
+          const currentDate = new Date();
+          const currentMonth = currentDate.getMonth();
+          const currentYear = currentDate.getFullYear();
+          
+          // Xác định ngưỡng thời gian cho người dùng hoạt động (30 ngày trước)
+          const activeThreshold = new Date();
+          activeThreshold.setDate(activeThreshold.getDate() - 7); // Hoạt động nếu đăng nhập trong 30 ngày qua
+          
+          // Tìm người dùng mới (đăng ký trong tháng hiện tại)
+          const newCustomers = customers.filter(customer => {
+            if (!customer.createdAt) return false;
+            
+            const createdDate = new Date(customer.createdAt);
+            return createdDate.getMonth() === currentMonth && 
+                  createdDate.getFullYear() === currentYear;
+          });
+          
+          // Số lượng người dùng mới trong tháng hiện tại
+          const newCustomersCount = newCustomers.length;
+          
+          // Phân loại khách hàng theo trạng thái hoạt động dựa vào thời gian đăng nhập
+          const activeCustomers = customers.filter(customer => {
+            if (!customer.lastLogin) return false;
+            
+            const lastLoginDate = new Date(customer.lastLogin);
+            return lastLoginDate >= activeThreshold; // Người dùng hoạt động nếu đăng nhập trong 30 ngày qua
+          });
+          
           const activeCount = activeCustomers.length;
           const inactiveCount = totalCustomers - activeCount;
           
           // Tính tỷ lệ phần trăm
           const activePercentage = totalCustomers ? Math.round((activeCount / totalCustomers) * 100) : 0;
           const inactivePercentage = totalCustomers ? Math.round((inactiveCount / totalCustomers) * 100) : 0;
-          const newPercentage = 100 - activePercentage - inactivePercentage; // Có thể điều chỉnh logic xác định khách hàng mới
+          // const newPercentage = totalCustomers ? Math.round((newCustomersCount / totalCustomers) * 100) : 0; // Có thể điều chỉnh logic xác định khách hàng mới
           
           // Cập nhật dữ liệu với định dạng hiện tại
+          // Cập nhật dữ liệu với định dạng mới
           this.customerStats = {
             totalCustomers: totalCustomers,
+            newCustomers: { label: ' Mới (tháng hiện tại)', value: newCustomersCount.toString(), color: '#4D2900' },
             stats: [
-              { label: ' Mới', value: `${newPercentage}%`, color: '#4D2900' },
-              { label: ' Hoạt động', value: `${activePercentage}%`, color: '#BA9468' },
+              // Chỉ giữ lại thông tin khách hàng hoạt động và không hoạt động cho biểu đồ tròn
+              { label: ' Hoạt động (7 ngày)', value: `${activePercentage}%`, color: '#BA9468' },
               { label: ' Không hoạt động', value: `${inactivePercentage}%`, color: '#9F8888' }
             ]
           };

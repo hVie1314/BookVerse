@@ -37,12 +37,9 @@
                   </button>
                 </template>
                 
-                <template v-else-if="isStaff">
-                  <button v-if="!localReview.hidden" class="auth-button login-button" @click.stop="toggleReviewVisibility(true)">
+                <template v-else-if="isStaff && !localReview.hidden">
+                  <button class="auth-button login-button" @click.stop="hideReview">
                     <i class="fas fa-eye-slash"></i> Ẩn đánh giá
-                  </button>
-                  <button v-else class="auth-button login-button" @click.stop="toggleReviewVisibility(false)">
-                    <i class="fas fa-eye"></i> Hiện đánh giá
                   </button>
                   <button class="auth-button register-button" @click.stop="confirmDeleteReview">
                     <i class="fas fa-trash"></i> Xóa đánh giá
@@ -197,6 +194,32 @@ export default {
         }
     },
     methods: {
+      async hideReview() {
+        try {
+          this.showOptionsMenu = false;
+          
+          await ReviewService.hideReview(this.review.id);
+          
+          this.localReview = {
+            ...this.localReview,
+            hidden: true
+          };
+          
+          this.$emit('visibility-changed', {
+            id: this.review.id,
+            hidden: true
+          });
+          
+          this.toast.success("Đã ẩn đánh giá!", {
+            timeout: 3000
+          });
+        } catch (error) {
+          console.error('Lỗi khi ẩn đánh giá:', error);
+          this.toast.error("Không thể ẩn đánh giá. Vui lòng thử lại sau.", {
+            timeout: 3000
+          });
+        }
+      },
         toggleExpandContent() {
           this.expanded = !this.expanded;
         },

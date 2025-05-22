@@ -36,6 +36,7 @@
             :cartText="'Thêm vào giỏ hàng'"
             :sold="String(book.sold)"
             :rating="book.rating || 0"
+            :showProgressBar="true"
           />
         </div>
       </div>
