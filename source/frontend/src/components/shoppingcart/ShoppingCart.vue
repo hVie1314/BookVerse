@@ -315,7 +315,30 @@
               const paymentUrl = paymentResponse.data.payUrl || paymentResponse.data.url||(paymentResponse.data.data && paymentResponse.data.data.url);
               
               console.log('URL thanh toán MoMo:', paymentUrl);
-              
+              try {
+                const user = AuthenticationService.getCurrentUser();
+                if (user && user.id) {
+                  // Xóa từng sản phẩm đã chọn khỏi giỏ hàng người dùng
+                  for (const itemId of this.selectedItems) {
+                    await CartService.removeFromUserCart(user.id, itemId);
+                  }
+                } else {
+                  // Xóa từng sản phẩm đã chọn khỏi giỏ hàng khách
+                  const guestCartId = localStorage.getItem('guestCartId');
+                  if (guestCartId) {
+                    for (const itemId of this.selectedItems) {
+                      await CartService.removeFromGuestCart(guestCartId, itemId);
+                    }
+                  }
+                }
+                
+                // Cập nhật lại UI
+                this.selectedItems = [];
+                eventBus.emit('cart-updated');
+              } catch (removeErr) {
+                console.error('Lỗi khi xóa sản phẩm khỏi giỏ hàng:', removeErr);
+                // Không cần hiển thị lỗi này cho người dùng vì họ đã được chuyển hướng đến trang thanh toán
+              }
               
               eventBus.emit('cart-updated');
               
@@ -361,19 +384,18 @@
             console.log('Đang sử dụng fallback trong môi trường development');
             
             try {
-                // Xóa giỏ hàng
-                const userId = AuthenticationService.getCurrentUser().id;
-                await CartService.clearUserCart(userId);
-                eventBus.emit('cart-updated');
-                
-                // Lưu thông tin đơn hàng giả lập vào localStorage
-                const mockOrderId = 'mock-' + Date.now();
-                localStorage.setItem('pendingOrderId', mockOrderId);
-                
-                // Chuyển hướng trực tiếp đến trang đơn hàng mà không hiển thị thông báo
-                this.$router.push('/my-orders');
+              const userId = AuthenticationService.getCurrentUser().id;
+              
+              // Xóa từng sản phẩm đã chọn khỏi giỏ hàng
+              for (const productId of this.selectedItems) {
+                await CartService.removeFromUserCart(userId, productId);
+              }
+              
+              // Cập nhật lại giỏ hàng
+              this.selectedItems = [];
+              eventBus.emit('cart-updated');
             } catch (err) {
-                console.error('Lỗi khi thực hiện fallback:', err);
+              console.error('Lỗi khi xóa sản phẩm đã chọn khỏi giỏ hàng:', err);
             }
             return;
         }
@@ -426,9 +448,30 @@
           // Kiểm tra response
           if (response.data && (response.data.success || response.data._id)) {
             // Xóa giỏ hàng
-            
-            // Phát sự kiện để cập nhật số lượng giỏ hàng
-            eventBus.emit('cart-updated');
+            try {
+              const user = AuthenticationService.getCurrentUser();
+              if (user && user.id) {
+                // Xóa từng sản phẩm đã chọn khỏi giỏ hàng người dùng
+                for (const itemId of this.selectedItems) {
+                  await CartService.removeFromUserCart(user.id, itemId);
+                }
+              } else {
+                // Xóa từng sản phẩm đã chọn khỏi giỏ hàng khách
+                const guestCartId = localStorage.getItem('guestCartId');
+                if (guestCartId) {
+                  for (const itemId of this.selectedItems) {
+                    await CartService.removeFromGuestCart(guestCartId, itemId);
+                  }
+                }
+              }
+              
+              // Cập nhật lại UI
+              this.selectedItems = [];
+              eventBus.emit('cart-updated');
+            } catch (removeErr) {
+              console.error('Lỗi khi xóa sản phẩm khỏi giỏ hàng:', removeErr);
+              // Không cần hiển thị lỗi này cho người dùng vì họ đã được chuyển hướng đến trang thanh toán
+            }
             
             // Hiển thị thông báo thành công
             eventBus.emit('show-alert', {
@@ -472,10 +515,17 @@
           // Xóa giỏ hàng
           try {
             const userId = AuthenticationService.getCurrentUser().id;
-            await CartService.clearUserCart(userId);
+            
+            // Xóa từng sản phẩm đã chọn khỏi giỏ hàng
+            for (const productId of this.selectedItems) {
+              await CartService.removeFromUserCart(userId, productId);
+            }
+            
+            // Cập nhật lại giỏ hàng
+            this.selectedItems = [];
             eventBus.emit('cart-updated');
           } catch (err) {
-            console.error('Lỗi khi xóa giỏ hàng:', err);
+            console.error('Lỗi khi xóa sản phẩm đã chọn khỏi giỏ hàng:', err);
           }
           
           // Hiển thị thông báo thành công
