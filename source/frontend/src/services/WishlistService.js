@@ -291,17 +291,23 @@ export default {
         }
     },
 
-    getWishlist() {
+    getWishlist(timestamp) {
         if (AuthenticationService.isLoggedIn()) {
             const userId = AuthenticationService.getCurrentUser().id;
-            return this.getUserWishlist(userId).then(response => {
-                // Ghi log đầy đủ cấu trúc để debug
-                console.log('Response getUserWishlist đầy đủ:', response.data);
-                return response;
+            // Thêm timestamp để tránh cache
+            const url = timestamp ? 
+            `wishlist/${userId}?t=${timestamp}` : 
+            `wishlist/${userId}`;
+            return Api().get(url, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
         } else {
             const wishlistId = this.ensureGuestWishlistId();
-            return this.getGuestWishlist(wishlistId);
+            // Thêm timestamp để tránh cache
+            const url = timestamp ? 
+            `wishlist/guest/${wishlistId}?t=${timestamp}` : 
+            `wishlist/guest/${wishlistId}`;
+            return Api().get(url);
         }
     },
 

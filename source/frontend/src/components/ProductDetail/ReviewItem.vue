@@ -182,7 +182,7 @@ export default {
         },
         displayContent() {
             const reviewText = this.localReview.content || this.localReview.comment || '';
-            if (!reviewText) return 'Không có nội dung đánh giá';
+            if (!reviewText) return '';
             
             return this.expanded || !this.isLongContent 
                 ? reviewText 

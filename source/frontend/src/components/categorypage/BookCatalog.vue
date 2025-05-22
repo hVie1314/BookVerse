@@ -51,6 +51,13 @@
         <div v-if="isWishlistPage" class="wishlist-header">
             <div class="results-count">{{ totalBooks }} sản phẩm yêu thích</div>
         </div>
+
+        <div v-if="loadingWishlist" class="wishlist-loading-overlay">
+            <div class="wishlist-spinner">
+                <div class="wishlist-spinner-circle"></div>
+            </div>
+            <p>Đang cập nhật danh sách yêu thích...</p>
+        </div>
     
     <div v-if="loading" class="loading-indicator">
       <div class="spinner"></div>
@@ -66,7 +73,11 @@
         <router-link to="/category" class="browse-books-btn">Khám phá sách</router-link>
     </div>
     <div v-else>
-      <BookGrid :books="books" :isWishlistPage="isWishlistPage"  @remove-from-wishlist="handleRemoveFromWishlist"/>
+      <BookGrid 
+            :books="books" 
+            :isWishlistPage="isWishlistPage"  
+            @remove-from-wishlist="handleRemoveFromWishlist"
+        />
     
       <Pagination
         :currentPage="currentPage"
@@ -83,6 +94,7 @@
     import BookService from '@/services/BookService';
     // import AuthenticationService from '@/services/AuthenticationService';
     import WishlistService from '@/services/WishlistService';
+    import eventBus from '@/eventBus.js';
     export default {
         name: 'BookCatalog',
         components: {
@@ -103,7 +115,8 @@
                 filters: {},
                 searchQuery: '',    
                 isWishlistPage: false,
-                wishlistAllBooks: []
+                wishlistAllBooks: [],
+                loadingWishlist: false, 
             };
         },
         
@@ -289,7 +302,9 @@
                 this.fetchBooks();
             },
             async fetchWishlistBooks() {
-                this.loading = true;
+                if (!this.loadingWishlist) {
+                    this.loading = true;
+                }
                 this.error = null;
                 
                 try {
@@ -354,7 +369,9 @@
                     this.error = 'Đã xảy ra lỗi khi tải danh sách yêu thích';
                     this.books = [];
                 } finally {
-                    this.loading = false;
+                    if (!this.loadingWishlist) {
+                        this.loading = false;
+                    }
                 }
             },
 
@@ -368,25 +385,85 @@
                 console.log(`Phân trang wishlist: ${startIndex}-${endIndex} / ${this.wishlistAllBooks.length}`);
             },
 
-            handleRemoveFromWishlist(bookId) {
-                // Xóa sách từ danh sách hiển thị trên giao diện
-                this.books = this.books.filter(book => (book.id || book._id) !== bookId);
-                
-                // Nếu đang hiển thị danh sách yêu thích, cập nhật lại wishlistAllBooks
-                if (this.isWishlistPage) { 
-                    this.wishlistAllBooks = this.wishlistAllBooks.filter(book => (book.id || book._id) !== bookId);
+            async handleRemoveFromWishlist() {
+                try {
+                    // Hiển thị hiệu ứng loading
+                    this.loadingWishlist = true;
                     
-                    // Cập nhật lại thông tin phân trang
-                    this.totalBooks = this.wishlistAllBooks.length;
-                    this.totalPages = Math.ceil(this.totalBooks / this.wishlistBooksPerPage);
+                    // Thêm xử lý delay để đảm bảo server đã xử lý xóa sản phẩm
+                    await new Promise(resolve => setTimeout(resolve, 300));
                     
-                    // Kiểm tra nếu trang hiện tại không còn sách thì quay lại trang trước
-                    if (this.books.length === 0 && this.currentPage > 1) {
-                        this.currentPage--;
+                    if (this.isWishlistPage) {
+                    // Tải lại danh sách yêu thích từ server với timestamp để tránh cache
+                    const timestamp = new Date().getTime();
+                    const response = await WishlistService.getWishlist(timestamp);
+                    
+                    if (response.data && response.data.success && response.data.data) {
+                        // Xử lý dữ liệu wishlist
+                        const wishlistData = response.data.data.wishlist || response.data.data;
+                        let products = [];
+                        
+                        if (wishlistData && wishlistData.products && Array.isArray(wishlistData.products)) {
+                        products = wishlistData.products;
+                        }
+                        
+                        // Cập nhật danh sách sản phẩm
+                        this.wishlistAllBooks = products.map(item => {
+                        if (item.productId && typeof item.productId === 'object') {
+                            // Xử lý hình ảnh sách
+                            let image = item.productId.image;
+                            if (typeof image === 'string' && image.startsWith('[') && image.endsWith(']')) {
+                            try {
+                                const images = JSON.parse(image.replace(/'/g, '"'));
+                                image = images[0];
+                            } catch (e) {
+                                console.error('Lỗi xử lý ảnh:', e);
+                            }
+                            }
+                            
+                            return {
+                            _id: item.productId._id,
+                            id: item.productId._id,
+                            title: item.productId.title,
+                            author: item.productId.author,
+                            price: item.productId.price,
+                            image: image,
+                            };
+                        }
+                        return null;
+                        }).filter(book => book !== null);
+                        
+                        // Cập nhật thông tin phân trang
+                        this.totalBooks = this.wishlistAllBooks.length;
+                        this.totalPages = Math.ceil(this.totalBooks / this.wishlistBooksPerPage);
+                        
+                        // Xử lý trường hợp trang hiện tại không còn sản phẩm
+                        if (this.wishlistAllBooks.length === 0) {
+                        this.currentPage = 1;
+                        } else if (this.currentPage > this.totalPages) {
+                        this.currentPage = this.totalPages;
+                        }
+                        
+                        // Thực hiện phân trang
                         this.paginateWishlistBooks();
                     }
+                    }
+                    
+                    // Phát sự kiện để các component khác cũng cập nhật
+                    eventBus.emit('wishlist-updated');
+                    
+                } catch (error) {
+                    console.error('Lỗi khi cập nhật danh sách yêu thích:', error);
+                    if (this.$toast) {
+                    this.$toast.error("Có lỗi xảy ra khi cập nhật danh sách yêu thích");
+                    }
+                } finally {
+                    // Ẩn hiệu ứng loading sau khi hoàn thành (sau 0.5s để UX mượt hơn)
+                    setTimeout(() => {
+                    this.loadingWishlist = false;
+                    }, 500);
                 }
-            }
+                }
         },
         created() {
             this.isWishlistPage = this.$route.query.wishlist === 'true';
@@ -623,4 +700,51 @@
         outline: none;
         border-color: #4d2900;
     }
+
+    .wishlist-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.wishlist-spinner {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 15px;
+}
+
+.wishlist-spinner-circle {
+  width: 100%;
+  height: 100%;
+  border: 4px solid rgba(77, 41, 0, 0.1);
+  border-top-color: #4d2900;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.wishlist-loading-overlay p {
+  font-family: "Montserrat", sans-serif;
+  font-size: 16px;
+  color: #4d2900;
+  margin-top: 10px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 </style>

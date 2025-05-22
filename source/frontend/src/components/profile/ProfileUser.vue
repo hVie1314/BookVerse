@@ -9,7 +9,27 @@
         <Nav v-if="!isStaffRoute" />
         <main class="profile-main">
             <div v-if="loading" class="loading-container">
-                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải thông tin...
+              <div class="loading-card">
+                <div class="loading-header">
+                  <div class="loading-title-skeleton"></div>
+                  <div class="loading-avatar-skeleton"></div>
+                </div>
+                
+                <div class="loading-field-skeleton"></div>
+                <div class="loading-field-skeleton"></div>
+                <div class="loading-field-skeleton"></div>
+                <div class="loading-field-skeleton"></div>
+                
+                <div class="loading-button-skeleton"></div>
+                
+                <div class="loading-overlay">
+                  <div class="loading-spinner">
+                    <div class="spinner-circle"></div>
+                    <div class="spinner-circle-dot"></div>
+                  </div>
+                  <span class="loading-text">Đang tải thông tin...</span>
+                </div>
+              </div>
             </div>
             <div v-else-if="error" class="error-message">
                 {{ error }}
@@ -37,7 +57,8 @@ import Footer from '../footer/footer.vue';
 import ProfilePage from './ProfilePage.vue';
 import UserService from '@/services/UserService';
 import AuthenticationService from '@/services/AuthenticationService';
-import Alert from '@/components/Alert.vue'
+import Alert from '@/components/Alert.vue';
+import {useToast} from 'vue-toastification';
 
 export default {
   name: 'ProfileUser',
@@ -47,6 +68,10 @@ export default {
     ProfilePage,
     Alert
   },
+  setup() {
+    const toast = useToast();
+    return { toast };
+  }, 
   data() {
     return {
       userInfo: null,
@@ -192,12 +217,7 @@ export default {
             }
             
             // Hiển thị thông báo thành công
-            this.alert = {
-              show: true,
-              type: 'success',
-              title: 'Cập nhật thành công',
-              message: 'Thông tin tài khoản của bạn đã được cập nhật'
-            };
+            this.toast.success('Cập nhật thông tin thành công');
             
             this.maintainEditing = false; // Đóng chế độ chỉnh sửa
           }
@@ -386,4 +406,161 @@ export default {
             padding: 0 15px;
         }
     }
+
+    /* Thêm vào phần <style scoped> */
+
+.loading-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 600px;
+}
+
+.loading-card {
+  width: 100%;
+  max-width: 800px;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  position: relative;
+  box-shadow: 0 8px 20px rgba(77, 41, 0, 0.08);
+  overflow: hidden;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+}
+
+.loading-spinner {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 15px;
+}
+
+.spinner-circle {
+  width: 100%;
+  height: 100%;
+  border: 4px solid rgba(186, 148, 104, 0.25);
+  border-top-color: #4d2900;
+  border-radius: 50%;
+  animation: spin 1.2s linear infinite;
+}
+
+.spinner-circle-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 15px;
+  height: 15px;
+  background-color: #4d2900;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 10px rgba(77, 41, 0, 0.5);
+}
+
+.loading-text {
+  font-family: "Montserrat", sans-serif;
+  color: #4d2900;
+  font-weight: 500;
+  font-size: 16px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* Skeleton elements */
+.loading-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.loading-title-skeleton {
+  width: 250px;
+  height: 40px;
+  background: linear-gradient(90deg, #f0e5d8 25%, #f9f5f0 50%, #f0e5d8 75%);
+  background-size: 200% 100%;
+  border-radius: 8px;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.loading-avatar-skeleton {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #f0e5d8 25%, #f9f5f0 50%, #f0e5d8 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.loading-field-skeleton {
+  height: 55px;
+  width: 100%;
+  background: linear-gradient(90deg, #f0e5d8 25%, #f9f5f0 50%, #f0e5d8 75%);
+  background-size: 200% 100%;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.loading-button-skeleton {
+  height: 50px;
+  width: 200px;
+  margin: 30px auto 0;
+  background: linear-gradient(90deg, #f0e5d8 25%, #f9f5f0 50%, #f0e5d8 75%);
+  background-size: 200% 100%;
+  border-radius: 8px;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .loading-card {
+    padding: 20px;
+  }
+  
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .loading-title-skeleton {
+    width: 180px;
+    height: 35px;
+  }
+  
+  .loading-avatar-skeleton {
+    width: 100px;
+    height: 100px;
+  }
+}
 </style>

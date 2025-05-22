@@ -34,13 +34,18 @@
             <p class="book-author">{{ author }}</p>
             
             <!-- Thêm hiển thị sao đánh giá - chỉ hiển thị khi rating > 0 -->
-            <div v-if="rating > 0" class="book-rating">
-                <div class="star-rating">
-                    <i v-for="index in 5" :key="index" 
-                       :class="[index <= Math.floor(rating) ? 'fas fa-star filled-star' : 'far fa-star empty-star']">
-                    </i>
-                </div>
-                <span class="rating-count">({{ rating }})</span>
+            <div class="book-rating">
+                <!-- Chỉ hiển thị sao khi rating > 0 -->
+                <template v-if="rating > 0">
+                    <div class="star-rating">
+                        <i v-for="index in 5" :key="index" 
+                        :class="[index <= Math.floor(rating) ? 'fas fa-star filled-star' : 'far fa-star empty-star']">
+                        </i>
+                    </div>
+                    <span class="rating-count">({{ rating }})</span>
+                </template>
+                <!-- Giữ phần tử trống khi không có rating để duy trì không gian -->
+                <div v-else class="rating-placeholder"></div>
             </div>
             
             <!-- Phần hiển thị số lượng đã bán -->
@@ -205,19 +210,29 @@ export default {
                     // Nếu đã có trong wishlist, xóa khỏi wishlist
                     await WishlistService.removeFromWishlist(this.bookId);
                     this.isInWishlist = false;
+                    
                     if (this.$toast) {
                         this.$toast.success("Đã xóa sách khỏi danh sách yêu thích");
                     }
+                    
+                    // Phát sự kiện để cập nhật UI wishlist
+                    eventBus.emit('wishlist-updated');
+                    
+                    // Thêm dòng này: Thông báo cho component cha rằng sách đã bị xóa 
+                    // (giống như hàm removeFromFavorites)
+                    this.$emit('remove-from-wishlist', this.bookId);
                 } else {
                     // Nếu chưa có, thêm vào wishlist
                     await WishlistService.addToWishlist(this.bookId);
                     this.isInWishlist = true;
+                    
                     if (this.$toast) {
                         this.$toast.success("Đã thêm sách vào danh sách yêu thích");
                     }
+                    
+                    // Phát sự kiện để cập nhật UI wishlist
+                    eventBus.emit('wishlist-updated');
                 }
-                // Phát sự kiện để cập nhật UI wishlist
-                eventBus.emit('wishlist-updated');
             } catch (error) {
                 console.error("Lỗi khi thao tác với danh sách yêu thích:", error);
                 
@@ -243,8 +258,10 @@ export default {
                     this.$toast.success("Đã xóa sách khỏi danh sách yêu thích");
                 }
                 
-                // Phát sự kiện để cập nhật UI wishlist và thông báo component cha rằng sách đã bị xóa
+                // Phát sự kiện để cập nhật UI wishlist
                 eventBus.emit('wishlist-updated');
+                
+                // Thông báo cho component cha rằng sách đã bị xóa
                 this.$emit('remove-from-wishlist', this.bookId);
             } catch (error) {
                 console.error("Lỗi khi xóa sách khỏi danh sách yêu thích:", error);
@@ -258,7 +275,8 @@ export default {
                     this.$toast.error(errorMessage);
                 }
             }
-        }
+        },
+        
     },
 };
 </script>
@@ -631,6 +649,20 @@ export default {
 .book-sold {
     width: 100%;
     margin-top: 10px;
+}
+
+.book-rating {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    margin-bottom: 3px;
+    height: 20px; /* Chiều cao cố định */
+    min-height: 20px;
+}
+
+.rating-placeholder {
+    height: 20px; /* Giữ không gian cố định khi không có rating */
+    width: 100%;
 }
 </style>
   
