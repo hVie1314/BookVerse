@@ -9,27 +9,11 @@
         <Nav v-if="!isStaffRoute" />
         <main class="profile-main">
             <div v-if="loading" class="loading-container">
-              <div class="loading-card">
-                <div class="loading-header">
-                  <div class="loading-title-skeleton"></div>
-                  <div class="loading-avatar-skeleton"></div>
-                </div>
-                
-                <div class="loading-field-skeleton"></div>
-                <div class="loading-field-skeleton"></div>
-                <div class="loading-field-skeleton"></div>
-                <div class="loading-field-skeleton"></div>
-                
-                <div class="loading-button-skeleton"></div>
-                
-                <div class="loading-overlay">
-                  <div class="loading-spinner">
-                    <div class="spinner-circle"></div>
-                    <div class="spinner-circle-dot"></div>
-                  </div>
-                  <span class="loading-text">Đang tải thông tin...</span>
-                </div>
+              <div class="loading-spinner">
+                <div class="spinner-circle"></div>
+                <div class="spinner-circle-dot"></div>
               </div>
+              <span class="loading-text">Đang tải thông tin...</span>
             </div>
             <div v-else-if="error" class="error-message">
                 {{ error }}
@@ -411,10 +395,12 @@ export default {
 
 .loading-container {
   width: 100%;
+  min-height: 600px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 600px;
+  background-color: transparent; /* Sử dụng nền chung của trang */
 }
 
 .loading-card {
@@ -444,15 +430,15 @@ export default {
 
 .loading-spinner {
   position: relative;
-  width: 60px;
-  height: 60px;
-  margin-bottom: 15px;
+  width: 70px;
+  height: 70px;
+  margin-bottom: 20px;
 }
 
 .spinner-circle {
   width: 100%;
   height: 100%;
-  border: 4px solid rgba(186, 148, 104, 0.25);
+  border: 5px solid rgba(186, 148, 104, 0.25);
   border-top-color: #4d2900;
   border-radius: 50%;
   animation: spin 1.2s linear infinite;
@@ -462,8 +448,8 @@ export default {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   background-color: #4d2900;
   border-radius: 50%;
   transform: translate(-50%, -50%);
@@ -473,10 +459,9 @@ export default {
 .loading-text {
   font-family: "Montserrat", sans-serif;
   color: #4d2900;
-  font-weight: 500;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 18px;
   text-align: center;
-  margin-top: 10px;
 }
 
 /* Skeleton elements */
@@ -543,24 +528,14 @@ export default {
   }
 }
 
-@media (max-width: 768px) {
-  .loading-card {
-    padding: 20px;
-  }
-  
-  .loading-spinner {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .loading-title-skeleton {
-    width: 180px;
-    height: 35px;
-  }
-  
-  .loading-avatar-skeleton {
-    width: 100px;
-    height: 100px;
-  }
+/* Xóa bỏ các style không cần thiết */
+.loading-card, 
+.loading-overlay,
+.loading-header,
+.loading-title-skeleton,
+.loading-avatar-skeleton,
+.loading-field-skeleton,
+.loading-button-skeleton {
+  display: none;
 }
 </style>
