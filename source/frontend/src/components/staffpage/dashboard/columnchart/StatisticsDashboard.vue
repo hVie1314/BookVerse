@@ -1,3 +1,4 @@
+<!-- filepath: d:\Workspace\Software-engineering\project\BookVerse\source\frontend\src\components\staffpage\dashboard\columnchart\StatisticsDashboard.vue -->
 <template>
   <div class="statistics-dashboard animate-in">
     <div class="dashboard-background">
@@ -45,22 +46,14 @@
           </div>
         </div>
       </div>
-      <button 
-        @click="loadChartData" 
-        class="refresh-button pulse-on-hover"
-        :disabled="isLoading"
-      >
-        <span class="refresh-icon" :class="{ 'is-refreshing': isLoading }">↻</span>
-        <span>Làm mới</span>
-      </button>
     </div>
 
     <transition name="fade">
       <div class="legend animate-item">
-        <div class="legend-item pulse-on-hover" @mouseover="highlightDataset(0)" @mouseout="resetHighlight">
+        <div class="legend-item">
           <span class="legend-color" style="background-color: #a86a2a;"></span> Tổng doanh thu
         </div>
-        <div class="legend-item pulse-on-hover" @mouseover="highlightDataset(1)" @mouseout="resetHighlight">
+        <div class="legend-item">
           <span class="legend-color" style="background-color: black;"></span> Tổng số lượng đơn hàng
         </div>
       </div>
@@ -74,33 +67,34 @@
     </transition>
 
     <div class="chart-wrapper animate-item">
-      <canvas ref="revenueChart"></canvas>
+      <apexchart
+        type="bar"
+        height="400"
+        :options="chartOptions"
+        :series="chartSeries"
+      ></apexchart>
     </div>
-
-    <transition name="slide-in">
-      <div v-if="showDataSummary" class="data-summary">
-        <div class="summary-item">
-          <div class="summary-label">Tổng doanh thu</div>
-          <div class="summary-value">{{ totalRevenue }} triệu VNĐ</div>
-        </div>
-        <div class="summary-item">
-          <div class="summary-label">Tổng đơn hàng</div>
-          <div class="summary-value">{{ totalOrders }} đơn</div>
-        </div>
-      </div>
-    </transition>
   </div>
 </template>
 
 <script>
 import DashboardHeader from './DashboardHeader.vue';
-import Chart from 'chart.js/auto';
+import VueApexCharts from 'vue3-apexcharts';
 import StatsApiService from '@/services/StatsApiService';
+
+function debounce(fn, delay) {
+  let timeoutId;
+  return function(...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
 
 export default {
   name: 'StatisticsDashboard',
   components: {
-    DashboardHeader
+    DashboardHeader,
+    apexchart: VueApexCharts
   },
   props: {
     chartData: {
@@ -127,44 +121,214 @@ export default {
     }
     
     return {
-      chart: null,
       startDate: formatYearMonth(startYear, startMonth),
       endDate: formatYearMonth(currentYear, currentMonth),
       minDate: formatYearMonth(currentYear - 2, 1), // 2 years ago
       maxDate: formatYearMonth(currentYear, currentMonth),
-      revenueData: [],
-      orderData: [],
       isLoading: false,
       showDataSummary: false,
       totalRevenue: 0,
       totalOrders: 0,
-      activeDatasetIndex: null
+      isUnmounting: false,
+      animationFrames: [],
+      timeoutIds: [],
+      
+      // ApexCharts options
+      chartOptions: {
+        chart: {
+          id: 'revenue-orders-chart',
+          type: 'line',
+          stacked: false,
+          toolbar: {
+            show: false
+          },
+          animations: {
+            enabled: true,
+            easing: 'easeinout',
+            speed: 800,
+            animateGradually: {
+              enabled: true,
+              delay: 150
+            },
+            dynamicAnimation: {
+              enabled: true,
+              speed: 350
+            }
+          },
+          fontFamily: 'Montserrat, sans-serif'
+        },
+        colors: ['#a86a2a', '#000000'],
+        stroke: {
+          width: [0, 3],
+          curve: 'smooth'
+        },
+        dataLabels: {
+          enabled: false
+        },
+        xaxis: {
+          categories: [],
+          labels: {
+            style: {
+              colors: '#4a3e3e',
+              fontSize: '12px'
+            },
+            rotate: -45,
+            rotateAlways: false
+          }
+        },
+        yaxis: [
+          {
+            title: {
+              text: 'Doanh thu',
+              style: {
+                fontWeight: 600
+              }
+            },
+            labels: {
+              formatter: (val) => `${val} triệu`,
+              style: {
+                colors: '#4a3e3e'
+              }
+            }
+          },
+          {
+           opposite: true,
+            title: {
+              text: 'Số lượng đơn hàng',
+              style: {
+                fontWeight: 600
+              }
+            },
+            labels: {
+              formatter: (val) => Math.round(val).toString(),
+              style: {
+                colors: '#4a3e3e'
+              }
+            }
+          }
+        ],
+        tooltip: {
+          shared: true,
+          intersect: false,
+          theme: 'light',
+          style: {
+            fontSize: '14px'
+          },
+          y: {
+            formatter: (val, { seriesIndex, w }) => {
+              const name = w.config.series[seriesIndex].name;
+              return name === 'Tổng doanh thu' ? 
+                `${val} triệu VNĐ` : 
+                `${val} đơn hàng`;
+            }
+          }
+        },
+        grid: {
+          borderColor: '#e0e0e0',
+          strokeDashArray: 3,
+          padding: {
+            top: 0,
+            right: 10,
+            bottom: 0,
+            left: 10
+          }
+        },
+        plotOptions: {
+          bar: {
+            borderRadius: 3,
+            columnWidth: '50%',
+            dataLabels: {
+              position: 'top'
+            }
+          }
+        },
+        legend: {
+          show: false
+        }
+      },
+      chartSeries: [
+        {
+          name: 'Tổng doanh thu',
+          type: 'column',
+          data: []
+        },
+        {
+          name: 'Tổng số lượng đơn hàng',
+          type: 'line',
+          data: []
+        }
+      ]
     };
   },
   mounted() {
     this.loadChartData();
     
-    // Hiển thị tóm tắt dữ liệu sau khi đã hiển thị chart
-    setTimeout(() => {
+    this.safeSetTimeout(() => {
       this.showDataSummary = true;
     }, 1500);
     
-    // Thêm hiệu ứng nền động
     this.animateBackgroundElements();
   },
+  beforeUnmount() {
+    this.isUnmounting = true;
+    this.clearAllPendingOperations();
+  },
   methods: {
+    safeSetTimeout(callback, delay) {
+      if (!this.timeoutIds) this.timeoutIds = [];
+      const id = setTimeout(() => {
+        if (!this.isUnmounting) callback();
+      }, delay);
+      this.timeoutIds.push(id);
+      return id;
+    },
+    
+    addAnimationFrame(callback) {
+      if (this.isUnmounting) return;
+      const id = requestAnimationFrame(callback);
+      this.animationFrames.push(id);
+      return id;
+    },
+    
+    clearAnimationFrames() {
+      if (this.animationFrames && this.animationFrames.length) {
+        this.animationFrames.forEach(id => {
+          try {
+            if (id) cancelAnimationFrame(id);
+          } catch (e) {
+            console.warn('Lỗi khi hủy animation frame:', e);
+          }
+        });
+        this.animationFrames = [];
+      }
+    },
+
+    clearAllPendingOperations() {
+      // Hủy tất cả animation frames
+      if (this.animationFrames && this.animationFrames.length) {
+        this.animationFrames.forEach(id => {
+          if (id) cancelAnimationFrame(id);
+        });
+        this.animationFrames = [];
+      }
+      
+      // Hủy tất cả timeouts
+      if (this.timeoutIds) {
+        this.timeoutIds.forEach(id => clearTimeout(id));
+        this.timeoutIds = [];
+      }
+    },
+
     activateDateInput(refName) {
       if (this.$refs[refName]) {
-        // Chỉ focus input để mở date picker, không gọi click()
         this.$refs[refName].focus();
         
-        // Thêm cách xử lý trực tiếp để mở date picker thay vì gọi sự kiện click
         if (this.$refs[refName].showPicker) {
           this.$refs[refName].showPicker();
         }
       }
     },
-    // Định dạng hiển thị tháng/năm theo tiếng Việt
+    
     formatMonthYear(dateString) {
       if (!dateString) return '';
       
@@ -177,7 +341,6 @@ export default {
       return `${monthNames[month-1]} ${year}`;
     },
     
-    // Hiệu ứng chuyển động cho các phần tử nền
     animateBackgroundElements() {
       const elements = document.querySelectorAll('.bg-element');
       elements.forEach(el => {
@@ -188,43 +351,8 @@ export default {
       });
     },
     
-    // Làm nổi bật dữ liệu khi hover vào legend
-    highlightDataset(index) {
-      if (!this.chart) return;
-      
-      this.activeDatasetIndex = index;
-      
-      this.chart.data.datasets.forEach((dataset, i) => {
-        if (i === index) {
-          dataset.backgroundColor = i === 0 ? '#c17b2b' : 'rgba(0, 0, 0, 0.9)';
-          dataset.borderColor = i === 0 ? '#c17b2b' : 'rgba(0, 0, 0, 0.9)';
-          dataset.borderWidth = i === 1 ? 3 : 1;
-        } else {
-          dataset.backgroundColor = i === 0 ? 'rgba(168, 106, 42, 0.5)' : 'rgba(0, 0, 0, 0.3)';
-          dataset.borderColor = i === 0 ? 'rgba(168, 106, 42, 0.5)' : 'rgba(0, 0, 0, 0.3)';
-          dataset.borderWidth = i === 1 ? 2 : 1;
-        }
-      });
-      
-      this.chart.update();
-    },
-    
-    // Khôi phục hiển thị mặc định khi không hover
-    resetHighlight() {
-      if (!this.chart) return;
-      
-      this.activeDatasetIndex = null;
-      
-      this.chart.data.datasets.forEach((dataset, i) => {
-        dataset.backgroundColor = i === 0 ? '#a86a2a' : 'black';
-        dataset.borderColor = i === 0 ? '#a86a2a' : 'black'; 
-        dataset.borderWidth = i === 1 ? 2 : 1;
-      });
-      
-      this.chart.update();
-    },
-    
-    async loadChartData() {
+    loadChartData: debounce(async function() {
+      if (this.isLoading || this.isUnmounting) return;
       try {
         this.isLoading = true;
         this.showDataSummary = false;
@@ -306,12 +434,16 @@ export default {
         this.totalRevenue = totalRev.toFixed(2);
         this.totalOrders = totalOrd;
         
-        this.renderChart(labels, revenueValues, orderValues);
-        
         // Hiển thị tóm tắt sau khi hiển thị chart
-        setTimeout(() => {
-          this.showDataSummary = true;
-        }, 1000);
+        if (!this.isUnmounting) {
+          this.renderChart(labels, revenueValues, orderValues);
+          
+          this.safeSetTimeout(() => {
+            if (!this.isUnmounting) {
+              this.showDataSummary = true;
+            }
+          }, 1000);
+        }
         
       } catch (error) {
         console.error('Lỗi khi tải dữ liệu biểu đồ:', error);
@@ -328,144 +460,60 @@ export default {
         
         this.renderChart(sampleLabels, sampleRevenue, sampleOrders);
         
-        // Hiển thị tóm tắt sau khi hiển thị chart
-        setTimeout(() => {
+        this.safeSetTimeout(() => {
           this.showDataSummary = true;
         }, 1000);
       } finally {
         this.isLoading = false;
       }
-    },
+    }, 300),
     
     renderChart(labels, revenueData, orderData) {
-      if (this.chart) {
-        this.chart.destroy();
-      }
+      if (this.isUnmounting) return;
       
-      const ctx = this.$refs.revenueChart.getContext('2d');
-      
-      // Calculate maximum values for y-axis scales
+      // Tính giá trị tối đa cho các trục y
       const maxRevenue = Math.ceil(Math.max(...revenueData, 5) / 5) * 5;
       const maxOrders = Math.ceil(Math.max(...orderData, 5) / 5) * 5;
       
-      this.chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              type: 'bar',
-              label: 'Tổng doanh thu',
-              data: revenueData,
-              backgroundColor: '#a86a2a',
-              yAxisID: 'y',
-              borderWidth: 1,
-              borderRadius: 4,
-              borderColor: '#a86a2a'
-            },
-            {
-              type: 'line',
-              label: 'Tổng số lượng đơn hàng',
-              data: orderData,
-              borderColor: 'black',
-              backgroundColor: 'black',
-              fill: false,
-              tension: 0.3,
-              yAxisID: 'y1',
-              borderWidth: 2,
-              pointBackgroundColor: 'black',
-              pointBorderColor: 'white',
-              pointRadius: 4,
-              pointHoverRadius: 6
-            }
-          ]
+      // Cập nhật options
+      this.chartOptions = {
+        ...this.chartOptions,
+        xaxis: {
+          ...this.chartOptions.xaxis,
+          categories: labels
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: {
-            duration: 1500,
-            easing: 'easeOutQuart'
+        yaxis: [
+          {
+            ...this.chartOptions.yaxis[0],
+            max: maxRevenue
           },
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
-          hover: {
-            mode: 'nearest',
-            intersect: true
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: maxRevenue,
-              title: {
-                display: true,
-                text: 'Doanh thu (triệu VNĐ)',
-                font: {
-                  weight: 'bold'
-                }
-              },
-              ticks: {
-                callback: (value) => value + ' triệu'
-              }
-            },
-            y1: {
-              beginAtZero: true,
-              position: 'right',
-              max: maxOrders,
-              title: {
-                display: true,
-                text: 'Số lượng đơn hàng',
-                font: {
-                  weight: 'bold'
-                }
-              },
-              grid: {
-                drawOnChartArea: false
-              }
-            },
-            x: {
-              ticks: {
-                maxRotation: 45,
-                minRotation: 45
-              }
-            }
-          },
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              enabled: true,
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              titleColor: '#333',
-              bodyColor: '#333',
-              borderColor: '#aaa',
-              borderWidth: 1,
-              cornerRadius: 8,
-              padding: 12,
-              boxPadding: 6,
-              usePointStyle: true,
-              callbacks: {
-                label: (tooltipItem) => {
-                  const label = tooltipItem.dataset.label || '';
-                  const val = tooltipItem.raw;
-                  return label === 'Tổng doanh thu' 
-                    ? `${label}: ${val} triệu VNĐ` 
-                    : `${label}: ${val} đơn hàng`;
-                }
-              }
-            }
+          {
+            ...this.chartOptions.yaxis[1],
+            max: maxOrders
           }
+        ]
+      };
+      
+      // Cập nhật series
+      this.chartSeries = [
+        {
+          name: 'Tổng doanh thu',
+          type: 'column',
+          data: revenueData
+        },
+        {
+          name: 'Tổng số lượng đơn hàng',
+          type: 'line',
+          data: orderData
         }
-      });
+      ];
     }
   }
 }
 </script>
 
 <style scoped>
+/* Giữ nguyên phần CSS hiện có */
 .statistics-dashboard {
   width: 100%;
   background-color: #fff;
@@ -593,68 +641,27 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Nút làm mới */
-.refresh-button {
-  display: flex;
-  align-items: center;
-  background-color: #4D2900;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 10px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  margin-left: 10px;
-}
-
-.refresh-button:hover:not(:disabled) {
-  background-color: #5e3200;
-}
-
-.refresh-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.refresh-icon {
-  display: inline-block;
-  margin-right: 5px;
-  font-size: 16px;
-  transition: transform 0.5s ease;
-}
-
-.is-refreshing {
-  animation: rotating 1s linear infinite;
-}
-
-@keyframes rotating {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Filters */
+/* Phần filters */
 .filters {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 20px;
-  margin-bottom: 15px;
+  margin: 0 0 15px 0;
+  max-width: 100%;
 }
 
 .filter-item {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1;
 }
 
 .date-select {
   position: relative;
-  cursor: pointer; /* Thêm cursor pointer cho toàn bộ vùng */
+  cursor: pointer;
+  flex: 1;
 }
 
 .date-select input {
@@ -673,11 +680,11 @@ export default {
 }
 
 .selected-date {
-  padding: 4px 8px;
+  padding: 6px 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
-  width: 140px;
+  min-width: 140px;
   background-color: white;
   display: flex;
   align-items: center;
@@ -702,7 +709,7 @@ export default {
   font-weight: 500;
 }
 
-/* Legend with hover effects */
+/* Legend */
 .legend {
   margin: 10px 0;
   display: flex;
@@ -739,7 +746,7 @@ export default {
   transform: scale(1.2);
 }
 
-/* Chart and loading */
+/* Chart và loading */
 .chart-wrapper {
   border-top: 1px solid #ccc;
   padding-top: 15px;
@@ -774,7 +781,7 @@ export default {
   margin-bottom: 15px;
 }
 
-/* Data summary section */
+/* Data summary */
 .data-summary {
   display: flex;
   justify-content: space-around;

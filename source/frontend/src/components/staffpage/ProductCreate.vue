@@ -184,6 +184,7 @@
 <script>
 import BookService from "@/services/BookService";
 import eventBus from "@/eventBus.js";
+import { useToast } from "vue-toastification";
 
 export default {
   name: "ProductCreate",
@@ -226,6 +227,10 @@ export default {
       }
       return this.previewImage;
     },
+  },
+  setup() {
+    const toast = useToast();
+    return { toast };
   },
   created() {
     this.fetchCategories();
@@ -501,12 +506,9 @@ export default {
         console.log("Kết quả API tạo sách:", response.data);
 
         // 5. Thông báo tạo sách thành công
-        eventBus.emit("show-alert", {
-          show: true,
-          type: "success",
-          title: "Thành công",
-          message: "Thêm sách mới thành công",
-          autoClose: true,
+        this.$toast.success("Tạo sách thành công!", {
+          timeout: 3000,
+          closeOnClick: true,
         });
 
         // 6. Thông báo cho component cha về việc tạo sách thành công

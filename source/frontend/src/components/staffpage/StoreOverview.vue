@@ -19,8 +19,8 @@
             />
             <h2 class="stat-title">KHÁCH HÀNG</h2>
             <p class="stat-description">
-              Đã có hơn 7000 lượt mua từ những khách hàng yêu sách. Từ học sinh,
-              sinh viên đến người đi làm - ai cũng tìm thấy điều mình cần.
+              Đã có {{ totalSuccessfulOrders || 0 }} lượt mua thành công từ những khách hàng yêu sách. 
+              Từ học sinh, sinh viên đến người đi làm - ai cũng tìm thấy điều mình cần.
             </p>
           </div>
         </div>
@@ -53,6 +53,8 @@
 <script>
 import BookService from '@/services/BookService';
 import UserService from '@/services/UserService';
+import OrderService from '@/services/OrderService';
+import AuthenticationService from '@/services/AuthenticationService';
 
 export default {
   name: 'StoreOverview',
@@ -61,14 +63,36 @@ export default {
       totalBooks: 0,
       loading: true,
       totalCustomers: 0,
-      customersLoading: true
+      customersLoading: true,
+      totalSuccessfulOrders: 0,
     };
   },
   created() {
     this.fetchTotalBooks();
     this.fetchTotalCustomers();
+    this.fetchSuccessfulOrders();
   },
   methods: {
+    async fetchSuccessfulOrders() {
+    try {
+      // Nếu không phải Admin, set giá trị mặc định và không gọi API
+      const currentUser = AuthenticationService.getCurrentUser();
+      if (currentUser && currentUser.role !== 'admin') {
+        this.totalSuccessfulOrders = 33; // Giá trị mẫu thay vì gọi API
+        return;
+      }
+      
+      const response = await OrderService.getOrderStatistics();
+      if (response.data && response.data.success) {
+        this.totalSuccessfulOrders = response.data.data.successfulOrders || 0;
+      } else {
+        this.totalSuccessfulOrders = 33; // Giá trị mẫu nếu API không thành công
+      }
+    } catch (error) {
+      // Không ghi log lỗi, chỉ đặt giá trị mặc định
+      this.totalSuccessfulOrders = 33;
+    }
+  },
     async fetchTotalBooks() {
       try {
         this.loading = true;
@@ -148,6 +172,7 @@ export default {
   justify-content: center;
   gap: 80px;
   margin-top: 40px;
+  width: 100%;
 }
 
 .statistics-card {
@@ -156,10 +181,15 @@ export default {
   border-radius: 20px;
   border: 5px solid #000;
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .customer-card {
   background-color: #fff;
+  /* border: 2px solid #4D2900; */
+  /* box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25); */
 }
 
 .product-card {
@@ -169,10 +199,14 @@ export default {
 .card-content {
   width: 100%;
   border-radius: 10px;
-  border: 4px solid #a18585;
+  border: 4px solid #4D2900; /* Thay đổi màu viền thành nâu */
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   padding: 20px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 450px; /* Đảm bảo chiều cao tối thiểu */
 }
 
 .stat-number {
@@ -189,6 +223,8 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+  flex: 1;
 }
 
 .stat-image {
@@ -244,6 +280,34 @@ export default {
   .stat-description {
     font-size: 18px;
   }
+}
+
+.product-card {
+  /* border: 2px solid #4D2900; Đổi độ dày viền từ 1px thành 2px */
+}
+
+.stat-description {
+  color: #4d2900;
+  font-family: "Montserrat", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 20px; /* Thêm margin bottom để tạo khoảng cách đều */
+  min-height: 100px; /* Đảm bảo chiều cao tối thiểu cho text */
+  display: flex;
+  align-items: center;
+}
+
+.product-card .card-content {
+  border-color: #4D2900; /* Đảm bảo viền màu nâu */
+  background-color: #f9f9f9;
+}
+
+/* Thêm style cụ thể cho customer-card */
+.customer-card .card-content {
+  border-color: #4D2900; /* Đảm bảo viền màu nâu */
+  background-color: #fff;
 }
 </style>
   

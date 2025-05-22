@@ -38,6 +38,7 @@ import AuthenticationService from '@/services/AuthenticationService';
 import eventBus from './eventBus';
 import Alert from '@/components/Alert.vue';
 import CartService from '@/services/CartService';
+import WishlistService from '@/services/WishlistService';
 export default {
   name: 'App',
   components: {
@@ -123,6 +124,41 @@ export default {
     if (!AuthenticationService.isLoggedIn()) {
         CartService.ensureGuestCartId();
     }
+
+    if (AuthenticationService.isLoggedIn()) {
+        WishlistService.getWishlist()
+            .then(response => {
+                eventBus.emit('wishlist-loaded', response.data);
+            })
+            .catch(error => console.error('Lỗi tải danh sách yêu thích:', error));
+    }
+    
+    // Khi người dùng đăng nhập, tải lại danh sách yêu thích
+    eventBus.on('user-logged-in', () => {
+      const userId = AuthenticationService.getCurrentUser()?.id;
+      if (userId) {
+          WishlistService.getUserWishlist(userId)
+              .then(response => {
+                  console.log('Đã tải danh sách yêu thích sau đăng nhập');
+                  
+                  // Tạo sự kiện với dữ liệu đã chuẩn hóa
+                  if (response.data && response.data.data && response.data.data.wishlist) {
+                      eventBus.emit('wishlist-loaded', {
+                          success: true,
+                          data: {
+                              products: response.data.data.wishlist.products || []
+                          }
+                      });
+                  } else {
+                      eventBus.emit('wishlist-loaded', response.data);
+                  }
+              })
+              .catch(error => console.error('Lỗi tải danh sách yêu thích sau đăng nhập:', error));
+      }
+  });
+    eventBus.on('close-alert', () => {
+      this.globalAlert.show = false; // Sửa từ this.alert thành this.globalAlert
+    });
   },
   beforeUnmount() {
     // Clean up listener
@@ -130,6 +166,7 @@ export default {
     eventBus.off('show-alert');
     eventBus.off('confirm');
     eventBus.off('cancel');
+    eventBus.off('close-alert', this.closeAlertHandler);
   },
   methods: {
     handleLogoutEvent() {
@@ -256,5 +293,23 @@ export default {
 
 .body{
   font-family: "Montserrat", sans-serif;
+}
+
+.Vue-Toastification__container {
+  z-index: 9999 !important;
+}
+
+.Vue-Toastification__container.top-right, 
+.Vue-Toastification__container.top-center, 
+.Vue-Toastification__container.top-left {
+  top: 85px !important; /* Điều chỉnh bằng chiều cao của navbar */
+}
+
+@media (max-width: 991px) {
+  .Vue-Toastification__container.top-right, 
+  .Vue-Toastification__container.top-center, 
+  .Vue-Toastification__container.top-left {
+    top: 55px !important; /* Chiều cao navbar trên thiết bị nhỏ hơn */
+  }
 }
 </style>

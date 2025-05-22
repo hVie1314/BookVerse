@@ -238,7 +238,8 @@
         <!-- Sử dụng ReviewList từ ProductDetail -->
         <ReviewList 
           :bookId="book._id" 
-          class="edit-review-list" 
+          class="edit-review-list"
+          :hideHiddenReviews="true"  
         />
       </div>
     </template>
@@ -250,6 +251,7 @@ import BookService from "@/services/BookService";
 import ReviewService from "@/services/ReviewService";
 import ReviewList from "@/components/ProductDetail/ReviewList.vue";
 import eventBus from "@/eventBus";
+import { useToast } from "vue-toastification";
 
 export default {
   name: "ProductEditPage",
@@ -290,6 +292,10 @@ export default {
       averageRating: 0,
       reviewsLoading: false
     };
+  },
+  setup() {
+    const toast = useToast();
+    return { toast };
   },
   created() {
     this.initializeForm();
@@ -614,26 +620,18 @@ export default {
         await BookService.updateBook(this.book._id, updatedData);
 
         // Thông báo thành công
-        eventBus.emit("show-alert", {
-          show: true,
-          type: "success",
-          title: "Thành công",
-          message: "Cập nhật sách thành công",
-          autoClose: true,
+        this.toast.success("Cập nhật sách thành công!", {
+          timeout: 2000,
+          closeOnClick: true,
         });
 
         // Thông báo cho component cha
         this.$emit("book-updated");
       } catch (error) {
         console.error("Lỗi khi cập nhật sách:", error);
-        eventBus.emit("show-alert", {
-          show: true,
-          type: "error",
-          title: "Lỗi",
-          message:
-            error.response?.data?.message ||
-            "Không thể cập nhật sách. Vui lòng thử lại sau.",
-          autoClose: true,
+        this.toast.error("Cập nhật sách thất bại!", {
+          timeout: 2000,
+          closeOnClick: true,
         });
       } finally {
         this.loading = false;

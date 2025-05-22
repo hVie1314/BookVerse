@@ -111,7 +111,14 @@ export default () => {
             // Các xử lý khác giữ nguyên
             if (error.response && error.response.status === 403) {
                 console.error('Lỗi quyền truy cập:', error.response.data);
-                
+                if (error.config && error.config.url && 
+                    (error.config.url.includes('review/') || 
+                    error.config.url.includes('/review/') ||
+                    error.config.url.includes('review?') ||
+                    error.config.url.includes('/review?'))) {
+                    console.log('Đã bỏ qua alert cho endpoint review');
+                    return Promise.reject(error);
+                }
                 // Nếu người dùng đã đăng nhập nhưng không có quyền
                 if (AuthenticationService.isLoggedIn()) {
                     eventBus.emit('show-alert', {

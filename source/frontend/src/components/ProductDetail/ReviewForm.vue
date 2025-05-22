@@ -42,6 +42,7 @@
   
   <script>
   import ReviewService from '@/services/ReviewService';
+  import {useToast} from 'vue-toastification';
   
   export default {
     name: 'ReviewForm',
@@ -59,6 +60,10 @@
         loading: false,
         error: null
       };
+    },
+    setup() {
+      const toast = useToast();
+      return { toast };
     },
     computed: {
       isValidForm() {
@@ -85,25 +90,25 @@
           };
           
           await ReviewService.addReview(this.bookId, reviewData);
+          this.toast.success("Đã gửi đánh giá thành công!", {
+            timeout: 3000,
+            closeOnClick: true
+          });
           this.$emit('submit-success');
         } catch (error) {
           console.error('Lỗi khi gửi đánh giá:', error);
           
-          // Xử lý các loại lỗi thường gặp
+          // Xử lý lỗi và hiển thị dưới form
           if (error.response) {
-                if (error.response.status === 403) {
-                    if (error.response.data?.message?.includes('buy this book')) {
-                        this.error = 'Bạn cần mua sách này để đánh giá.';
-                    } else if (error.response.data?.message?.includes('already reviewed')) {
-                        this.error = 'Bạn đã đánh giá sách này trước đó.';
-                    } else {
-                        this.error = 'Không có quyền gửi đánh giá. Vui lòng liên hệ hỗ trợ.';
-                        console.error('Chi tiết lỗi:', error.response.data);
-                    }
-                } else {
-                    this.error = error.response.data?.message || 'Không thể gửi đánh giá. Vui lòng thử lại sau.';
-                }
+            if (error.response.status === 403) {
+              // Nếu không thể kiểm tra thông qua message, chúng ta giả định rằng 
+              // lỗi 403 khi đánh giá thường liên quan đến việc không mua sách
+              this.error = 'Bạn phải mua sách thì mới có thể đánh giá được';
+              // Các điều kiện khác giữ nguyên nếu cần
             } else {
+              this.error = error.response.data?.message || 'Không thể gửi đánh giá. Vui lòng thử lại sau.';
+            }
+          } else {
             this.error = 'Lỗi kết nối. Vui lòng thử lại sau.';
           }
         } finally {
@@ -197,5 +202,10 @@
     color: #e53935;
     font-size: 14px;
     margin-top: 8px;
+    font-weight: 500;
+    background-color: rgba(229, 57, 53, 0.1);
+    padding: 8px 12px;
+    border-radius: 4px;
+    border-left: 3px solid #e53935;
   }
   </style>

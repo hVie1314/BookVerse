@@ -1,22 +1,27 @@
 <template>
     <article class="product-info">
+
       <div class="info-container">
         <div class="book-info">
+          <!-- 1. Hiển thị tên sách ở đầu tiên -->
           <h1 class="book-title">{{ book.title || 'Không có tiêu đề' }}</h1>
-
-            <div class="rating-container">
-                <div class="star-rating">
-                    <i v-for="index in 5" :key="index" 
-                        :class="[
-                            index <= Math.floor(averageRating) ? 'fas fa-star filled-star' : 
-                            index - averageRating < 1 && index - averageRating > 0 ? 'fas fa-star-half-alt filled-star' : 'far fa-star empty-star'
-                        ]"
-                    ></i>
-                </div>
-                <span class="rating-value">{{ averageRating.toFixed(1) }}/5</span>
-                <span class="review-count">({{ book.reviews ? book.reviews.length : 0 }} đánh giá)</span>
-            </div>
+          
+          <!-- 2. Hiển thị tác giả ngay sau tên sách -->
           <p class="book-author">{{ book.author || 'Không có tác giả' }}</p>
+          
+          <!-- 3. Hiển thị rating dưới dạng sao ngay dưới tác giả -->
+          <div class="rating-container">
+              <div class="star-rating">
+                  <i v-for="index in 5" :key="index" 
+                      :class="[
+                          index <= Math.floor(averageRating) ? 'fas fa-star filled-star' : 
+                          index - averageRating < 1 && index - averageRating > 0 ? 'fas fa-star-half-alt filled-star' : 'far fa-star empty-star'
+                      ]"
+                  ></i>
+              </div>
+              <span class="rating-value">{{ averageRating.toFixed(1) }}/5</span>
+              <span class="review-count">({{ book.reviews ? book.reviews.length : 0 }} đánh giá)</span>
+          </div>
           <p class="book-price">{{ formatPrice(book.price) }}</p>
   
           <div class="sold-info">
@@ -68,7 +73,7 @@
     export default {
         name: 'ProductInfo',
         components: {
-            ProductActions
+            ProductActions,
         },
         props: {
             book: {
@@ -86,7 +91,9 @@
         },
         mounted() {
             this.averageRating = this.book.rating || 0;
-            console.log('Đánh giá trung bình từ book object:', this.averageRating);
+            console.log('Book data:', this.book);
+            console.log('Title:', this.book.title);
+            console.log('Author:', this.book.author);
         },
         
         methods: {
@@ -101,10 +108,10 @@
                 }).format(price).replace('₫', 'đ');
             },
             calculateProgressWidth() {
-                // Giả sử tính toán dựa trên số lượng bán
+                // Tính toán dựa trên số lượng đã bán với tối đa 1000 cuốn
                 const soldCount = this.book.sold || 0;
-                // Giả sử một sách bán chạy là khoảng 100 cuốn
-                const percentage = Math.min(soldCount / 100 * 100, 100);
+                // Tính phần trăm: số lượng đã bán / 1000 * 100
+                const percentage = Math.min((soldCount / 1000) * 100, 100);
                 return percentage;
             },
             incrementQuantity() {
@@ -165,6 +172,7 @@
 
     
     .info-container {
+        margin-top: 70px;
         width: 100%;
     }
     
@@ -419,4 +427,12 @@
         flex-shrink: 0;
         cursor: pointer;
     }
+
+    .book-title, .book-author {
+    display: block !important; /* Force display */
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: rgba(76, 41, 0, 1) !important; /* Đảm bảo màu sắc nổi bật */
+    border: 1px solid transparent; /* Để dễ thấy kích thước phần tử */
+}
 </style>

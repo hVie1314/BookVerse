@@ -33,6 +33,7 @@
     import WishlistService from '@/services/WishlistService';
     import eventBus from '@/eventBus.js';
     import AuthenticationService from '@/services/AuthenticationService';
+    import { useToast } from 'vue-toastification';
     export default {
     name: 'ProductActions',
     props: {
@@ -45,9 +46,14 @@
             default: 1
         }
     },
+    setup() {
+        // Khởi tạo toast trong setup hook
+        const toast = useToast();
+        return { toast }; // Trả về toast cho template sử dụng
+    },
     data() {
         return {
-            isInWishlist: false
+            isInWishlist: false,
         }
     },
     mounted() {
@@ -74,28 +80,56 @@
                     const userId = AuthenticationService.getCurrentUser().id;
                     const bookId = this.book._id || this.book.id;
                     
+                    // Log IDs để debug
+                    console.log('Kiểm tra sách ID:', bookId);
+                    
                     const response = await WishlistService.getUserWishlist(userId);
                     
-                    if (response.data && response.data.success && response.data.data) {
-                        const wishlistItems = response.data.data.products || [];
-                        
-                        // Cải thiện cách so sánh
-                        this.isInWishlist = wishlistItems.some(item => {
-                            if (typeof item.productId === 'string') {
-                                return item.productId === bookId;
-                            }
-                            
-                            if (item.productId && item.productId._id) {
-                                return item.productId._id === bookId;
-                            }
-                            
-                            if (item.productId && item.productId.toString) {
-                                return item.productId.toString() === bookId.toString();
-                            }
-                            
-                            return false;
-                        });
+                    // Log response để debug
+                    console.log('WishlistService response:', response.data);
+                    
+                    // Xử lý linh hoạt hơn với nhiều cấu trúc dữ liệu có thể có
+                    let wishlistItems = [];
+                    if (response.data && response.data.success) {
+                        if (response.data.data && response.data.data.products) {
+                            wishlistItems = response.data.data.products;
+                        } else if (response.data.data && response.data.data.wishlist && response.data.data.wishlist.products) {
+                            wishlistItems = response.data.data.wishlist.products;
+                        } else if (response.data.products) {
+                            wishlistItems = response.data.products;
+                        } else if (response.data.wishlist && response.data.wishlist.products) {
+                            wishlistItems = response.data.wishlist.products;
+                        }
                     }
+                    
+                    console.log('Danh sách sản phẩm yêu thích:', wishlistItems);
+                    
+                    // Chuẩn hóa bookId để so sánh
+                    const normalizedBookId = String(bookId).trim();
+                    
+                    // Tìm kiếm sản phẩm trong danh sách yêu thích
+                    this.isInWishlist = wishlistItems.some(item => {
+                        // Xử lý nhiều trường hợp productId khác nhau
+                        let itemId = '';
+                        
+                        if (typeof item.productId === 'string') {
+                            itemId = item.productId;
+                        } else if (item.productId && item.productId._id) {
+                            itemId = item.productId._id;
+                        } else if (item.productId && typeof item.productId.toString === 'function') {
+                            itemId = item.productId.toString();
+                        } else if (item._id) {
+                            itemId = item._id;
+                        } else if (item.id) {
+                            itemId = item.id;
+                        }
+                        
+                        // Chuẩn hóa itemId và so sánh
+                        return String(itemId).trim() === normalizedBookId;
+                    });
+                    
+                    console.log('Kết quả kiểm tra trong wishlist:', this.isInWishlist);
+                    
                 } catch (error) {
                     console.error('Lỗi khi kiểm tra trạng thái wishlist:', error);
                 }
@@ -103,35 +137,83 @@
                 this.isInWishlist = false;
             }
         },
+
+        animateToCart() {
+            // Tìm hình ảnh sách từ trang chi tiết
+            const bookImage = document.querySelector('.product-detail-image');
+            // Tìm icon giỏ hàng trong navbar
+            const cartIcon = document.querySelector('.fa-cart-shopping');
+            
+            if (!bookImage || !cartIcon) return;
+            
+            // Lấy vị trí và kích thước của hình ảnh sách
+            const bookRect = bookImage.getBoundingClientRect();
+            // Lấy vị trí của icon giỏ hàng
+            const cartRect = cartIcon.getBoundingClientRect();
+            
+            // Tạo một phần tử ảnh mới để làm hiệu ứng
+            const flyingImage = document.createElement('img');
+            flyingImage.src = bookImage.src;
+            flyingImage.style.position = 'fixed';
+            flyingImage.style.zIndex = '9999';
+            flyingImage.style.left = `${bookRect.left}px`;
+            flyingImage.style.top = `${bookRect.top}px`;
+            flyingImage.style.width = '100px';
+            flyingImage.style.height = '130px';
+            flyingImage.style.objectFit = 'contain';
+            flyingImage.style.borderRadius = '8px';
+            flyingImage.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+            flyingImage.style.transition = 'all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            flyingImage.style.opacity = '1';
+            
+            // Thêm phần tử vào body
+            document.body.appendChild(flyingImage);
+            
+            // Thiết lập timeout để kích hoạt hiệu ứng bay sau khi phần tử được thêm vào DOM
+            setTimeout(() => {
+                flyingImage.style.left = `${cartRect.left}px`;
+                flyingImage.style.top = `${cartRect.top}px`;
+                flyingImage.style.width = '20px';
+                flyingImage.style.height = '20px';
+                flyingImage.style.opacity = '0.5';
+                flyingImage.style.transform = 'rotate(360deg)';
+            }, 50);
+            
+            // Xóa phần tử sau khi hoàn thành hiệu ứng
+            setTimeout(() => {
+                if (document.body.contains(flyingImage)) {
+                    document.body.removeChild(flyingImage);
+                }
+            }, 1050);
+        },
         async addToCart() {
             try {
+                // Hiệu ứng bay vào giỏ hàng
+                this.animateToCart();
+                
+                // Bọc emit trong try-catch riêng để có thể xử lý lỗi nhưng vẫn tiếp tục
+                try {
+                eventBus.emit('cart-animation');
+                } catch (err) {
+                console.error('Lỗi khi emit cart-animation:', err);
+                // Vẫn tiếp tục thực hiện chức năng thêm vào giỏ hàng
+                }
+                
+                // Thêm vào giỏ hàng thông qua API
                 await CartService.addToCart({ 
                     bookId: this.book._id || this.book.id, 
                     quantity: this.quantity 
                 });
                 
-                eventBus.emit('show-alert', {
-                    show: true,
-                    type: 'success',
-                    title: 'Thành công',
-                    message: 'Đã thêm sản phẩm vào giỏ hàng',
-                    autoClose: true,
-                    duration: 3000
-                });
-                
+                // Cập nhật số lượng giỏ hàng
                 eventBus.emit('cart-updated');
             } catch (error) {
                 console.error('Lỗi khi thêm vào giỏ hàng:', error);
-                eventBus.emit('show-alert', {
-                    show: true,
-                    type: 'error',
-                    title: 'Lỗi',
-                    message: 'Không thể thêm sản phẩm vào giỏ hàng',
-                    autoClose: true,
-                    duration: 3000
+                this.toast.error("Không thể thêm sản phẩm vào giỏ hàng", {
+                timeout: 2500
                 });
             }
-        },
+            },
         
         async addToFavorites() {
             try {
@@ -143,34 +225,18 @@
                     await WishlistService.removeFromWishlist(bookId);
                     this.isInWishlist = false;
                     
-                    eventBus.emit('show-alert', {
-                        show: true,
-                        type: 'success',
-                        title: 'Thành công',
-                        message: 'Đã xóa sản phẩm khỏi danh sách yêu thích',
-                        autoClose: true,
-                        duration: 3000
-                    });
                 } else {
-                    // Nếu chưa có, thêm vào wishlist
-                    const response = await WishlistService.addToWishlist(bookId);
-                    
-                    // Kiểm tra phản hồi từ API 
-                    if (!response.data || !response.data.success) {
-                        throw new Error('Thêm vào yêu thích không thành công');
-                    }
-                    
-                    this.isInWishlist = true;
-                    
-                    eventBus.emit('show-alert', {
-                        show: true,
-                        type: 'success',
-                        title: 'Thành công',
-                        message: 'Đã thêm sản phẩm vào danh sách yêu thích',
-                        autoClose: true,
-                        duration: 3000
-                    });
+                // Nếu chưa có, thêm vào wishlist
+                const response = await WishlistService.addToWishlist(bookId);
+                
+                // Kiểm tra phản hồi từ API 
+                if (!response.data || !response.data.success) {
+                    throw new Error('Thêm vào yêu thích không thành công');
                 }
+                
+                this.isInWishlist = true;
+                
+            }
                 
                 // Phát sự kiện để cập nhật UI wishlist
                 eventBus.emit('wishlist-updated');
@@ -188,13 +254,8 @@
                     }
                 }
                 
-                eventBus.emit('show-alert', {
-                    show: true,
-                    type: 'error',
-                    title: 'Lỗi',
-                    message: errorMessage,
-                    autoClose: true,
-                    duration: 3000
+                this.toast.error(errorMessage, {
+                    timeout: 2500
                 });
             }
         },

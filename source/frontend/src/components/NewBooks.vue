@@ -35,6 +35,8 @@
                         :author="book.author"
                         :cartText="'Thêm vào giỏ'"
                         :sold="String(book.sold)"
+                        :product="book"
+                        :rating="book.rating || 0"
                     />
                 </div>
             </div>
@@ -80,7 +82,7 @@ export default {
             error: null,
             currentPage: 1,
             booksPerPage: 5,
-            totalBooks: 20 // Giới hạn tổng số sách cần lấy
+            totalBooks: 20, // Giới hạn tổng số sách cần lấy
         };
     },
     computed: {
@@ -155,7 +157,8 @@ export default {
                 originalPrice: book.originalPrice > book.price ? book.originalPrice : null,
                 title: book.title,
                 author: book.author,
-                sold: String(book.sold || 0)
+                sold: String(book.sold || 0),
+                rating: book.rating || 0
             };
             },
         

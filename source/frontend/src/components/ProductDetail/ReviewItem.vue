@@ -37,12 +37,9 @@
                   </button>
                 </template>
                 
-                <template v-else-if="isStaff">
-                  <button v-if="!localReview.hidden" class="auth-button login-button" @click.stop="toggleReviewVisibility(true)">
+                <template v-else-if="isStaff && !localReview.hidden">
+                  <button class="auth-button login-button" @click.stop="hideReview">
                     <i class="fas fa-eye-slash"></i> Ẩn đánh giá
-                  </button>
-                  <button v-else class="auth-button login-button" @click.stop="toggleReviewVisibility(false)">
-                    <i class="fas fa-eye"></i> Hiện đánh giá
                   </button>
                   <button class="auth-button register-button" @click.stop="confirmDeleteReview">
                     <i class="fas fa-trash"></i> Xóa đánh giá
@@ -131,6 +128,7 @@
 import AuthenticationService from '@/services/AuthenticationService';
 import ReviewService from '@/services/ReviewService';
 import eventBus from '@/eventBus.js';
+import { useToast } from 'vue-toastification';
 
 export default {
     name: 'ReviewItem',
@@ -152,6 +150,12 @@ export default {
           editContent: '',
           localReview: null // đánh giá hiện tại.
         };
+    },
+    setup() {
+      const toast = useToast();
+      return {
+        toast
+      };
     },
     created() {
       this.localReview = { 
@@ -178,7 +182,7 @@ export default {
         },
         displayContent() {
             const reviewText = this.localReview.content || this.localReview.comment || '';
-            if (!reviewText) return 'Không có nội dung đánh giá';
+            if (!reviewText) return '';
             
             return this.expanded || !this.isLongContent 
                 ? reviewText 
@@ -190,6 +194,32 @@ export default {
         }
     },
     methods: {
+      async hideReview() {
+        try {
+          this.showOptionsMenu = false;
+          
+          await ReviewService.hideReview(this.review.id);
+          
+          this.localReview = {
+            ...this.localReview,
+            hidden: true
+          };
+          
+          this.$emit('visibility-changed', {
+            id: this.review.id,
+            hidden: true
+          });
+          
+          this.toast.success("Đã ẩn đánh giá!", {
+            timeout: 3000
+          });
+        } catch (error) {
+          console.error('Lỗi khi ẩn đánh giá:', error);
+          this.toast.error("Không thể ẩn đánh giá. Vui lòng thử lại sau.", {
+            timeout: 3000
+          });
+        }
+      },
         toggleExpandContent() {
           this.expanded = !this.expanded;
         },
@@ -247,22 +277,14 @@ export default {
               comment: this.editContent
             });
             
-            eventBus.emit('show-alert', {
-              show: true,
-              type: 'success',
-              title: 'Thành công',
-              message: 'Đã cập nhật đánh giá thành công',
-              autoClose: true
+            this.toast.success("Đã cập nhật đánh giá thành công!", {
+              timeout: 3000
             });
             
           } catch (error) {
             console.error('Lỗi khi cập nhật đánh giá:', error);
-            eventBus.emit('show-alert', {
-              show: true,
-              type: 'error',
-              title: 'Lỗi',
-              message: 'Không thể cập nhật đánh giá. Vui lòng thử lại sau.',
-              autoClose: true
+            this.toast.error("Không thể cập nhật đánh giá. Vui lòng thử lại sau.", {
+              timeout: 3000
             });
           }
         },
@@ -342,29 +364,32 @@ export default {
           try {
             // Gọi API để xóa đánh giá
             await ReviewService.deleteReview(this.review.id);
+
+            this.showConfirmDelete = false;
+            
+            try {
+              eventBus.emit('close-alert');
+            } catch (error) {
+              console.error('Error when emitting close-alert:', error);
+            }
             
             // Thông báo thành công
-            eventBus.emit('show-alert', {
-              show: true,
-              type: 'success',
-              title: 'Thành công',
-              message: 'Đã xóa đánh giá thành công',
-              autoClose: true
+            this.toast.success("Đã xóa đánh giá thành công!", {
+              timeout: 3000
             });
             
             // Phát sự kiện để cập nhật danh sách đánh giá
-            this.$emit('review-deleted');
+            this.$emit('review-deleted', this.review.id);
             
           } catch (error) {
             console.error('Lỗi khi xóa đánh giá:', error);
             
+            // Đóng hộp thoại xác nhận ngay cả khi có lỗi (thêm dòng này)
+            eventBus.emit('close-alert');
+            
             // Thông báo lỗi
-            eventBus.emit('show-alert', {
-              show: true,
-              type: 'error',
-              title: 'Lỗi',
-              message: 'Không thể xóa đánh giá. Vui lòng thử lại sau.',
-              autoClose: true
+            this.toast.error("Không thể xóa đánh giá. Vui lòng thử lại sau.", {
+              timeout: 3000
             });
           }
         }

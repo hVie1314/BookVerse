@@ -13,7 +13,7 @@ export default {
     },
     
     // Lưu thông tin đăng nhập vào localStorage
-    setUser(userData) {
+   setUser(userData) {
         if (userData && userData.accessToken) {
             localStorage.setItem('token', userData.accessToken);
             localStorage.setItem('user', JSON.stringify({
@@ -23,6 +23,9 @@ export default {
                 role: userData.role,
                 avatar: userData.avatar
             }));
+            
+            // Phát sự kiện đăng nhập thành công
+            eventBus.emit('user-logged-in', userData);
         }
     },
     

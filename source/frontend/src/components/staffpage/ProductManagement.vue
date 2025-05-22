@@ -759,7 +759,8 @@ export default {
   border-radius: 10px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
   padding: 10px 15px;
-  min-width: 200px;
+  width: 250px; /* Chiều dài cố định đủ cho option dài nhất */
+  min-width: 250px;
   position: relative;
 }
 
@@ -785,6 +786,13 @@ export default {
   color: #333;
 }
 
+.dropdown-button {
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .dropdown-content {
   position: absolute;
   top: 100%;
@@ -797,6 +805,12 @@ export default {
   max-height: 300px;
   overflow-y: auto;
   margin-top: 5px;
+}
+
+.dropdown-content {
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .category-item,
