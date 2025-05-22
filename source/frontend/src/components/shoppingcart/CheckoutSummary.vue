@@ -1,32 +1,32 @@
 <template>
   <aside class="checkout-summary">
     <div class="summary-content">
+      
       <div class="summary-details">
-        <!-- Thêm thông tin về sản phẩm đã chọn -->
-        <div class="summary-item selected-items-info">
-          <span class="summary-label">Đã chọn:</span>
-          <span class="summary-value">{{ selectedCount }}/{{ totalCount }} sản phẩm</span>
-        </div>
-        
-        <!-- Existing summary items -->
-        <div class="summary-item">
-          <span class="summary-label">Tổng tiền hàng: </span>
+        <div class="summary-row">
+          <span class="summary-label">Tổng tiền hàng</span>
           <span class="summary-value">{{ formatPrice(totalPrice) }}</span>
         </div>
-        <div class="summary-item">
-          <span class="summary-label">Phí vận chuyển: </span>
+        
+        <div class="summary-row">
+          <span class="summary-label">Phí vận chuyển</span>
           <span class="summary-value">{{ formatPrice(shippingFee) }}</span>
         </div>
+        
         <div class="summary-divider"></div>
-        <div class="total-row">
-          <h3 class="total-label">Tổng thanh toán: </h3>
-          <p class="total-value">{{ formatPrice(totalPrice + shippingFee) }}</p>
+        
+        <div class="summary-row total-row">
+          <span class="total-label">Tổng thanh toán</span>
+          <span class="total-value">{{ formatPrice(totalPrice + shippingFee) }}</span>
         </div>
       </div>
       
-      <!-- Button shows count of selected items -->
-      <button class="checkout-button" @click="checkout" :disabled="selectedCount === 0">
-        ĐẶT HÀNG ({{ selectedCount }})
+      <button 
+        class="checkout-button" 
+        @click="checkout" 
+        :disabled="selectedCount === 0"
+      >
+        ĐẶT HÀNG
       </button>
     </div>
   </aside>
@@ -76,183 +76,148 @@ export default {
 <style scoped>
 .checkout-summary {
   width: 100%;
-  margin: 0; /* Bỏ margin auto */
+  margin: 0;
 }
 
 .summary-content {
   border-radius: 8px;
-  background-color: rgba(255, 255, 255, 1);
-  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.15); /* Giảm shadow */
+  background-color: #ffffff;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
   width: 100%;
-  padding: 16px 14px; /* Giảm padding */
-  color: rgba(0, 0, 0, 1);
+  padding: 20px;
+  color: #000000;
+}
+
+.summary-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #4d2900;
+  margin-bottom: 16px;
+  text-align: center;
 }
 
 .summary-details {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  margin: 0;
+  width: 100%;
 }
 
 .summary-row {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
-
-.summary-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-  flex-wrap: nowrap;
+  margin-bottom: 12px;
 }
 
 .summary-label {
-  font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.7);
-  white-space: nowrap;
-  margin-top: 10px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  color: #666666;
 }
 
 .summary-value {
-  font-family: "Darker Grotesque", -apple-system, Roboto, Helvetica, sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 14px;
-  font-weight: 500;
-  text-align: right;
-}
-
-.labels {
-  font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 14px;
-}
-
-.summary-label + .summary-label {
-  margin-top: 25px;
-}
-
-.values {
-  font-family: "Darker Grotesque", -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 16px;
-  text-align: right;
-}
-
-.labels, .values {
-  width: auto;
-  min-width: 30%;
-  display: flex;
-  flex-direction: column;
-  padding: 0 10px;
-}
-
-.summary-value + .summary-value {
-  margin-top: 16px;
+  font-weight: 600;
+  color: #333333;
 }
 
 .summary-divider {
-  border-color: rgba(208, 207, 207, 1);
-  border-style: solid;
-  border-width: 1px;
-  margin: 10px 0;
-  width: 100%;
+  border: none;
   height: 1px;
+  background-color: #e0e0e0;
+  margin: 16px 0;
 }
-@media (min-width: 1200px) {
-  /* Bỏ hoàn toàn layout flex row */
-  .summary-row {
-    display: flex;
-    flex-direction: column; /* Thay đổi thành column để giữ nguyên trật tự */
-    width: 100%;
-  }
-  
-  .labels, .values {
-    display: flex;
-    flex-direction: column; /* Hiển thị theo cột */
-    width: 100%;
-  }
-  
-  /* Tạo layout có 2 cột bằng cách đặt label và giá trị trên cùng một hàng */
-  .summary-label, .summary-value {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin: 8px 0 !important;
-  }
-  
-  /* Đặt tổng thanh toán ở cuối */
-  .total-row {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    margin-top: 12px;
-  }
-  
-  /* Nút đặt hàng vẫn giữ nguyên chiều rộng */
-  .checkout-button {
-    width: 100%;
-    padding: 12px;
-  }
-}
+
 .total-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  font-weight: 700;
-  margin: 8px 0;
+  margin-top: 8px;
+  margin-bottom: 20px;
 }
 
 .total-label {
-  font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+  font-family: "Montserrat", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #4d2900;
 }
 
 .total-value {
-  font-family: "Darker Grotesque", -apple-system, Roboto, Helvetica, sans-serif;
+  font-family: "Montserrat", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #4d2900;
 }
 
 .checkout-button {
-  border-radius: 6px; /* Giảm bo góc */
-  margin-top: 12px; /* Giảm margin */
-  padding: 8px; /* Giảm padding */
-  font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 14px; /* Giảm font size */
-  color: rgba(255, 255, 255, 1);
-  font-weight: 600;
-  text-align: center;
-  letter-spacing: 0.5px; /* Giảm letter spacing */
-  background-color: #4d2900;
-  border: none;
-  cursor: pointer;
   width: 100%;
-  transition: background-color 0.3s ease;
-  height: 36px;
-} 
+  padding: 12px 0;
+  background-color: #4d2900;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
 
 .checkout-button:hover {
-  background-color: #724e4e;
+  background-color: #5e3300;
+  transform: translateY(-2px);
 }
 
-@media (max-width: 991px) {
-  .checkout-summary {
-    width: 100%;
-  }
-
-  .summary-content {
-    margin-top: 15px; /* Giảm margin */
-    padding: 15px; /* Giảm padding */
-  }
-}
-
-.selected-items-info {
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-/* Disable button when no items selected */
 .checkout-button:disabled {
   background-color: #a89393;
   cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive styles */
+@media (max-width: 991px) {
+  .summary-content {
+    padding: 16px;
+  }
+  
+  .summary-title {
+    font-size: 16px;
+  }
+  
+  .checkout-button {
+    padding: 10px 0;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 576px) {
+  .summary-content {
+    padding: 12px;
+    border-radius: 6px;
+  }
+  
+  .summary-label,
+  .summary-value {
+    font-size: 13px;
+  }
+  
+  .total-label {
+    font-size: 15px;
+  }
+  
+  .total-value {
+    font-size: 16px;
+  }
+  
+  .checkout-button {
+    font-size: 14px;
+    padding: 8px 0;
+  }
+}
+
+/* Styles for when it's sticky at the bottom */
+.checkout-summary-container.is-sticky .checkout-summary {
+  background-color: #ffffff;
+  border-top: 1px solid #e0e0e0;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
 }
 </style>
