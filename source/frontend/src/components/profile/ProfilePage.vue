@@ -42,57 +42,66 @@
         <!-- Khi người dùng chọn thay đổi mật khẩu, hiển thị 2 ô mật khẩu -->
         <div v-if="isEditing && isChangingPassword" class="password-change-section">
             <!-- Phần mật khẩu hiện tại -->
-            <section class="profile-field password-field">
-                <label class="field-label">Mật khẩu hiện tại <span class="required-star">*</span></label>
+            <section class="profile-field">
+                <label class="field-label">
+                    Mật khẩu hiện tại
+                </label>
                 <div class="input-container">
                     <input 
-                    :type="isOldPasswordVisible ? 'text' : 'password'" 
-                    v-model="userForm.oldPassword" 
-                    placeholder="Nhập mật khẩu hiện tại" 
-                    class="field-input"
-                    :class="{ 'error-input': oldPasswordError }" 
-                    @focus="oldPasswordFocused = true" 
-                    @blur="validateOldPassword"
+                        :type="isOldPasswordVisible ? 'text' : 'password'" 
+                        v-model="userForm.oldPassword" 
+                        placeholder="Nhập mật khẩu hiện tại" 
+                        class="field-input"
+                        :class="{ 'error-input': oldPasswordError }" 
+                        @focus="oldPasswordFocused = true" 
+                        @blur="validateOldPassword"
                     >
                     <div class="icon-container password-toggle" @click="toggleOldPasswordVisibility">
-                    <transition name="fade" mode="out-in">
-                        <div v-if="isOldPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
-                        <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
-                    </transition>
+                        <transition name="fade" mode="out-in">
+                            <div v-if="isOldPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
+                            <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
+                        </transition>
                     </div>
                 </div>
-                <!-- Sửa container cho thông báo lỗi -->
-                
             </section>
+            <!-- Thông báo lỗi -->
             <div v-if="oldPasswordError" class="field-error-container">
-                    <div class="field-error">
+                <div class="field-error">
                     <i class="fa-solid fa-circle-exclamation error-icon"></i>
                     {{ oldPasswordError }}
-                    </div>
-            </div>
-            <!-- Phần mật khẩu mới -->
-            <section class="profile-field">
-            <label class="field-label">Mật khẩu mới <span class="required-star">*</span></label>
-            <div class="input-container">
-                <input 
-                :type="isPasswordVisible ? 'text' : 'password'" 
-                v-model="userForm.password" 
-                placeholder="Nhập mật khẩu mới" 
-                class="field-input"
-                :class="{ 'error': passwordError }"
-                @focus="passwordFocused = true" 
-                @blur="passwordFocused = false"
-                >
-                <div class="icon-container password-toggle" @click="togglePasswordVisibility">
-                <transition name="fade" mode="out-in">
-                    <div v-if="isPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
-                    <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
-                </transition>
                 </div>
             </div>
-            
+
+            <!-- Điều chỉnh phần mật khẩu mới -->
+            <section class="profile-field">
+                <label class="field-label">
+                    Mật khẩu mới
+                </label>
+                <div class="input-container">
+                    <input 
+                        :type="isPasswordVisible ? 'text' : 'password'" 
+                        v-model="userForm.password" 
+                        placeholder="Nhập mật khẩu mới" 
+                        class="field-input"
+                        :class="{ 'error-input': passwordError }"
+                        @focus="passwordFocused = true" 
+                        @blur="passwordFocused = false"
+                    >
+                    <div class="icon-container password-toggle" @click="togglePasswordVisibility">
+                        <transition name="fade" mode="out-in">
+                            <div v-if="isPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
+                            <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
+                        </transition>
+                    </div>
+                </div>
             </section>
-            <div v-if="passwordError"  class="field-error-container"><div class="field-error">{{ passwordError }}</div></div>
+            <!-- Thông báo lỗi -->
+            <div v-if="passwordError" class="field-error-container">
+                <div class="field-error">
+                    <i class="fa-solid fa-circle-exclamation error-icon"></i>
+                    {{ passwordError }}
+                </div>
+            </div>
             <div class="password-note">
             <span class="required-star">*</span> Lưu ý: Nếu bạn thay đổi mật khẩu, bạn sẽ cần đăng nhập lại
             </div>
@@ -1004,5 +1013,119 @@ export default {
 
 .field-error {
   animation: errorPulse 2s infinite;
+}
+
+.input-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.field-error {
+  color: #e74c3c;
+  font-size: 14px;
+  font-family: "Montserrat", sans-serif;
+  display: flex;
+  align-items: center;
+  background-color: rgba(231, 76, 60, 0.08);
+  padding: 6px 12px;
+  border-radius: 4px;
+  border-left: 3px solid #e74c3c;
+  margin-top: 8px;
+  animation: errorPulse 2s infinite;
+}
+
+/* Điều chỉnh style hiện có */
+.profile-field {
+  width: 80%;
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 30px;
+}
+
+.field-label {
+  width: 20%;
+  min-width: 150px; /* Đảm bảo kích thước tối thiểu cho label */
+}
+
+/* Xóa bỏ field-error-container hiện tại */
+.field-error-container {
+  width: 80%;
+  margin-left: calc(20% + 30px); /* Căn chỉnh theo label + gap */
+  margin-bottom: 20px;
+  margin-top: -10px;
+  display: flex;
+}
+
+/* Đảm bảo input container có kích thước đồng nhất */
+.input-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 5px;
+  transition: transform 0.3s ease;
+}
+
+/* Đảm bảo các input có kích thước đồng nhất */
+.field-input {
+  width: 100%;
+  height: 50px;
+  box-sizing: border-box;
+}
+
+/* Định dạng cho .password-change-section */
+.password-change-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.field-error {
+  color: #e74c3c;
+  font-size: 14px;
+  font-family: "Montserrat", sans-serif;
+  display: flex;
+  align-items: center;
+  background-color: rgba(231, 76, 60, 0.08);
+  padding: 6px 12px;
+  border-radius: 4px;
+  border-left: 3px solid #e74c3c;
+  animation: errorPulse 2s infinite;
+}
+
+.password-change-section .field-label {
+  display: flex;
+  width: 20%;
+  min-width: 180px; /* Tăng min-width để đủ chỗ cho label dài hơn */
+  white-space: nowrap; /* Ngăn label xuống dòng */
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #4d2900;
+  position: relative; /* Cho phép đặt required-star tương đối với label */
+}
+
+/* Điều chỉnh vị trí của dấu sao */
+.password-change-section .required-star {
+  color: #ff3333;
+  margin-left: 4px;
+  font-weight: bold;
+  position: absolute;
+  right: -12px; /* Đặt dấu sao bên phải label */
+  top: 0;
+}
+
+/* Đảm bảo chiều rộng đồng nhất */
+.password-change-section .profile-field {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 30px;
+}
+
+/* Điều chỉnh chiều rộng của phần input container */
+.password-change-section .input-container {
+  width: 80%;
 }
 </style>

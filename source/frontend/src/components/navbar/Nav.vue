@@ -1,7 +1,7 @@
 <template>
   <header class="header-container">
     <div class="header-content">
-      <router-link to="/" class="logo-section">
+      <div class="logo-section" @click="navigateToHome">
         <div class="logo-icon-wrapper">
           <svg
             width="62"
@@ -22,7 +22,7 @@
           </svg>
         </div>
         <h1 class="brand-name">BOOKVERSE</h1>
-      </router-link>
+      </div>
   
       <div class="search-section">
         <form @submit.prevent="handleSearch" class="search-form">
@@ -169,6 +169,16 @@ export default {
     }
   },
   methods: {
+    navigateToHome() {
+      // Kiểm tra xem đang ở trang chủ hay không
+      if (this.$route.path === '/') {
+        // Nếu đang ở trang chủ, tải lại trang
+        window.location.reload();
+      } else {
+        // Nếu không phải trang chủ, điều hướng đến trang chủ
+        this.$router.push('/');
+      }
+    },
    animateCartIcon() {
       // Lấy ra icon giỏ hàng trong thanh navigation
       const cartIcon = document.querySelector('.icon-container .fa-cart-shopping');
@@ -854,5 +864,12 @@ i.fa-bars{
   background-color: #ff3333;
 }
 
-
+.logo-section {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  margin-top: 25px;
+  transition: all 0.3s ease;
+  cursor: pointer; /* Thêm con trỏ pointer để hiển thị là có thể click */
+}
 </style>
