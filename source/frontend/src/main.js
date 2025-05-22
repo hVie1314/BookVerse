@@ -23,7 +23,10 @@ const toastOptions = {
     hideProgressBar: false,
     closeButton: 'button',
     icon: true,
-    rtl: false
+    rtl: false,
+    containerClassName: "toast-container", // Thêm class để dễ styling
+    toastClassName: "bookverse-toast", // Thêm class cho mỗi toast
+    bodyClassName: "toast-body" // Class cho phần nội dung toast
 }
 
 

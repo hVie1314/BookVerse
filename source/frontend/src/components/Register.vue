@@ -1,10 +1,10 @@
 <template>
   <Alert 
-  v-model:show="alert.show" 
-  :type="alert.type" 
-  :title="alert.title" 
-  :message="alert.message" 
-  :auto-close-only="true"
+    v-model:show="alert.show" 
+    :type="alert.type" 
+    :title="alert.title" 
+    :message="alert.message" 
+    :auto-close-only="true"
   />
   <div>
     <link
@@ -25,10 +25,18 @@
               type="text"
               placeholder="Nhập tên đăng nhập của bạn"
               class="form-input"
+              :class="{ 'error-input': usernameError }"
               v-model="formData.username"
               @focus="usernameFocused = true"
-              @blur="usernameFocused = false"
+              @blur="validateUsername"
             />
+          </div>
+          <!-- Username Error Message -->
+          <div v-if="usernameError" class="field-error-container">
+            <div class="field-error">
+              <i class="fa-solid fa-circle-exclamation error-icon"></i>
+              {{ usernameError }}
+            </div>
           </div>
           
           <!-- Email Input -->
@@ -37,11 +45,19 @@
               type="email"
               placeholder="Nhập email của bạn"
               class="form-input"
+              :class="{ 'error-input': emailError }"
               v-model="formData.email"
               @focus="emailFocused = true"
-              @blur="emailFocused = false"
+              @blur="validateEmail"
             />
             <div class="icon-container"><i class="fa-regular fa-envelope eyes"></i></div>
+          </div>
+          <!-- Email Error Message -->
+          <div v-if="emailError" class="field-error-container">
+            <div class="field-error">
+              <i class="fa-solid fa-circle-exclamation error-icon"></i>
+              {{ emailError }}
+            </div>
           </div>
           
           <!-- Password Input -->
@@ -50,15 +66,23 @@
               :type="isPasswordVisible ? 'text' : 'password'"
               placeholder="Nhập mật khẩu của bạn"
               class="form-input"
+              :class="{ 'error-input': passwordError }"
               v-model="formData.password"
               @focus="passwordFocused = true"
-              @blur="passwordFocused = false"
+              @blur="validatePassword"
             />
             <div class="icon-container password-toggle" @click="togglePasswordVisibility">
               <transition name="fade" mode="out-in">
                 <div v-if="isPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
                 <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
               </transition>
+            </div>
+          </div>
+          <!-- Password Error Message -->
+          <div v-if="passwordError" class="field-error-container">
+            <div class="field-error">
+              <i class="fa-solid fa-circle-exclamation error-icon"></i>
+              {{ passwordError }}
             </div>
           </div>
           
@@ -68,16 +92,24 @@
               :type="isConfirmPasswordVisible ? 'text' : 'password'"
               placeholder="Xác nhận mật khẩu của bạn"
               class="form-input"
+              :class="{ 'error-input': confirmPasswordError }"
               v-model="formData.confirmPassword"
               ref="confirmPasswordInput"
               @focus="confirmPasswordFocused = true"
-              @blur="confirmPasswordFocused = false"
+              @blur="validateConfirmPassword"
             />
             <div class="icon-container password-toggle" @click="toggleConfirmPasswordVisibility">
               <transition name="fade" mode="out-in">
                 <div v-if="isConfirmPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
                 <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
               </transition>
+            </div>
+          </div>
+          <!-- Confirm Password Error Message -->
+          <div v-if="confirmPasswordError" class="field-error-container">
+            <div class="field-error">
+              <i class="fa-solid fa-circle-exclamation error-icon"></i>
+              {{ confirmPasswordError }}
             </div>
           </div>
           
@@ -116,6 +148,11 @@ export default {
         password: "",
         confirmPassword: ""
       },
+      // Thêm các biến lỗi cho từng trường
+      usernameError: '',
+      emailError: '',
+      passwordError: '',
+      confirmPasswordError: '',
       isPasswordVisible: false,
       isConfirmPasswordVisible: false,
       usernameFocused: false,
@@ -125,46 +162,91 @@ export default {
     }
   },
   methods: {
+    // Thêm các phương thức kiểm tra hợp lệ cho từng trường
+    validateUsername() {
+      this.usernameFocused = false;
+      this.usernameError = '';
+      
+      if (!this.formData.username.trim()) {
+        this.usernameError = 'Vui lòng nhập tên đăng nhập';
+      } else if (this.formData.username.trim().length < 3) {
+        this.usernameError = 'Tên đăng nhập phải có ít nhất 3 ký tự';
+      }
+    },
+    
+    validateEmail() {
+      this.emailFocused = false;
+      this.emailError = '';
+      
+      if (!this.formData.email.trim()) {
+        this.emailError = 'Vui lòng nhập email';
+        return;
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(this.formData.email)) {
+        this.emailError = 'Email không hợp lệ';
+      }
+    },
+    
+    validatePassword() {
+      this.passwordFocused = false;
+      this.passwordError = '';
+      
+      if (!this.formData.password) {
+        this.passwordError = 'Vui lòng nhập mật khẩu';
+      } else if (this.formData.password.length < 8) {
+        this.passwordError = 'Mật khẩu phải có ít nhất 8 ký tự';
+      }
+      
+      // Nếu đã nhập confirm password, kiểm tra lại khi password thay đổi
+      if (this.formData.confirmPassword) {
+        this.validateConfirmPassword();
+      }
+    },
+    
+    validateConfirmPassword() {
+      this.confirmPasswordFocused = false;
+      this.confirmPasswordError = '';
+      
+      if (!this.formData.confirmPassword) {
+        this.confirmPasswordError = 'Vui lòng xác nhận mật khẩu';
+      } else if (this.formData.confirmPassword !== this.formData.password) {
+        this.confirmPasswordError = 'Mật khẩu xác nhận không khớp';
+      }
+    },
+    
+    validateForm() {
+      // Xóa tất cả lỗi
+      this.usernameError = '';
+      this.emailError = '';
+      this.passwordError = '';
+      this.confirmPasswordError = '';
+      
+      // Kiểm tra từng trường
+      this.validateUsername();
+      this.validateEmail();
+      this.validatePassword();
+      this.validateConfirmPassword();
+      
+      // Form hợp lệ nếu không có lỗi
+      return !this.usernameError && !this.emailError && 
+             !this.passwordError && !this.confirmPasswordError;
+    },
+    
     togglePasswordVisibility() {
       this.isPasswordVisible = !this.isPasswordVisible;
     },
+    
     toggleConfirmPasswordVisibility() {
       this.isConfirmPasswordVisible = !this.isConfirmPasswordVisible;
     },
+    
     async handleRegister() {
       try {
-        // Kiểm tra mật khẩu xác nhận
-        if (this.formData.password !== this.formData.confirmPassword) {
-          this.alert = {
-            show: true,
-            type: 'error',
-            title: 'Lỗi xác nhận',
-            message: 'Mật khẩu xác nhận không khớp!'
-          };
-          return;
-        }
-        
-        // Kiểm tra độ dài mật khẩu
-        if (this.formData.password.length < 8) {
-          this.alert = {
-            show: true,
-            type: 'error',
-            title: 'Lỗi mật khẩu',
-            message: 'Mật khẩu phải có ít nhất 8 ký tự!'
-          };
-          return;
-        }
-        
-        // Kiểm tra email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(this.formData.email)) {
-          this.alert = {
-            show: true,
-            type: 'error',
-            title: 'Lỗi email',
-            message: 'Email không hợp lệ!'
-          };
-          return;
+        // Kiểm tra form hợp lệ
+        if (!this.validateForm()) {
+          return; // Không tiếp tục nếu form không hợp lệ
         }
         
         // Tiến hành đăng ký
@@ -178,7 +260,7 @@ export default {
         });
         
         if (response.data.success) {
-          // Hiển thị alert thành công thay vì alert()
+          // Hiển thị alert thành công
           this.alert = {
             show: true,
             type: 'success',
@@ -191,24 +273,32 @@ export default {
             this.$router.push('/login');
           }, 2000);
         } else {
+          // Xử lý lỗi từ API
+          if (response.data.errorCode === 'USER_ALREADY_EXISTS') {
+            this.usernameError = 'Tên đăng nhập hoặc email đã tồn tại';
+          } else {
+            this.alert = {
+              show: true,
+              type: 'error',
+              title: 'Đăng ký thất bại',
+              message: response.data.message || 'Vui lòng thử lại sau'
+            };
+          }
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        
+        // Xử lý lỗi từ response
+        if (error.response?.data?.errorCode === 'USER_ALREADY_EXISTS') {
+          this.usernameError = 'Tên đăng nhập hoặc email đã tồn tại';
+        } else {
           this.alert = {
             show: true,
             type: 'error',
             title: 'Đăng ký thất bại',
-            message: response.data.errorCode || 'Vui lòng thử lại sau'
+            message: error.response?.data?.message || 'Không thể kết nối đến máy chủ'
           };
         }
-      } catch (error) {
-        console.error('Registration error:', error);
-        this.alert = {
-          show: true,
-          type: 'error',
-          title: 'Đăng ký thất bại',
-          message: error.response?.data?.message || 
-            (error.response?.data?.errorCode === 'USER_ALREADY_EXISTS' ? 
-              'Tên đăng nhập hoặc email đã tồn tại' : 
-              'Không thể kết nối đến máy chủ')
-        };
       }
     }
   }
@@ -476,5 +566,57 @@ export default {
 
 .eyes {
   color: #724e4e;
+}
+
+.field-error-container {
+  width: 100%;
+  max-width: 340px;
+  margin-bottom: 16px;
+  margin-top: -10px;
+}
+
+.field-error {
+  color: #e74c3c;
+  font-size: 14px;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  align-items: center;
+  background-color: rgba(231, 76, 60, 0.08);
+  padding: 6px 12px;
+  border-radius: 4px;
+  border-left: 3px solid #e74c3c;
+  margin-top: 4px;
+  animation: errorPulse 2s infinite;
+}
+
+.error-icon {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.error-input {
+  border-color: #e74c3c !important;
+  background-color: rgba(231, 76, 60, 0.03) !important;
+}
+
+@keyframes errorPulse {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
+
+/* Responsive styles */
+@media (max-width: 991px) {
+  .field-error-container {
+    width: 316px;
+    max-width: 316px;
+  }
+}
+
+@media (max-width: 640px) {
+  .field-error-container {
+    width: 280px;
+    max-width: 280px;
+  }
 }
 </style>

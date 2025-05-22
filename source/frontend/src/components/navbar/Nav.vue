@@ -1,7 +1,7 @@
 <template>
   <header class="header-container">
     <div class="header-content">
-      <router-link to="/" class="logo-section">
+      <div class="logo-section" @click="navigateToHome">
         <div class="logo-icon-wrapper">
           <svg
             width="62"
@@ -22,7 +22,7 @@
           </svg>
         </div>
         <h1 class="brand-name">BOOKVERSE</h1>
-      </router-link>
+      </div>
   
       <div class="search-section">
         <form @submit.prevent="handleSearch" class="search-form">
@@ -91,7 +91,9 @@
         <div class="icon-container" @click="navigateToCart">
           <!-- <div class="cart-icon-container"> -->
           <i class="fa-regular fa-cart-shopping fa-xl"></i>
-          <div v-if="cartItemCount > 0" class="cart-badge">{{ cartItemCount }}</div>
+          <div class="cart-badge" v-if="cartItemCount > 0">
+            {{ displayCartCount }}
+          </div>
           <!-- </div> -->
           <span class="icon-label label-cart">Giỏ hàng</span>
         </div>
@@ -106,6 +108,7 @@
       <UserMenu v-if="showUserMenu" @close="showUserMenu = false" />
     </div>
   </header>
+  <i ref="cartIcon" class="fa-regular fa-cart-shopping fa-xl"></i>
 </template>
 
 <script>
@@ -139,10 +142,13 @@ export default {
     // Kiểm tra trạng thái đăng nhập khi component được tạo
     this.isLoggedIn = AuthenticationService.isLoggedIn();
     eventBus.on('logout', this.handleLogoutEvent);
+    this.cartAnimationHandler = () => this.animateCartIcon();
+    eventBus.on('cart-animation', this.cartAnimationHandler);
   },
   beforeUnmount() {
     // Loại bỏ listener khi component được hủy để tránh memory leak
     eventBus.off('cart-updated', this.getCartItemCount);
+    eventBus.off('cart-animation', this.cartAnimationHandler);
   },
   mounted() {
     // Kiểm tra trạng thái đăng nhập khi component được gắn vào DOM
@@ -156,7 +162,44 @@ export default {
     // Kiểm tra trạng thái đăng nhập khi component được kích hoạt (nếu sử dụng keep-alive)
     this.checkLoginStatus();
   },
+  computed: {
+    // Tính toán trạng thái hiển thị của menu người dùng
+    displayCartCount() {
+      return this.cartItemCount > 99 ? '99+' : this.cartItemCount;
+    }
+  },
   methods: {
+    navigateToHome() {
+      // Kiểm tra xem đang ở trang chủ hay không
+      if (this.$route.path === '/') {
+        // Nếu đang ở trang chủ, tải lại trang
+        window.location.reload();
+      } else {
+        // Nếu không phải trang chủ, điều hướng đến trang chủ
+        this.$router.push('/');
+      }
+    },
+   animateCartIcon() {
+      // Lấy ra icon giỏ hàng trong thanh navigation
+      const cartIcon = document.querySelector('.icon-container .fa-cart-shopping');
+      if (!cartIcon) {
+        console.log('Không tìm thấy icon giỏ hàng!');
+        return;
+      }
+      
+      // Xóa class fa-shake nếu đã có
+      cartIcon.classList.remove('fa-shake');
+      
+      // Thêm class fa-shake để tạo hiệu ứng rung
+      setTimeout(() => {
+        cartIcon.classList.add('fa-shake');
+        
+        // Đặt timer để xóa hiệu ứng sau 2 giây
+        setTimeout(() => {
+          cartIcon.classList.remove('fa-shake');
+        }, 2000);
+      }, 10);
+    },
       navigateToWishlist() {
           this.$router.push({
               name: 'category',
@@ -288,14 +331,12 @@ export default {
       },
       async getCartItemCount() {
         try {
-          let cartData;
-          if (this.isLoggedIn) {
-            const userData = AuthenticationService.getCurrentUser();
-            
-            if (userData) {
-              const response = await CartService.getUserCart(userData.id);
-              cartData = response.data;
-            }
+          let cartData = null;
+          
+          if (AuthenticationService.isLoggedIn()) {
+            const userId = AuthenticationService.getCurrentUser().id;
+            const response = await CartService.getUserCart(userId);
+            cartData = response.data;
           } else {
             const guestCartId = localStorage.getItem('guestCartId');
             if (guestCartId) {
@@ -306,15 +347,15 @@ export default {
           
           // Kiểm tra nhiều cấu trúc dữ liệu có thể có
           if (cartData && cartData.items && Array.isArray(cartData.items)) {
-            this.cartItemCount = cartData.items.reduce((total, item) => total + item.quantity, 0);
+            // Đếm số lượng sản phẩm riêng biệt, không phải tổng số lượng
+            this.cartItemCount = cartData.items.length;
           } else if (cartData && cartData.products && Array.isArray(cartData.products)) {
-            this.cartItemCount = cartData.products.reduce((total, item) => total + item.quantity, 0);
+            this.cartItemCount = cartData.products.length;
           } else if (cartData && cartData.cart && cartData.cart.items) {
-            this.cartItemCount = cartData.cart.items.reduce((total, item) => total + item.quantity, 0);
+            this.cartItemCount = cartData.cart.items.length;
           } else if (cartData && cartData.data && cartData.data.products && Array.isArray(cartData.data.products)) {
-          // Thêm điều kiện này để kiểm tra cấu trúc thực tế
-            this.cartItemCount = cartData.data.products.reduce((total, item) => total + item.quantity, 0);
-        }   else {
+            this.cartItemCount = cartData.data.products.length;
+          } else {
             this.cartItemCount = 0;
             console.log("No items in cart or invalid cart data structure:", cartData);
           }
@@ -823,5 +864,12 @@ i.fa-bars{
   background-color: #ff3333;
 }
 
-
+.logo-section {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  margin-top: 25px;
+  transition: all 0.3s ease;
+  cursor: pointer; /* Thêm con trỏ pointer để hiển thị là có thể click */
+}
 </style>

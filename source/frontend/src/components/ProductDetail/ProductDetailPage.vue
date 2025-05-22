@@ -11,28 +11,34 @@
                 {{ error }}
             </section>
             
-            <section v-else class="product-section">
+            <section v-else-if="book && book.title" class="product-section">
                 <div class="product-detail-container">
                     <figure class="product-image-detail-column">
-                        <img
+                        <div class="image-container">
+                            <img
                             :src="getMainImage(book)"
                             class="product-detail-image"
                             :alt="book.title"
                             @error="handleImageError"
-                        />
-                        
-                        <!-- Thêm gallery hình ảnh nếu có nhiều hình -->
-                        <div v-if="bookImages.length > 1" class="product-image-thumbnails">
-                            <img 
-                                v-for="(image, index) in bookImages.slice(0, 4)" 
-                                :key="index"
-                                :src="image"
-                                @click="selectImage(image)"
-                                class="thumbnail-image"
-                                :class="{ 'active': selectedImage === image }"
-                                @error="handleThumbnailError($event, index)"
+                            @click="showGalleryWithImage(selectedImage || bookImages[0])"
                             />
-                            <div v-if="bookImages.length > 4" class="more-images">+{{ bookImages.length - 4 }}</div>
+                        </div>
+                        
+                        <div class="thumbnails-grid">
+                            <img 
+                            v-for="(image, index) in bookImages.slice(0, Math.min(4, bookImages.length))" 
+                            :key="index"
+                            :src="image"
+                            @click="selectImage(image)"
+                            class="thumbnail"
+                            :class="{ 'active-thumbnail': selectedImage === image }"
+                            @error="handleThumbnailError($event, index)"
+                            />
+                            
+                            <!-- Hiển thị "+" nếu có nhiều hơn 4 hình ảnh -->
+                            <div v-if="bookImages.length > 4" class="more-images-overlay" @click="showAllImages">
+                            <span>+{{ bookImages.length - 4 }}</span>
+                            </div>
                         </div>
                     </figure>
                     <div class="product-info-column">
@@ -53,10 +59,46 @@
                 
                 <RecommendedProducts :currentBookId="book._id || book.id" />
             </section>
+            <section v-else class="error-message">
+                Không tìm thấy thông tin sách
+            </section>
         </main>
         
         <Footer />
     </div>
+
+    <!-- Thêm vào cuối template, trước </div> cuối cùng -->
+<div v-if="showGalleryModal" class="gallery-modal" @click.self="showGalleryModal = false">
+  <div class="gallery-content">
+    <button class="close-button" @click="showGalleryModal = false">×</button>
+    
+    <div class="main-gallery-image-container">
+      <img 
+        :src="currentGalleryImage" 
+        class="main-gallery-image" 
+        alt="Book image"
+        :style="{ transform: `scale(${zoomLevel})` }"
+      />
+      
+      <div class="zoom-controls">
+        <button class="zoom-btn" @click="zoomIn" title="Phóng to">+</button>
+        <button class="zoom-btn" @click="zoomOut" title="Thu nhỏ">-</button>
+        <button class="zoom-btn" @click="resetZoom" title="Khôi phục">↺</button>
+      </div>
+    </div>
+    
+    <div class="gallery-thumbnails">
+      <img 
+        v-for="(image, index) in bookImages" 
+        :key="index"
+        :src="image"
+        :class="['gallery-thumbnail', { active: currentGalleryImage === image }]"
+        @click="currentGalleryImage = image; resetZoom()"
+        @error="handleThumbnailError($event, index)"
+      />
+    </div>
+  </div>
+</div>
 </template>
     
   
@@ -94,7 +136,10 @@
                 bookImages: [],
                 bookId: null,
                 reviews: [],
-                showReviewForm: false
+                showReviewForm: false,
+                showGalleryModal: false,
+                currentGalleryImage: null,
+                zoomLevel: 1 // Thêm biến để quản lý mức độ phóng to
             }
         },
         methods: {
@@ -117,7 +162,9 @@
                         } else {
                             this.error = 'Không tìm thấy thông tin sách';
                         }
-                        
+                        console.log('Dữ liệu sách nhận được:', this.book);
+                        console.log('Tiêu đề:', this.book.title);
+                        console.log('Tác giả:', this.book.author);
                         // Process images after setting book data
                         this.processBookImages();
                     } else {
@@ -200,7 +247,35 @@
                 message: 'Cảm ơn bạn đã đánh giá sản phẩm!',
                 autoClose: true
                 });
-            }
+            },
+
+            zoomIn() {
+        if (this.zoomLevel < 3) {
+            this.zoomLevel += 0.5;
+        }
+    },
+    
+    zoomOut() {
+        if (this.zoomLevel > 1) {
+            this.zoomLevel -= 0.5;
+        }
+    },
+    
+    resetZoom() {
+        this.zoomLevel = 1;
+    },
+    
+    showGalleryWithImage(image) {
+        this.showGalleryModal = true;
+        this.currentGalleryImage = image;
+        this.zoomLevel = 1; // Đảm bảo reset zoom
+    },
+    
+    showAllImages() {
+        this.showGalleryModal = true;
+        this.currentGalleryImage = this.selectedImage || this.bookImages[0];
+        this.zoomLevel = 1; // Đảm bảo reset zoom
+    }
         },
         created() {
             // Lấy bookId từ route params
@@ -277,19 +352,21 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        min-height: 100vh; /* Đảm bảo trang chiếm toàn bộ chiều cao màn hình */
+        justify-content: space-between; /* Thêm dòng này */
+        min-height: 100vh;
         width: 100%;
         background-color: rgb(244, 235, 225);
     }
 
-    .product-detail-page {
-        display: flex;
+    .product-detail-image {
         width: 100%;
-        flex-direction: column;
-        flex: 1; /*Đảm bảo phần nội dung mở rộng để footer nằm ở dưới cùng*/
-        padding: 10px 0; /* Thêm padding trên dưới */
-        margin-bottom: 30px;
-        margin-top: 100px;
+        height: 550px; /* Tăng từ 400px lên 550px */
+        object-fit: contain;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        transition: transform 0.3s ease;
+        cursor: zoom-in;
+        padding: 10px; /* Thêm padding để tránh ảnh chạm sát viền */
     }
   
     
@@ -406,4 +483,223 @@
             margin-top: 15px; /* Giảm từ 20px */
         }
     }
+
+    /* Thêm style mới cho figure.product-image-detail-column */
+.product-image-detail-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 35%;
+  margin: 0;
+  position: relative;
+}
+
+/* Cải thiện hiển thị ảnh chính */
+.product-detail-image {
+  width: 100%;
+  height: 400px; /* Kích thước cố định */
+  object-fit: contain; /* Giữ nguyên tỷ lệ ảnh và hiển thị toàn bộ */
+  border-radius: 8px;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+  transition: transform 0.3s ease;
+  cursor: zoom-in;
+}
+
+/* Style cho lưới hình thu nhỏ */
+.thumbnails-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  width: 100%;
+  position: relative;
+}
+
+/* Điều chỉnh hiển thị thumbnail */
+.thumbnail {
+  aspect-ratio: 1/1; /* Giữ tỷ lệ vuông */
+  width: 100%;
+  border-radius: 4px;
+  object-fit: cover; /* Mặc định hiển thị thumbnail kiểu cover */
+  cursor: pointer;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.thumbnail:hover {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.active-thumbnail {
+    border-color: #4d2900;
+    opacity: 1;
+}
+
+/* Style cho overlay "xem thêm hình ảnh" */
+.more-images-overlay {
+    position: absolute;
+    right: 0%; /* Điều chỉnh để nằm ở góc phải ảnh thứ 3 */
+    bottom: 0;
+    width: 25%; /* Giữ nguyên kích thước bằng 1/4 lưới */
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 5; /* Đảm bảo hiển thị trên cùng */
+}
+
+/* Responsive styles */
+@media (max-width: 991px) {
+    .product-image-detail-column {
+        width: 100%;
+    }
+    
+    .image-container, .product-detail-image {
+        height: 450px; /* Giảm chiều cao trên thiết bị nhỏ hơn nhưng vẫn cao hơn trước */
+    }
+    
+    /* Điều chỉnh vị trí overlay khi responsive */
+    .more-images-overlay {
+        right: 25%;
+    }
+}
+
+@media (max-width: 576px) {
+    .image-container, .product-detail-image {
+        height: 350px; /* Giảm tiếp chiều cao trên thiết bị rất nhỏ */
+    }
+}
+
+/* Modal gallery styles */
+.gallery-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.gallery-content {
+  width: 90%;
+  max-width: 1000px;
+  max-height: 90vh;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 30px;
+  background: none;
+  border: none;
+  color: #333;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.main-gallery-image-container {
+    width: 100%;
+    height: 600px; /* Tăng từ 500px lên 600px */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: #f8f8f8;
+    position: relative;
+}
+
+/* Cải thiện hiển thị ảnh trong modal */
+.main-gallery-image {
+  max-width: 95%;
+  max-height: 95%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.gallery-thumbnails {
+  display: flex;
+  overflow-x: auto;
+  padding: 15px;
+  gap: 10px;
+  background-color: #f0f0f0;
+}
+
+.gallery-thumbnail {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.gallery-thumbnail.active {
+  border-color: #4d2900;
+}
+
+.gallery-thumbnail:hover {
+  transform: scale(1.05);
+}
+
+.image-container {
+    width: 100%;
+    height: 550px; /* Tăng từ 400px lên 550px */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    margin-bottom: 20px;
+}
+
+/* Thêm các nút zoom */
+.zoom-controls {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  display: flex;
+  gap: 10px;
+  z-index: 1002;
+}
+
+.zoom-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  color: #333;
+  transition: all 0.2s;
+}
+
+.zoom-btn:hover {
+  background-color: white;
+  transform: scale(1.1);
+}
 </style>

@@ -24,9 +24,6 @@
             <p class="rating-text">{{ rating.label }}</p>
         </div>
         
-        <div class="clear-filter" v-if="selectedRating" @click="clearFilter">
-            Xóa bộ lọc
-        </div>
     </section>
 </template>
   
@@ -37,11 +34,11 @@
             return {
                 selectedRating: null,
                 ratingOptions: [
-                    { value: 5, label: '5 Star' },
-                    { value: 4, label: '4 Star & up' },
-                    { value: 3, label: '3 Star & up' },
-                    { value: 2, label: '2 Star & up' },
-                    { value: 1, label: '1 Star & up' }
+                    { value: 5, label: '5 Sao' },
+                    { value: 4, label: '4 Sao trở lên' },
+                    { value: 3, label: '3 Sao trở lên' },
+                    { value: 2, label: '2 Sao trở lên' },
+                    { value: 1, label: '1 Sao trở lên' }
                 ]
             };
         },

@@ -1,9 +1,22 @@
 <!-- filepath: d:\Prj\BookVerse\source\frontend\src\components\shoppingcart\ProductCard.vue -->
 <template>
-  <article class="product-card">
-    <div class="product-info">
+  <article 
+    class="product-card" 
+    :class="{ 'product-card-selected': isSelected }"
+    @click="cardClick"
+  >
+    <div class="checkbox-container">
+      <input 
+        type="checkbox" 
+        class="product-checkbox" 
+        :checked="isSelected" 
+        @change="toggleSelection"
+        @click.stop
+      />
+    </div>
+    <div class="product-info" @click.stop>
       <!-- Thêm router-link cho hình ảnh sản phẩm -->
-      <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-image-link">
+      <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-image-link" @click.stop>
         <img 
           :src="getImageSrc()" 
           :alt="product.title || product.name" 
@@ -14,20 +27,20 @@
       
       <div class="product-details">
         <!-- Thêm router-link cho thông tin sản phẩm -->
-        <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-text-link">
+        <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-text-link" @click.stop>
           <h3 class="product-name">{{ getTitle() }}</h3>
           <p class="product-description">{{ getAuthor() }}</p>
         </router-link>
       </div>
     </div>
-    <div class="quantity-controls">
-      <button class="quantity-btn" @click="decreaseQuantity">-</button>
+    <div class="quantity-controls" @click.stop>
+      <button class="quantity-btn" @click.stop="decreaseQuantity">-</button>
       <span class="quantity-value">{{ product.quantity }}</span>
-      <button class="quantity-btn" @click="increaseQuantity">+</button>
+      <button class="quantity-btn" @click.stop="increaseQuantity">+</button>
     </div>
-    <div class="price-info">
+    <div class="price-info" @click.stop>
       <span class="price-value">{{ formatPrice(getPrice()) }}</span>
-      <button class="remove-button" @click="removeItem">
+      <button class="remove-button" @click.stop="removeItem">
         <i class="fa-solid fa-trash"></i>
       </button>
     </div>
@@ -35,6 +48,7 @@
 </template>
 
 <script>
+import eventBus from '@/eventBus.js';// Đảm bảo bạn đã tạo eventBus
 export default {
   name: "ProductCard",
   props: {
@@ -42,33 +56,66 @@ export default {
       type: Object,
       required: true,
     },
+    isSelected: {
+      type: Boolean,
+      default: false
+    }
   },
   methods: {
-    getImageSrc(book) {
-  // Kiểm tra null/undefined
-  if (!book || !book.image) return '/images/top-week.jpg';
-  
-  // Nếu đã là URL hợp lệ, trả về trực tiếp
-  if (typeof book.image === 'string' && (book.image.startsWith('http') || book.image.startsWith('/'))) {
-    return book.image;
-  }
-  
-  // Xử lý chuỗi mảng
-  try {
-    if (typeof book.image === 'string' && book.image.includes('[')) {
-      const jsonStr = book.image.replace(/'/g, '"');
-      const images = JSON.parse(jsonStr);
-      return Array.isArray(images) && images.length > 0 
-        ? images[0] 
-        : '/images/top-week.jpg';
-    }
-  } catch (e) {
-    console.error('Lỗi xử lý chuỗi hình ảnh:', e, book.image);
-  }
-  
-  // Mặc định trả về hình ảnh gốc hoặc dự phòng
-  return book.image || '/images/top-week.jpg';
-},
+    cardClick() {
+      // Đơn giản là toggle trạng thái chọn khi click vào card
+      this.toggleSelection();
+    },
+
+    toggleSelection() {
+      this.$emit('toggle-selection', this.product.cartItemId || this.product._id);
+    },
+    getImageSrc() {
+      try {
+        // Đầu tiên kiểm tra trong product.book nếu có
+        if (this.product.book) {
+          const bookImage = this.product.book.image;
+          
+          // Nếu image là URL trực tiếp
+          if (typeof bookImage === 'string') {
+            if (bookImage.startsWith('http') || bookImage.startsWith('/')) {
+              return bookImage;
+            }
+            
+            // Nếu image là chuỗi JSON
+            if (bookImage.includes('[') && bookImage.includes(']')) {
+              const jsonStr = bookImage.replace(/'/g, '"');
+              const images = JSON.parse(jsonStr);
+              return Array.isArray(images) && images.length > 0 ? images[0] : '/images/top-week.jpeg';
+            }
+          }
+        }
+        
+        // Kiểm tra trong product trực tiếp
+        if (this.product.image) {
+          const productImage = this.product.image;
+          
+          // Xử lý tương tự như trên
+          if (typeof productImage === 'string') {
+            if (productImage.startsWith('http') || productImage.startsWith('/')) {
+              return productImage;
+            }
+            
+            if (productImage.includes('[') && productImage.includes(']')) {
+              const jsonStr = productImage.replace(/'/g, '"');
+              const images = JSON.parse(jsonStr);
+              return Array.isArray(images) && images.length > 0 ? images[0] : '/images/top-week.jpeg';
+            }
+          }
+        }
+        
+        // Trường hợp mặc định
+        return this.product.rawImage || '/images/top-week.jpeg';
+      } catch (err) {
+        console.error('Lỗi xử lý ảnh:', err);
+        return '/images/top-week.jpeg';
+      }
+    },
     getTitle() {
       return this.product.book?.title || this.product.title || 'Không có tên sách';
     },
@@ -91,9 +138,45 @@ export default {
       }
     },
     removeItem() {
-      if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
-        this.$emit('remove', this.product.cartItemId || this.product._id);
-      }
+      const productId = this.product.cartItemId || this.product._id;
+      const productName = this.getTitle();
+      
+      // Đơn giản hóa bằng cách sử dụng confirm của browser
+      // if (window.confirm(`Bạn có chắc muốn xóa "${productName}" khỏi giỏ hàng?`)) {
+      //   console.log("Xóa sản phẩm với ID:", productId);
+      //   this.$emit('remove', productId);
+      // }
+      // Đăng ký lắng nghe sự kiện trước khi hiển thị alert
+      const handleConfirm = () => {
+        console.log("ProductCard: Confirm xóa sản phẩm", productId);
+        this.$emit('remove', productId);
+        // Hủy đăng ký sau khi xử lý
+        eventBus.off('confirm', handleConfirm);
+        eventBus.off('cancel', handleCancel);
+      };
+      
+      const handleCancel = () => {
+        console.log("ProductCard: Cancel xóa sản phẩm");
+        // Chỉ cần hủy đăng ký
+        eventBus.off('confirm', handleConfirm);
+        eventBus.off('cancel', handleCancel);
+      };
+      
+      // Đăng ký lắng nghe sự kiện
+      eventBus.on('confirm', handleConfirm);
+      eventBus.on('cancel', handleCancel);
+      
+      // Hiển thị alert
+      eventBus.emit('show-alert', {
+        show: true,
+        type: 'error',
+        title: 'Xác nhận xóa sản phẩm',
+        message: `Bạn có chắc muốn xóa "${productName}" khỏi giỏ hàng?`,
+        autoClose: false,
+        showChoices: true,
+        confirmText: 'Xóa',
+        cancelText: 'Hủy'
+      });
     },
     formatPrice(price) {
       // Đảm bảo price là một số
@@ -290,5 +373,30 @@ export default {
 
 .product-image {
   transition: transform 0.2s ease;
+}
+
+.product-card-selected {
+  background-color: rgba(77, 41, 0, 0.05); /* Màu nền nhẹ khi được chọn */
+  border-left: 4px solid #4D2900; /* Viền bên trái */
+  transform: translateY(-2px); /* Hiệu ứng nhấc lên nhẹ */
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1); /* Đổ bóng đậm hơn */
+}
+
+/* Chỉnh sửa style cho checkbox để nổi bật hơn */
+.checkbox-container {
+  margin-right: 15px;
+}
+
+.product-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #4D2900; /* Màu khi checkbox được chọn */
+}
+
+/* Đảm bảo cursor là pointer để người dùng biết có thể click */
+.product-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 </style>

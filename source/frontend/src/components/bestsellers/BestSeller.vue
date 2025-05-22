@@ -35,6 +35,8 @@
             :author="book.author"
             :cartText="'Thêm vào giỏ hàng'"
             :sold="String(book.sold)"
+            :rating="book.rating || 0"
+            :showProgressBar="true"
           />
         </div>
       </div>
@@ -155,7 +157,8 @@ export default {
         originalPrice: book.originalPrice > book.price ? book.originalPrice : null,
         title: book.title,
         author: book.author,
-        sold: String(book.sold || 0)
+        sold: String(book.sold || 0),
+        rating: book.rating || 0
       };
     },
     
