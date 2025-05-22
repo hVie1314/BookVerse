@@ -219,6 +219,7 @@ import ProductCard from "./ProductCard.vue";
 import ProductCreate from "./ProductCreate.vue";
 import eventBus from "@/eventBus.js";
 import ProductEditPage from "./productedit/ProductEditPage.vue";
+import { useToast } from "vue-toastification";
 
 export default {
   name: "ProductManagement",
@@ -246,8 +247,8 @@ export default {
       sortOption: "default",
       sortOptions: [
         { value: "default", label: "Mặc định" },
-        { value: "price-asc", label: "Giá: Thấp đến cao" },
-        { value: "price-desc", label: "Giá: Cao đến thấp" },
+        { value: "price-asc", label: "Giá thấp đến cao" },
+        { value: "price-desc", label: "Giá cao đến thấp" },
         { value: "bestseller", label: "Bán chạy nhất" },
         { value: "newest", label: "Mới nhất" },
       ],
@@ -259,6 +260,10 @@ export default {
       showDeleteConfirm: false,
       bookToDelete: null,
     };
+  },
+  setup() {
+    const toast = useToast();
+    return { toast };
   },
   computed: {
     hasActiveFilters() {
@@ -352,50 +357,44 @@ export default {
       }
     },
 
+    // Cải thiện phương thức fetchRecentlyAddedBooks
     async fetchRecentlyAddedBooks() {
       this.loading = true;
       try {
-        // Giống như trong NewBooks.vue - sử dụng getRecentlyAddedBooks
-        const response = await BookService.getRecentlyAddedBooks(
-          this.itemsPerPage * 5
-        ); // Lấy đủ số sách để phân trang
-
+        console.log("Đang lấy sách mới nhập...");
+        
+        // Tăng limit để đảm bảo lấy được sách vừa thêm
+        const response = await BookService.getRecentlyAddedBooks(50);
+        
         // Xử lý linh hoạt với nhiều cấu trúc có thể có từ response
         let books = [];
 
-        if (
-          response.data &&
-          response.data.success &&
-          response.data.data &&
-          response.data.data.books
-        ) {
-          // Cấu trúc từ responseFormatterMiddleware
+        if (response.data && response.data.success && response.data.data && response.data.data.books) {
           books = response.data.data.books;
         } else if (response.data && response.data.books) {
-          // Cấu trúc trả về trực tiếp từ controller
           books = response.data.books;
         } else if (Array.isArray(response.data)) {
-          // Mảng sách trực tiếp
           books = response.data;
         } else {
+          console.warn("Định dạng dữ liệu không mong đợi:", response.data);
           throw new Error("Định dạng dữ liệu không hợp lệ từ API");
         }
 
         console.log("Sách mới nhập:", books);
 
-        // Cập nhật danh sách sách
-        this.books = books;
+        // Lưu trữ tất cả sách mới để phân trang client-side
+        this._allNewBooks = [...books];
 
         // Cập nhật thông tin phân trang
         this.totalBooks = books.length;
         this.totalPages = Math.ceil(this.totalBooks / this.itemsPerPage);
 
-        // Thực hiện phân trang ngay nếu có nhiều sách
-        if (this.totalBooks > this.itemsPerPage) {
-          const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-          const endIndex = startIndex + this.itemsPerPage;
-          this.books = books.slice(startIndex, endIndex);
-        }
+        // Phân trang client-side
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        this.books = books.slice(startIndex, endIndex);
+
+        console.log(`Đã tải ${this.books.length} sách. Tổng số: ${this.totalBooks}, Trang: ${this.currentPage}/${this.totalPages}`);
       } catch (error) {
         console.error("Lỗi khi lấy sách mới nhập:", error);
         this.error = "Không thể tải danh sách sách mới. Vui lòng thử lại sau.";
@@ -646,24 +645,18 @@ export default {
       try {
         await BookService.deleteBook(this.bookToDelete._id);
 
-        eventBus.emit("show-alert", {
-          show: true,
-          type: "success",
-          title: "Xóa thành công",
-          message: `Sách "${this.bookToDelete.title}" đã được xóa`,
-          autoClose: true,
+        this.toast.success("Đã xóa sách thành công!", {
+          timeout: 1500,
+          closeOnClick: true,
         });
 
         this.fetchBooks();
       } catch (error) {
         console.error("Lỗi khi xóa sách:", error);
 
-        eventBus.emit("show-alert", {
-          show: true,
-          type: "error",
-          title: "Lỗi",
-          message: "Không thể xóa sách. Vui lòng thử lại sau.",
-          autoClose: true,
+        this.toast.error("Không thể xóa sách. Vui lòng thử lại sau.", {
+          timeout: 1500,
+          closeOnClick: true,
         });
       } finally {
         this.showDeleteConfirm = false;
@@ -672,17 +665,19 @@ export default {
     },
 
     handleBookCreated() {
-      eventBus.emit("show-alert", {
-        show: true,
-        type: "success",
-        title: "Thành công",
-        message: "Sách đã được thêm thành công",
-        autoClose: true,
-      });
+      // Thông báo đã có
 
-      // Đóng form và làm mới danh sách, tự động bật chế độ hiển thị sản phẩm mới nhập
+      // Đóng form
       this.closeProductForm();
+      
+      // Đảm bảo hiển thị sách mới nhập và reset về trang đầu tiên
+      this.selectedCategory = null; // Reset category filter
+      this.searchQuery = "";       // Reset search query
+      this.sortOption = "default"; // Reset sort option
       this.showRecentlyAdded = true;
+      this.currentPage = 1;
+      
+      // Gọi API ngay lập tức
       this.fetchBooks();
     },
   },

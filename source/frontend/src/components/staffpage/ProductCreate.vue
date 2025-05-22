@@ -415,18 +415,6 @@ export default {
         isValid = false;
       }
 
-      if (this.imageUrls.length === 0 && !this.uploadedFiles.length) {
-        this.errors.image = "Vui lòng thêm ít nhất một hình ảnh";
-
-        eventBus.emit("show-alert", {
-          show: true,
-          type: "error",
-          title: "Thiếu hình ảnh",
-          message: "Vui lòng thêm ít nhất một hình ảnh cho sản phẩm",
-          autoClose: true,
-        });
-      }
-
       return isValid;
     },
 
@@ -465,70 +453,104 @@ export default {
       return this.imageUrls.filter((url) => !url.startsWith("data:"));
     },
 
-    async submitForm() {
-      if (!this.validateForm()) {
-        return;
-      }
+    // Sửa phương thức submitForm()
+  // Tìm và thay thế phương thức submitForm với phiên bản đã sửa sau:
+async submitForm() {
+  if (!this.validateForm()) {
+    return;
+  }
 
-      this.loading = true;
+  this.loading = true;
 
-      try {
-        // 1. Upload các file ảnh đã chọn
-        const uploadedUrls = await this.uploadImages();
+  try {
+    // 1. Upload các file ảnh đã chọn
+    const uploadedUrls = await this.uploadImages();
 
-        // 2. Kết hợp URL đã upload và URL bên ngoài
-        const externalUrls = this.getExternalUrls();
-        console.log("External URLs:", externalUrls);
-        const allImageUrls = [...uploadedUrls, ...externalUrls];
-        console.log("Tất cả URLs:", allImageUrls);
+    // 2. Kết hợp URL đã upload và URL bên ngoài
+    const externalUrls = this.getExternalUrls();
+    console.log("External URLs:", externalUrls);
+    const allImageUrls = [...uploadedUrls, ...externalUrls];
+    console.log("Tất cả URLs:", allImageUrls);
 
-        // 3. Chuẩn bị dữ liệu sách
-        const bookData = {
-          title: this.book.title,
-          author: this.book.author,
-          category: this.selectedCategory,
-          description: this.book.description,
-          price: parseFloat(this.book.price),
-          stock: "Còn hàng",
-          sold: 0,
-          image:
-            allImageUrls.length > 0
-              ? `[${allImageUrls.map((url) => `'${url}'`).join(", ")}]`
-              : "",
-        };
+    // 3. Chuẩn bị dữ liệu sách
+    const bookData = {
+      title: this.book.title,
+      author: this.book.author,
+      category: this.selectedCategory,
+      description: this.book.description,
+      price: parseFloat(this.book.price),
+      stock: "Còn hàng",
+      sold: 0,
+      image:
+        allImageUrls.length > 0
+          ? `[${allImageUrls.map((url) => `'${url}'`).join(", ")}]`
+          : "",
+    };
 
-        console.log("Chuỗi image cuối cùng:", bookData.image);
-        console.log("Gửi dữ liệu sách mới:", bookData);
+    console.log("Chuỗi image cuối cùng:", bookData.image);
+    console.log("Gửi dữ liệu sách mới:", bookData);
 
-        // 4. Gọi API tạo sách mới với access token
-        const response = await BookService.createBook(bookData);
+    // 4. Gọi API tạo sách mới với access token
+    const response = await BookService.createBook(bookData);
 
-        console.log("Kết quả API tạo sách:", response.data);
+    // Kiểm tra response trước khi truy cập thuộc tính
+    console.log("Kết quả API tạo sách:", response.data);
 
-        // 5. Thông báo tạo sách thành công
-        this.$toast.success("Tạo sách thành công!", {
-          timeout: 3000,
-          closeOnClick: true,
-        });
+    // 5. Không kiểm tra response.data.success nữa mà xử lý trực tiếp
+    // Nếu đến được đây nghĩa là API call thành công và sách đã được tạo
+    this.toast.success("Tạo sách thành công!", {
+      timeout: 3000,
+      closeOnClick: true,
+    });
 
-        // 6. Thông báo cho component cha về việc tạo sách thành công
-        this.$emit("book-created");
-      } catch (error) {
-        console.error("Lỗi khi tạo sách mới:", error);
+    // 6. Thông báo cho component cha về việc tạo sách thành công
+    this.$emit("book-created");
+    
+    // 7. Reset form
+    this.resetForm();
+  } catch (error) {
+    console.error("Lỗi khi tạo sách mới:", error);
 
-        eventBus.emit("show-alert", {
-          show: true,
-          type: "error",
-          title: "Lỗi",
-          message:
-            error.response?.data?.message ||
-            "Không thể tạo sách mới. Vui lòng thử lại sau.",
-          autoClose: true,
-        });
-      } finally {
-        this.loading = false;
-      }
-    },
+    eventBus.emit("show-alert", {
+      show: true,
+      type: "error",
+      title: "Lỗi",
+      message:
+        error.response?.data?.message ||
+        "Không thể tạo sách mới. Vui lòng thử lại sau.",
+      autoClose: true,
+    });
+  } finally {
+    this.loading = false;
+  }
+},
+
+// Thêm phương thức resetForm để xóa form sau khi thêm sách thành công
+resetForm() {
+  this.book = {
+    title: "",
+    author: "",
+    description: "",
+    price: 0,
+    stock: "Còn hàng",
+    sold: 0,
+    image: "",
+  };
+  this.selectedCategory = "";
+  this.imageUrls = [];
+  this.uploadedFiles = [];
+  this.newImageUrl = "";
+  this.previewImage = null;
+  this.currentMainImageIndex = 0;
+  this.errors = {
+    title: "",
+    author: "",
+    price: "",
+    description: "",
+    category: "",
+    image: "",
+  };
+}
   },
 };
 </script>
