@@ -139,7 +139,11 @@ export default {
     },
     
     // Đặt lại mật khẩu
-    resetPassword(email, newPassword) {
-        return Api().post('auth/reset-password', { email, newPassword });
+    resetPassword(email, newPassword, otp) {
+        return Api().post('auth/verify-otp-and-change-password', { 
+            email, 
+            newPassword,
+            otp 
+        });
     }
 }
