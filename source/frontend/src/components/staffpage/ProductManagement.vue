@@ -812,6 +812,7 @@ export default {
   font-family: "Montserrat", sans-serif;
 }
 
+/* Style cho dropdown button */
 .dropdown-button {
   background-color: transparent;
   border: none;
@@ -828,11 +829,16 @@ export default {
   color: #333;
 }
 
-.dropdown-button {
-  width: 100%;
+.dropdown-button span {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
+  padding-right: 10px; /* Tạo khoảng cách giữa text và icon */
+}
+
+.dropdown-button i {
+  flex-shrink: 0; /* Ngăn icon bị co lại khi không đủ không gian */
 }
 
 .dropdown-content {
