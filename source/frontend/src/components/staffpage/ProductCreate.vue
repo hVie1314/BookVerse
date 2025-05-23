@@ -499,7 +499,7 @@ async submitForm() {
     // 5. Không kiểm tra response.data.success nữa mà xử lý trực tiếp
     // Nếu đến được đây nghĩa là API call thành công và sách đã được tạo
     this.toast.success("Tạo sách thành công!", {
-      timeout: 3000,
+      timeout: 1500,
       closeOnClick: true,
     });
 
