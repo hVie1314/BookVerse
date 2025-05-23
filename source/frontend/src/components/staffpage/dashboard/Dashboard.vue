@@ -193,7 +193,7 @@ export default {
   padding: 38px 42px;
   min-height: 100vh;
   background-color: #f4ebe1;
-  font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+  font-family: "Montserrat", sans-serif;
 }
 
 .dashboard-title {
