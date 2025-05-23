@@ -153,7 +153,18 @@ export default {
       
       try {
         this.loading = true;
-        const response = await AuthenticationService.resetPassword(this.email, this.password);
+        const otp = this.$route.query.otp || localStorage.getItem('resetPasswordOtp');
+    
+        if (!otp) {
+          this.alert = {
+            show: true,
+            type: 'error',
+            title: 'Lỗi',
+            message: 'Không tìm thấy mã OTP. Vui lòng yêu cầu lại mã mới.'
+          };
+          return;
+        }
+        const response = await AuthenticationService.resetPassword(this.email, this.password, otp);
         
         if (response.data && response.data.success) {
           this.alert = {
