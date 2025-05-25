@@ -249,9 +249,7 @@ export default {
     removeFromUserCart(userId, productId) {
         console.log(`Xóa sản phẩm ${productId} khỏi giỏ hàng người dùng ${userId}`);
         const token = localStorage.getItem('token');
-        toast.success("Đã xóa sản phẩm khỏi giỏ hàng", {
-            timeout: 1500
-        });
+
         return Api().put('cart/', 
             { userId, productId, quantity: 0 }, 
             { headers: { 'Authorization': `Bearer ${token}` }}
