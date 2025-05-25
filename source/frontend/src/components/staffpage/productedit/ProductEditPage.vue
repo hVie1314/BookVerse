@@ -619,12 +619,6 @@ export default {
         // Gọi API cập nhật sách
         await BookService.updateBook(this.book._id, updatedData);
 
-        // Thông báo thành công
-        this.toast.success("Cập nhật sách thành công!", {
-          timeout: 1500,
-          closeOnClick: true,
-        });
-
         // Thông báo cho component cha
         this.$emit("book-updated");
       } catch (error) {
