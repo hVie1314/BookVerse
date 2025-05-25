@@ -482,11 +482,6 @@
               autoClose: true,
               duration: 5000
             });
-            
-            // Chuyển hướng đến trang đơn hàng
-            setTimeout(() => {
-              this.$router.push('/my-orders');
-            }, 2000);
           }
         } catch (error) {
         console.error('Lỗi khi tạo đơn hàng:', error);
@@ -539,11 +534,6 @@
             autoClose: true,
             duration: 5000
           });
-          
-          // Chuyển hướng đến trang đơn hàng
-          setTimeout(() => {
-            this.$router.push('/my-orders');
-          }, 2000);
           
           return;
         }
