@@ -90,7 +90,7 @@ export default {
         show: true 
       };
       
-      // Chỉ tự động đóng các thông báo thành công về đăng nhập
+      // Chỉ tự động đóng các thông báo thành công về đăng nhập và đăng xuất
       if (alertData.type === 'success' && 
           alertData.message && 
           (alertData.message.includes('đăng nhập thành công') || 
@@ -171,7 +171,7 @@ export default {
   methods: {
     handleLogoutEvent() {
       this.isLoggedIn = false;
-        this.userRole = null;
+      this.userRole = null;
         
         // Hiển thị thông báo đăng xuất thành công
         eventBus.emit('show-alert', {
@@ -182,8 +182,13 @@ export default {
             autoClose: true
         });
 
-        // Chuyển hướng về trang chủ
-        this.$router.push('/');
+        setTimeout(() => {
+          if(this.$route.path.startsWith('/staff')) {
+            this.$router.push('/login');
+          } else {
+            this.$router.push('/login');
+          }
+        }, 1500);
     },
 
     // Thêm phương thức xử lý confirm

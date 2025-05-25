@@ -105,10 +105,6 @@ export default {
     logout() {
       // Gọi hàm đăng xuất từ Authentication Service
       AuthenticationService.logout()
-        .then(() => {
-          // Chuyển hướng về trang login
-          this.$router.push('/login');
-        })
         .catch(error => {
           console.error('Lỗi khi đăng xuất:', error);
         });
