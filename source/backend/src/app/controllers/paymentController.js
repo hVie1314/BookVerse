@@ -1,7 +1,7 @@
 const momo = require('../../utils/momo');
 const AppError = require('../../utils/appError');
 const OrderController = require('./orderController'); 
-
+const Order = require('../models/Order');
 
 class PaymentController {
 
@@ -31,7 +31,17 @@ class PaymentController {
 
             if (resultCode === 0) {
                 // update order status to success
-                updatedOrder = await OrderController.updateOrderStatus(orderId, 'success');        
+                updatedOrder = await OrderController.updateOrderStatus(orderId, 'success');      
+                
+                // update sold for books in the order
+                const order = await Order.findById(orderId);
+                await Promise.all(order.items.map(item => 
+                    Book.findByIdAndUpdate(
+                        item.bookId,
+                        { $inc: { sold: item.quantity } },
+                        { new: true }
+                    )
+                ));
             }
             else { // timeout or something else
                 // update order status to failed
