@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const User = require('../models/User');
 const AppError = require('../../utils/appError');
+const Book = require('../models/Book');
 
 class OrderController {
 
@@ -8,6 +9,15 @@ class OrderController {
     async createOrder(req, res, next) {
         try {
             const { userId, items, totalAmount, paymentMethod } = req.body;
+
+            // Check stock before placing the order
+            for (const item of items) {
+                const book = await Book.findById(item.bookId);
+                if (!book)
+                    return res.status(404).json({ message: 'Book not found' });
+                if (item.quantity > book.stock)
+                    return res.status(400).json({ message: `Not enough stock for book ${book.title}. Requested: ${item.quantity}. Available: ${book.stock}` });
+            }
 
             // Create a new order 
             const newOrder = new Order({
@@ -20,6 +30,16 @@ class OrderController {
 
             // Save the order to the database
             const savedOrder = await newOrder.save();
+
+            // Update stock for each item
+            await Promise.all(items.map(item => 
+                Book.findByIdAndUpdate(
+                    item.bookId,
+                    { $inc: { stock: -item.quantity } },
+                    { new: true }
+                )
+            ));
+
             res.status(201).json({ message: 'Order created successfully', order: savedOrder });
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error creating order'));
@@ -114,6 +134,15 @@ class OrderController {
 
             order.orderStatus = 'cancelled'; // Update the order status to 'cancelled'
             await order.save(); // Save the updated order
+            
+            // Update stock for items in the cancelled order
+            await Promise.all(order.items.map(item => 
+                Book.findByIdAndUpdate(
+                    item.bookId,
+                    { $inc: { stock: item.quantity } },
+                    { new: true }
+                )
+            ));
 
             res.status(200).json({ message: 'Order cancelled successfully' });
 
