@@ -14,9 +14,9 @@ class OrderController {
             for (const item of items) {
                 const book = await Book.findById(item.bookId);
                 if (!book)
-                    return res.status(404).json({ message: 'Book not found' });
+                    return res.status(404).json({ errorCode: 'BOOK_NOT_FOUND' });
                 if (item.quantity > book.stock)
-                    return res.status(400).json({ message: `Not enough stock for book ${book.title}. Requested: ${item.quantity}. Available: ${book.stock}` });
+                    return res.status(400).json({ errorCode: 'NOT_ENOUGH_STOCK' });
             }
 
             // Create a new order 
@@ -32,13 +32,18 @@ class OrderController {
             const savedOrder = await newOrder.save();
 
             // Update stock for each item
-            await Promise.all(items.map(item => 
-                Book.findByIdAndUpdate(
-                    item.bookId,
+            for (const item of items) {
+                const updatedBook = await Book.findOneAndUpdate(
+                    { _id: item.bookId, stock: { $gte: item.quantity } },
                     { $inc: { stock: -item.quantity } },
                     { new: true }
-                )
-            ));
+                );
+                if (!updatedBook) {
+                    // If update fails, rollback by deleting the order
+                    await Order.findByIdAndDelete(savedOrder._id);
+                    return res.status(400).json({ errorCode: 'NOT_ENOUGH_STOCK' });
+                }
+            }
 
             res.status(201).json({ message: 'Order created successfully', order: savedOrder });
         } catch (err) {

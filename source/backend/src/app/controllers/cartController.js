@@ -14,9 +14,9 @@ class CartController {
          // Check stock before placing the order
          const book = await Book.findById(productId);
          if (!book)
-            return res.status(404).json({ message: 'Book not found' });
+            return res.status(404).json({ errorCode: 'BOOK_NOT_FOUND' });
          if (quantity > book.stock)
-            return res.status(400).json({ message: `Not enough stock for book ${book.title}. Requested: ${quantity}. Available: ${book.stock}` });
+            return res.status(400).json({ errorCode: 'NOT_ENOUGH_STOCK' });
 
          await CartService.addToCart(userId, null, productId, quantity);
          return res.status(200).json({});
@@ -73,9 +73,9 @@ class CartController {
          // Check stock before placing the order
          const book = await Book.findById(productId);
          if (!book)
-            return res.status(404).json({ message: 'Book not found' });
+            return res.status(404).json({ errorCode: 'BOOK_NOT_FOUND' });
          if (quantity > book.stock)
-            return res.status(400).json({ message: `Not enough stock for book ${book.title}. Requested: ${quantity}. Available: ${book.stock}` });
+            return res.status(400).json({ errorCode: 'NOT_ENOUGH_STOCK' });
 
          await CartService.addToCart(null, cartId, productId, quantity);
          return res.status(200).json({});
