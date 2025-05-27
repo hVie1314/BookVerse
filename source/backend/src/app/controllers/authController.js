@@ -79,6 +79,10 @@ class AuthController {
                return next(new AppError(400, "INVALID_CREDENTIALS"));
             }
 
+            // update last login time
+            user.lastLogin = new Date();
+            user.save()
+
             // create token
             const accessToken = jwt.sign({
                id: user._id,
@@ -120,20 +124,16 @@ class AuthController {
          if (!decoded) {
             return next(new AppError(401, "UNAUTHORIZED"));
          }
-            
+
          // check if token is blacklisted
-         const isBlacklisted = await new Promise((resolve, reject) => {
-            redisClient.get(`blacklist:${token}`, (err, reply) => {
-               if (err) {
-                 reject(new AppError(500, "INTERNAL_SERVER_ERROR"));
-               } else {
-                 resolve(reply);
-               }
-            });
-          });
-         if (isBlacklisted) {
-            return next(new AppError(401, "UNAUTHORIZED"));
-         }
+         await redisClient.get(`blacklist:${token}`, (err, reply) => {
+            if (err) {
+               return next(new AppError(500, "INTERNAL_SERVER_ERROR"));
+            }
+            if (reply) {
+               return next(new AppError(401, "UNAUTHORIZED"));
+            }
+         });
 
          // retrieve userId and role from decoded token
          var { id: userId, role: userRole } = decoded.payload;

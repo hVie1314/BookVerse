@@ -9,7 +9,16 @@ class OrderController {
     async createOrder(req, res, next) {
         try {
             const { userId, items, totalAmount, paymentMethod } = req.body;
+          
+            // Check if the user exists
+            const user = await User.findById(userId);
+            if (!user)
+                return next(new AppError(404, 'USER_NOT_FOUND', 'User not found'));
 
+            // If the user has no address, prevent the order and ask for an address update
+            if (!user.address)
+                return next(new AppError(400, 'MISSING_ADDRESS', 'Please update your address before placing an order'));
+            
             // Check stock before placing the order
             for (const item of items) {
                 const book = await Book.findById(item.bookId);
@@ -17,8 +26,8 @@ class OrderController {
                     return res.status(404).json({ errorCode: 'BOOK_NOT_FOUND' });
                 if (item.quantity > book.stock)
                     return res.status(400).json({ errorCode: 'NOT_ENOUGH_STOCK' });
-            }
-
+            }   
+          
             // Create a new order 
             const newOrder = new Order({
                 userId: userId,
@@ -75,7 +84,7 @@ class OrderController {
                 )
             );
 
-            res.status(200).json({ orders : ordersWithDetails });
+            res.status(200).json({ orders :  ordersWithDetails });
 
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching orders'));
@@ -85,12 +94,8 @@ class OrderController {
     // Get order details by order ID
     async getOrderById(req, res, next) {
         try {
-            const order = await Order.findById(req.params.id);
-            if (!order)
-                return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found'));
-
             // Join with Book and User collections to get book details and user details
-            const OrderInfo = await Order.findById(req.params.id).populate([
+            const orderInfo = await Order.findById(req.params.id).populate([
                 { 
                     path: 'items.bookId', 
                     model: 'Book', 
@@ -98,7 +103,9 @@ class OrderController {
                 }
             ]);
             
-            res.status(200).json(OrderInfo);
+            if (!orderInfo)
+                return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found'));
+            res.status(200).json(orderInfo);
 
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching order'));
@@ -154,6 +161,28 @@ class OrderController {
         }
         catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
+        }
+    }
+
+    // [POST] /order/statistics
+    async getOrderStatistics(req, res, next) {
+        try {
+            const totalOrders = await Order.countDocuments();
+            const successfulOrders = await Order.countDocuments({ orderStatus: 'success' });
+            const cancelledOrders = await Order.countDocuments({ orderStatus: 'cancelled' });
+            const pendingOrders = await Order.countDocuments({ orderStatus: 'pending' });
+
+            const statistics = {
+                totalOrders,
+                successfulOrders,
+                cancelledOrders,
+                pendingOrders
+            };
+
+            res.status(200).json(statistics);
+
+        } catch (err) {
+            next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching order statistics'));
         }
     }
     

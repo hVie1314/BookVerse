@@ -63,11 +63,6 @@ class StatsController {
                 return next(new AppError(404, 'NOT_FOUND', 'Year or Month cannot be in the future'));
             }
 
-            // Check if the year is before the website was created
-            if (year < 2025 || (year == 2025 && month < 4)) {
-                return next(new AppError(404, 'BAD_REQUEST', 'Year is before the website was created'));
-            }
-
             // Get stats for the current month
             const currentMonthStats = await StatsController.getMonthlyStats(month, year, next);
             
@@ -129,25 +124,60 @@ class StatsController {
                 return next(new AppError(400, 'BAD_REQUEST', 'Invalid query parameters'));
             }
 
-            const results = [];
+            const startDate = new Date(Date.UTC(startYear, startMonth - 1, 1, 0, 0, 0, 0)); // bắt đầu từ 00:00:00
+            const endDate = new Date(Date.UTC(endYear, endMonth, 0, 23, 59, 59, 999)); // đến cuối ngày
 
-            let currentMonth = startMonth;
-            let currentYear = startYear;
-
-            while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
-                const stat = await StatsController.getMonthlyStats(currentMonth, currentYear, next);
-                results.push({
-                    month: currentMonth,
-                    year: currentYear,
-                    revenue: stat.revenue
-                });
-
-                // Tăng tháng
-                currentMonth++;
-                if (currentMonth > 12) {
-                    currentMonth = 1;
-                    currentYear++;
+            // Lấy doanh thu theo ngày có đơn hàng
+            const revenueByDate = await Order.aggregate([
+                {
+                    $match: {
+                        createdAt: { $gte: startDate, $lte: endDate }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            year: { $year: "$createdAt" },
+                            month: { $month: "$createdAt" },
+                            day: { $dayOfMonth: "$createdAt" }
+                        },
+                        revenue: { $sum: "$totalAmount" }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        date: {
+                            $dateFromParts: {
+                                year: "$_id.year",
+                                month: "$_id.month",
+                                day: "$_id.day"
+                            }
+                        },
+                        revenue: 1
+                    }
                 }
+            ]);
+
+            // Đưa vào map để dễ tra cứu
+            const revenueMap = new Map();
+            for (const entry of revenueByDate) {
+                const key = new Date(entry.date).toISOString().slice(0, 10); // YYYY-MM-DD
+                revenueMap.set(key, entry.revenue);
+            }
+
+            // Tạo mảng kết quả: mỗi ngày một entry
+            const results = [];
+            for (
+                let d = new Date(startDate);
+                d <= endDate;
+                d.setDate(d.getDate() + 1)
+            ) {
+                const dateStr = d.toISOString().slice(0, 10); // clone lại trước khi lấy ISO
+                results.push({
+                    date: dateStr,
+                    revenue: revenueMap.get(dateStr) || 0
+                });
             }
 
             return res.status(200).json(results);
