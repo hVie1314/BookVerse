@@ -215,11 +215,18 @@
                 eventBus.emit('cart-updated');
             } catch (error) {
                 console.error('Lỗi khi thêm vào giỏ hàng:', error);
-                this.toast.error("Không thể thêm sản phẩm vào giỏ hàng", {
-                timeout: 1500
-                });
+                if (error.response && error.response.status === 400) {
+                    this.toast.warning("Số lượng tồn kho không đủ. Vui lòng giảm số lượng hoặc chọn sản phẩm khác!", {
+                        timeout: 3000
+                    });
+                }
+                else {
+                    this.toast.error("Không thể thêm sản phẩm vào giỏ hàng. Vui lòng thử lại sau.", {
+                        timeout: 1500
+                    });
+                }
             }
-            },
+        },
         
         async addToFavorites() {
             try {

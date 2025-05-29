@@ -33,10 +33,10 @@ export default {
         } catch (error) {
             console.error('Lỗi khi thêm vào giỏ hàng:', error);
             
-            // Hiển thị toast lỗi
-            toast.error("Không thể thêm sản phẩm vào giỏ hàng", {
-                timeout: 1500
-            });
+            // // Hiển thị toast lỗi
+            // toast.error("Không thể thêm sản phẩm vào giỏ hàng", {
+            //     timeout: 1500
+            // });
             
             throw error;
         }
