@@ -130,15 +130,15 @@
         </div>
 
         <div class="form-group">
-          <label class="label_input_create_product"
-            >Giá (VNĐ) <span class="required">*</span></label
-          >
+          <label class="label_input_create_product">
+            Giá (VNĐ) <span class="required">*</span>
+          </label>
           <input
             type="number"
-            v-model="book.price"
-            placeholder="Nhập giá sách"
             class="form-input"
+            v-model.number="book.price"
             :class="{ error: errors.price }"
+            placeholder="Nhập giá sách"
             min="0"
           />
           <div v-if="errors.price" class="error-message">
@@ -147,9 +147,40 @@
         </div>
 
         <div class="form-group">
-          <label class="label_input_create_product"
-            >Mô tả <span class="required">*</span></label
-          >
+          <label class="label_input_create_product">
+            Số lượng tồn kho
+          </label>
+          <input
+            type="number"
+            class="form-input"
+            v-model.number="book.stock"
+            min="0"
+            placeholder="Nhập số lượng tồn kho"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="label_input_create_product">
+            Số lượng đã bán
+          </label>
+          <input
+            type="number"
+            class="form-input"
+            v-model.number="book.sold"
+            readonly
+            disabled
+            title="Số lượng đã bán mặc định là 0 khi tạo sản phẩm mới"
+          />
+          <div class="note-message">
+            <i class="fas fa-info-circle"></i>
+            Số lượng đã bán mặc định là 0 khi tạo sản phẩm mới
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label_input_create_product">
+            Mô tả <span class="required">*</span>
+          </label>
           <textarea
             v-model="book.description"
             placeholder="Nhập mô tả sách"
@@ -196,7 +227,7 @@ export default {
         description: "",
         price: 0,
         // Giá trị mặc định theo yêu cầu
-        stock: "Còn hàng",
+        stock: 0,
         sold: 0,
         image: "",
       },
@@ -479,7 +510,7 @@ async submitForm() {
       category: this.selectedCategory,
       description: this.book.description,
       price: parseFloat(this.book.price),
-      stock: "Còn hàng",
+      stock: this.book.stock || 0, // Sử dụng giá trị mặc định nếu không có
       sold: 0,
       image:
         allImageUrls.length > 0
@@ -532,7 +563,7 @@ resetForm() {
     author: "",
     description: "",
     price: 0,
-    stock: "Còn hàng",
+    stock: 0,
     sold: 0,
     image: "",
   };
@@ -871,6 +902,26 @@ resetForm() {
 .form-input,
 .form-textarea {
   font-family: "Montserrat", sans-serif; /* Thêm font-family cho form */
+}
+
+.note-message {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.note-message i {
+  color: #4d2900;
+}
+
+input:disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+  color: #999;
+  border-color: #ddd;
 }
 
 @media (max-width: 991px) {
