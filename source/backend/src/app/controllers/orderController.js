@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const User = require('../models/User');
 const AppError = require('../../utils/appError');
+const Book = require('../models/Book');
 
 class OrderController {
 
@@ -8,7 +9,7 @@ class OrderController {
     async createOrder(req, res, next) {
         try {
             const { userId, items, totalAmount, paymentMethod } = req.body;
-
+          
             // Check if the user exists
             const user = await User.findById(userId);
             if (!user)
@@ -18,6 +19,15 @@ class OrderController {
             if (!user.address)
                 return next(new AppError(400, 'MISSING_ADDRESS', 'Please update your address before placing an order'));
             
+            // Check stock before placing the order
+            for (const item of items) {
+                const book = await Book.findById(item.bookId);
+                if (!book)
+                    return res.status(404).json({ errorCode: 'BOOK_NOT_FOUND' });
+                if (item.quantity > book.stock)
+                    return res.status(400).json({ errorCode: 'NOT_ENOUGH_STOCK' });
+            }   
+          
             // Create a new order 
             const newOrder = new Order({
                 userId: userId,
@@ -29,6 +39,21 @@ class OrderController {
 
             // Save the order to the database
             const savedOrder = await newOrder.save();
+
+            // Update stock for each item
+            for (const item of items) {
+                const updatedBook = await Book.findOneAndUpdate(
+                    { _id: item.bookId, stock: { $gte: item.quantity } },
+                    { $inc: { stock: -item.quantity } },
+                    { new: true }
+                );
+                if (!updatedBook) {
+                    // If update fails, rollback by deleting the order
+                    await Order.findByIdAndDelete(savedOrder._id);
+                    return res.status(400).json({ errorCode: 'NOT_ENOUGH_STOCK' });
+                }
+            }
+
             res.status(201).json({ message: 'Order created successfully', order: savedOrder });
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error creating order'));
@@ -121,6 +146,15 @@ class OrderController {
 
             order.orderStatus = 'cancelled'; // Update the order status to 'cancelled'
             await order.save(); // Save the updated order
+            
+            // Update stock for items in the cancelled order
+            await Promise.all(order.items.map(item => 
+                Book.findByIdAndUpdate(
+                    item.bookId,
+                    { $inc: { stock: item.quantity } },
+                    { new: true }
+                )
+            ));
 
             res.status(200).json({ message: 'Order cancelled successfully' });
 
