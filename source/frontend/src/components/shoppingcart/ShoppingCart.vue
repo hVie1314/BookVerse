@@ -236,44 +236,49 @@
         }
       },
       async removeItem(productId) {
-      try {
-        console.log("ShoppingCart: Bắt đầu xóa sản phẩm", productId);
-        this.loading = true;
-        
-        const user = AuthenticationService.getCurrentUser();
-        
-        if (user && user.id) {
-          console.log("Xóa sản phẩm từ giỏ hàng người dùng", user.id);
-          await CartService.removeFromUserCart(user.id, productId);
-        } else {
-          const guestCartId = localStorage.getItem('guestCartId');
-          if (guestCartId) {
-            console.log("Xóa sản phẩm từ giỏ hàng khách", guestCartId);
-            await CartService.removeFromGuestCart(guestCartId, productId);
-          }
-        }
-        
-        // Tải lại dữ liệu giỏ hàng sau khi xóa
-        await this.fetchCartData();
-        
-      } catch (error) {
-        console.error('Lỗi khi xóa sản phẩm:', error);
-        if (error.response) {
-          console.error('Response error:', error.response.data);
-        }
-        
-        // Thông báo lỗi
-        eventBus.emit('show-alert', {
-          show: true,
-          type: 'error',
-          title: 'Lỗi',
-          message: 'Không thể xóa sản phẩm. Vui lòng thử lại sau.',
-          autoClose: true
-        });
-      } finally {
-        this.loading = false;
+  try {
+    console.log("ShoppingCart: Bắt đầu xóa sản phẩm", productId);
+    this.loading = true;
+    
+    const user = AuthenticationService.getCurrentUser();
+    
+    // Tìm sản phẩm để lấy tên trước khi xóa
+    const product = this.cartItems.find(item => (item.cartItemId || item._id) === productId);
+    const productName = product ? (product.title || product.book?.title || 'Sản phẩm') : 'Sản phẩm';
+    
+    if (user && user.id) {
+      console.log("Xóa sản phẩm từ giỏ hàng người dùng", user.id);
+      await CartService.removeFromUserCart(user.id, productId);
+    } else {
+      const guestCartId = localStorage.getItem('guestCartId');
+      if (guestCartId) {
+        console.log("Xóa sản phẩm từ giỏ hàng khách", guestCartId);
+        await CartService.removeFromGuestCart(guestCartId, productId);
       }
-    },
+    }
+    
+    // Tải lại dữ liệu giỏ hàng sau khi xóa
+    await this.fetchCartData();
+    
+    // Hiển thị thông báo thành công
+    this.toast.success(`Đã xóa 1 sản phẩm khỏi giỏ hàng`, {
+      timeout: 1500
+    });
+    
+  } catch (error) {
+    console.error('Lỗi khi xóa sản phẩm:', error);
+    if (error.response) {
+      console.error('Response error:', error.response.data);
+    }
+    
+    // Thông báo lỗi
+    this.toast.error("Không thể xóa sản phẩm. Vui lòng thử lại sau.", {
+      timeout: 1500
+    });
+  } finally {
+    this.loading = false;
+  }
+},
 
     async createOrderWithPayment() {
   try {
@@ -544,55 +549,47 @@ async createOrderWithoutPayment() {
       },
 
       async removeSelectedItems(selectedIds) {
-        try {
-          this.loading = true;
-          
-          const user = AuthenticationService.getCurrentUser();
-          
-          if (user && user.id) {
-            // Remove each selected item from user cart
-            for (const productId of selectedIds) {
-              await CartService.removeFromUserCart(user.id, productId);
-            }
-          } else {
-            const guestCartId = localStorage.getItem('guestCartId');
-            if (guestCartId) {
-              // Remove each selected item from guest cart
-              for (const productId of selectedIds) {
-                await CartService.removeFromGuestCart(guestCartId, productId);
-              }
-            }
-          }
-          
-          // Clear selected items
-          this.selectedItems = [];
-          
-          // Reload cart data
-          await this.fetchCartData();
-          
-          // Show success message
-          eventBus.emit('show-alert', {
-            show: true,
-            type: 'success',
-            title: 'Thành công',
-            message: 'Đã xóa các sản phẩm đã chọn khỏi giỏ hàng',
-            autoClose: true
-          });
-        } catch (error) {
-          console.error('Lỗi khi xóa sản phẩm đã chọn:', error);
-          
-          // Show error message
-          eventBus.emit('show-alert', {
-            show: true,
-            type: 'error',
-            title: 'Lỗi',
-            message: 'Không thể xóa sản phẩm. Vui lòng thử lại sau.',
-            autoClose: true
-          });
-        } finally {
-          this.loading = false;
+  try {
+    this.loading = true;
+    
+    const user = AuthenticationService.getCurrentUser();
+    
+    if (user && user.id) {
+      // Xử lý xóa các sản phẩm đã chọn cho người dùng đã đăng nhập
+      for (const productId of selectedIds) {
+        await CartService.removeFromUserCart(user.id, productId);
+      }
+    } else {
+      // Xử lý xóa các sản phẩm đã chọn cho khách
+      const guestCartId = localStorage.getItem('guestCartId');
+      if (guestCartId) {
+        for (const productId of selectedIds) {
+          await CartService.removeFromGuestCart(guestCartId, productId);
         }
       }
+    }
+    
+    // Clear selected items
+    this.selectedItems = [];
+    
+    // Reload cart data
+    await this.fetchCartData();
+    
+    // Thay đổi từ event bus sang toast
+    this.toast.success(`Đã xóa ${selectedIds.length} sản phẩm khỏi giỏ hàng`, {
+      timeout: 2000
+    });
+  } catch (error) {
+    console.error('Lỗi khi xóa sản phẩm đã chọn:', error);
+    
+    // Thay đổi từ event bus sang toast
+    this.toast.error("Không thể xóa sản phẩm. Vui lòng thử lại sau.", {
+      timeout: 1500
+    });
+  } finally {
+    this.loading = false;
+  }
+}
     },
   };
   </script>
