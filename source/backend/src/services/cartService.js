@@ -226,7 +226,7 @@ class CartService {
                //Check stock
                const book = await Book.findById(userCart.products[productIndex].productId);
                if (!book)
-                  return res.status(404).json({ errorCode: 'BOOK_NOT_FOUND' });
+                  throw new AppError(404, 'BOOK_NOT_FOUND');
                if (userCart.products[productIndex].quantity > book.stock)
                   userCart.products[productIndex].quantity = book.stock
             }
