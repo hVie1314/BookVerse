@@ -1,5 +1,6 @@
 const AppError = require('../../utils/appError');
 const CartService = require('../../services/cartService');
+const Book = require('../models/Book');
 
 class CartController {
    
@@ -9,6 +10,14 @@ class CartController {
    async addToUserCart(req, res, next) {
       try {
          const { userId, productId, quantity } = req.body;
+
+         // Check stock before placing the order
+         const book = await Book.findById(productId);
+         if (!book)
+            return res.status(404).json({ errorCode: 'BOOK_NOT_FOUND' });
+         if (quantity > book.stock)
+            return res.status(400).json({ errorCode: 'NOT_ENOUGH_STOCK' });
+
          await CartService.addToCart(userId, null, productId, quantity);
          return res.status(200).json({});
       }
@@ -60,6 +69,14 @@ class CartController {
    async addToGuestCart(req, res, next) {
       try {
          const { cartId, productId, quantity } = req.body;
+
+         // Check stock before placing the order
+         const book = await Book.findById(productId);
+         if (!book)
+            return res.status(404).json({ errorCode: 'BOOK_NOT_FOUND' });
+         if (quantity > book.stock)
+            return res.status(400).json({ errorCode: 'NOT_ENOUGH_STOCK' });
+
          await CartService.addToCart(null, cartId, productId, quantity);
          return res.status(200).json({});
       }
