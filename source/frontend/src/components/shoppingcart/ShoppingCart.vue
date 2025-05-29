@@ -315,7 +315,74 @@
     const orderResponse = await OrderService.createOrder(orderData);
     console.log('Kết quả tạo đơn hàng:', orderResponse.data);
     
-    // Phần code tiếp theo giữ nguyên...
+    if (orderResponse.data && (orderResponse.data.success || orderResponse.data._id)) {
+            // 2. Lấy orderId từ response
+            console.log('Chi tiết response tạo đơn hàng:', JSON.stringify(orderResponse.data));
+            const orderId = orderResponse.data._id || 
+                orderResponse.data.data?._id || 
+                orderResponse.data.data?.order?._id || 
+                (orderResponse.data.order && orderResponse.data.order._id);
+
+            console.log('OrderId trích xuất:', orderId);
+            const totalAmount = this.calculatedTotalPrice;
+            
+            // 3. Tạo yêu cầu thanh toán MoMo
+            const paymentResponse = await OrderService.createMomoPayment(orderId, totalAmount);
+            console.log('Kết quả tạo thanh toán MoMo:', paymentResponse.data);
+            
+            if (paymentResponse.data && 
+                  (paymentResponse.data.payUrl || 
+                  paymentResponse.data.url || 
+                  (paymentResponse.data.data && paymentResponse.data.data.url))
+              ) {
+              // Lấy URL thanh toán từ bất kỳ trường nào có giá trị
+              const paymentUrl = paymentResponse.data.payUrl || paymentResponse.data.url||(paymentResponse.data.data && paymentResponse.data.data.url);
+              
+              console.log('URL thanh toán MoMo:', paymentUrl);
+              try {
+                const user = AuthenticationService.getCurrentUser();
+                if (user && user.id) {
+                  // Xóa từng sản phẩm đã chọn khỏi giỏ hàng người dùng
+                  for (const itemId of this.selectedItems) {
+                    await CartService.removeFromUserCart(user.id, itemId);
+                  }
+                } else {
+                  // Xóa từng sản phẩm đã chọn khỏi giỏ hàng khách
+                  const guestCartId = localStorage.getItem('guestCartId');
+                  if (guestCartId) {
+                    for (const itemId of this.selectedItems) {
+                      await CartService.removeFromGuestCart(guestCartId, itemId);
+                    }
+                  }
+                }
+                
+                // Cập nhật lại UI
+                this.selectedItems = [];
+                eventBus.emit('cart-updated');
+              } catch (removeErr) {
+                console.error('Lỗi khi xóa sản phẩm khỏi giỏ hàng:', removeErr);
+                // Không cần hiển thị lỗi này cho người dùng vì họ đã được chuyển hướng đến trang thanh toán
+              }
+              
+              eventBus.emit('cart-updated');
+              
+              // 5. Lưu orderId để kiểm tra sau này
+              localStorage.setItem('pendingOrderId', orderId);
+              
+              // 6. Chuyển hướng người dùng đến trang thanh toán MoMo
+              window.location.href = paymentUrl;
+              return;
+            }
+            
+            // Nếu không có payUrl, hiển thị thông báo lỗi
+            eventBus.emit('show-alert', {
+              show: true,
+              type: 'error',
+              title: 'Lỗi thanh toán',
+              message: 'Không thể tạo liên kết thanh toán MoMo. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.',
+              autoClose: true
+            });
+          }
   } catch (error) {
     console.error('Lỗi khi tạo đơn hàng và thanh toán:', error);
     
@@ -397,16 +464,45 @@ async createOrderWithoutPayment() {
     const response = await OrderService.createOrder(orderData);
     console.log('Kết quả tạo đơn hàng:', response.data);
 
-    eventBus.emit('show-alert', {
-      show: true,
-      type: 'success',
-      title: 'Đặt hàng thành công',
-      message: 'Đơn hàng đã tạo thành công. Vui lòng truy cập trang "Đơn hàng của tôi" để thanh toán.',
-      autoClose: true,
-      duration: 5000
-    });
+    // Kiểm tra response
+    if (response.data && (response.data.success || response.data._id)) {
+            // Xóa giỏ hàng
+            try {
+              const user = AuthenticationService.getCurrentUser();
+              if (user && user.id) {
+                // Xóa từng sản phẩm đã chọn khỏi giỏ hàng người dùng
+                for (const itemId of this.selectedItems) {
+                  await CartService.removeFromUserCart(user.id, itemId);
+                }
+              } else {
+                // Xóa từng sản phẩm đã chọn khỏi giỏ hàng khách
+                const guestCartId = localStorage.getItem('guestCartId');
+                if (guestCartId) {
+                  for (const itemId of this.selectedItems) {
+                    await CartService.removeFromGuestCart(guestCartId, itemId);
+                  }
+                }
+              }
+              
+              // Cập nhật lại UI
+              this.selectedItems = [];
+              eventBus.emit('cart-updated');
+            } catch (removeErr) {
+              console.error('Lỗi khi xóa sản phẩm khỏi giỏ hàng:', removeErr);
+              // Không cần hiển thị lỗi này cho người dùng vì họ đã được chuyển hướng đến trang thanh toán
+            }
+            
+            // Hiển thị thông báo thành công
+            eventBus.emit('show-alert', {
+              show: true,
+              type: 'success',
+              title: 'Đặt hàng thành công',
+              message: 'Bạn đã đặt hàng thành công, vui lòng qua đơn hàng của tôi để xác nhận thanh toán.',
+              autoClose: true,
+              duration: 3000
+            });
+          }
     
-    // Phần code xử lý kết quả thành công giữ nguyên...
   } catch (error) {
     console.error('Lỗi khi tạo đơn hàng:', error);
     
