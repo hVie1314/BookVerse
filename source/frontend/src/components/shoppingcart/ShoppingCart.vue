@@ -242,10 +242,6 @@
     
     const user = AuthenticationService.getCurrentUser();
     
-    // Tìm sản phẩm để lấy tên trước khi xóa
-    const product = this.cartItems.find(item => (item.cartItemId || item._id) === productId);
-    const productName = product ? (product.title || product.book?.title || 'Sản phẩm') : 'Sản phẩm';
-    
     if (user && user.id) {
       console.log("Xóa sản phẩm từ giỏ hàng người dùng", user.id);
       await CartService.removeFromUserCart(user.id, productId);
@@ -400,6 +396,15 @@ async createOrderWithoutPayment() {
     // Tạo đơn hàng
     const response = await OrderService.createOrder(orderData);
     console.log('Kết quả tạo đơn hàng:', response.data);
+
+    eventBus.emit('show-alert', {
+      show: true,
+      type: 'success',
+      title: 'Đặt hàng thành công',
+      message: 'Đơn hàng đã tạo thành công. Vui lòng truy cập trang "Đơn hàng của tôi" để thanh toán.',
+      autoClose: true,
+      duration: 5000
+    });
     
     // Phần code xử lý kết quả thành công giữ nguyên...
   } catch (error) {
