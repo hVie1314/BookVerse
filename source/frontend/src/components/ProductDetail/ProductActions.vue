@@ -1,34 +1,36 @@
 <template>
-    <div class="action-buttons">
-      <button class="buy-now-button" @click="buyNow">
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/2a79e75e4c878777ec56dd7bdc9146e84a5a316e?placeholderIfAbsent=true"
-          class="button-icon"
-          alt="Buy icon"
-        />
-        <span class="button-text">Mua sách ngay</span>
-      </button>
-  
-      <button class="add-to-cart-button" @click="addToCart">
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/c5ad92d22654c9d4b75f5fd5dfda7ab50490430c?placeholderIfAbsent=true"
-          class="cart-icon"
-          alt="Cart icon"
-        />
-        <span class="cart-text">Thêm vào giỏ hàng</span>
-      </button>
-  
-      <button class="favorite-button" @click="addToFavorites" :class="{ 'in-wishlist': isInWishlist }">
-        <i 
-            :class="['fa-heart fa-lg', isInWishlist ? 'fa-solid liked' : 'fa-regular']"
-            aria-hidden="true"
-        ></i>
-        <span class="favorite-text">{{ isInWishlist ? 'Đã yêu thích' : 'Yêu thích' }}</span>
-    </button>
-    </div>
-    <div v-if="isLoading" class="loading-overlay">
-    <div class="loading-spinner"></div>
-        <p>Đang xử lý...</p>
+    <div>
+        <div class="action-buttons">
+          <button class="buy-now-button" @click="buyNow">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/2a79e75e4c878777ec56dd7bdc9146e84a5a316e?placeholderIfAbsent=true"
+              class="button-icon"
+              alt="Buy icon"
+            />
+            <span class="button-text">Mua sách ngay</span>
+          </button>
+      
+          <button class="add-to-cart-button" @click="addToCart">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/c5ad92d22654c9d4b75f5fd5dfda7ab50490430c?placeholderIfAbsent=true"
+              class="cart-icon"
+              alt="Cart icon"
+            />
+            <span class="cart-text">Thêm vào giỏ hàng</span>
+          </button>
+      
+          <button class="favorite-button" @click="addToFavorites" :class="{ 'in-wishlist': isInWishlist }">
+            <i 
+                :class="['fa-heart fa-lg', isInWishlist ? 'fa-solid liked' : 'fa-regular']"
+                aria-hidden="true"
+            ></i>
+            <span class="favorite-text">{{ isInWishlist ? 'Đã yêu thích' : 'Yêu thích' }}</span>
+        </button>
+        </div>
+        <div v-if="isLoading" class="loading-overlay">
+        <div class="loading-spinner"></div>
+            <p>Đang xử lý...</p>
+        </div>
     </div>
 </template>
   
@@ -194,20 +196,79 @@
         },
         async addToCart() {
             try {
+                const bookId = this.book._id;
+                const stockAvailable = this.book.stock || 0;
+
+                let currentCartQuantity = 0;
+                try {
+                    if (AuthenticationService.isLoggedIn()) {
+                        const userId = AuthenticationService.getCurrentUser().id;
+                        const cartResponse = await CartService.getUserCart(userId);
+                        if (cartResponse.data && cartResponse.data.success && cartResponse.data.data && cartResponse.data.data.products) {
+                            const cartProducts = cartResponse.data.data.products;
+                            // Tìm sản phẩm trong giỏ hàng
+                            for (const item of cartProducts) {
+                                // Kiểm tra nhiều trường hợp cấu trúc dữ liệu khác nhau
+                                const itemProductId = typeof item.productId === 'object' 
+                                    ? item.productId._id 
+                                    : item.productId;
+                                
+                                if (itemProductId === bookId) {
+                                    currentCartQuantity = item.quantity;
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        const guestCartId = localStorage.getItem('guestCartId');
+                        if (guestCartId) {
+                            const cartResponse = await CartService.getGuestCart(guestCartId);
+                            
+                            if (cartResponse.data && cartResponse.data.success && cartResponse.data.data && cartResponse.data.data.products) {
+                                const cartProducts = cartResponse.data.data.products;
+                                // Tìm sản phẩm trong giỏ hàng khách
+                                for (const item of cartProducts) {
+                                    const itemProductId = typeof item.productId === 'object' 
+                                        ? item.productId._id 
+                                        : item.productId;
+                                    
+                                    if (itemProductId === bookId) {
+                                        currentCartQuantity = item.quantity;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi lấy giỏ hàng:', error);
+                }
+
+                // Tính tổng số lượng
+                const totalQuantity = currentCartQuantity + this.quantity;
+                
+                // So sánh với số lượng tồn kho
+                if (totalQuantity > stockAvailable) {
+                    this.toast.warning(`Số lượng tồn kho không đủ!`, {
+                        timeout: 1500
+                    });
+                    return;
+                }
+                
                 // Hiệu ứng bay vào giỏ hàng
                 this.animateToCart();
                 
                 // Bọc emit trong try-catch riêng để có thể xử lý lỗi nhưng vẫn tiếp tục
                 try {
-                eventBus.emit('cart-animation');
+                    eventBus.emit('cart-animation');
                 } catch (err) {
-                console.error('Lỗi khi emit cart-animation:', err);
+                    console.error('Lỗi khi emit cart-animation:', err);
                 // Vẫn tiếp tục thực hiện chức năng thêm vào giỏ hàng
                 }
                 
                 // Thêm vào giỏ hàng thông qua API
                 await CartService.addToCart({ 
-                    bookId: this.book._id || this.book.id, 
+                    bookId: this.book._id, 
                     quantity: this.quantity 
                 });
                 
@@ -216,8 +277,8 @@
             } catch (error) {
                 console.error('Lỗi khi thêm vào giỏ hàng:', error);
                 if (error.response && error.response.status === 400) {
-                    this.toast.warning("Số lượng tồn kho không đủ. Vui lòng giảm số lượng hoặc chọn sản phẩm khác!", {
-                        timeout: 3000
+                    this.toast.warning("Số lượng tồn kho không đủ!", {
+                        timeout: 1500
                     });
                 }
                 else {
