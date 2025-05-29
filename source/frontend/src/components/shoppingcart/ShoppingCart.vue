@@ -41,6 +41,7 @@
   import AuthenticationService from '@/services/AuthenticationService';
   import OrderService from '@/services/OrderService'; // Thêm import này
   import eventBus from '@/eventBus.js';
+  import { useToast } from "vue-toastification";
   
   export default {
     name: "ShoppingCart",
@@ -50,6 +51,10 @@
       ProductList,
       CheckoutSummary,
       FooterForm
+    },
+    setup() {
+      const toast = useToast();
+      return {toast};
     },
     data() {
       return {
@@ -195,7 +200,7 @@
             this.loading = false;
         }
     },
-      async updateQuantity(productId, quantity) {
+      async updateQuantity(productId, quantity, callback) {
         try {
           const user = AuthenticationService.getCurrentUser();
           if (user && user.id) {
@@ -208,8 +213,26 @@
           }
           // Cập nhật lại giỏ hàng sau khi thay đổi
           this.fetchCartData();
+          if (callback) callback(true);
         } catch (error) {
           console.error('Lỗi khi cập nhật số lượng:', error);
+          
+          if (error.response && error.response.status === 400) {
+            // Tìm sản phẩm trong giỏ hàng để lấy tên
+            const product = this.cartItems.find(item => (item.cartItemId || item._id) === productId);
+            const productName = product ? (product.title || product.book?.title || 'Sản phẩm') : 'Sản phẩm';
+            
+            // Hiển thị thông báo với tên sản phẩm
+            this.toast.warning(`Số lượng tồn kho của sản phẩm "${productName}" không đủ!`, {
+              timeout: 2000
+            });
+          } else {
+            this.toast.error("Không thể cập nhật giỏ hàng. Vui lòng thử lại sau.", {
+              timeout: 1500
+            });
+          }
+          
+          if (callback) callback(false, error);
         }
       },
       async removeItem(productId) {
