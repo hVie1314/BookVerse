@@ -30,6 +30,14 @@ class CartController {
    async updateUserCart(req, res, next) {
       try {
          const { userId, productId, quantity } = req.body;
+
+         // Check stock
+         const book = await Book.findById(productId);
+         if (!book)
+            return res.status(404).json({ errorCode: 'BOOK_NOT_FOUND' });
+         if (quantity > book.stock)
+            return res.status(400).json({ errorCode: 'NOT_ENOUGH_STOCK' });
+
          await CartService.updateCart(userId, null, productId, quantity);
          return res.status(200).json({});
       }
@@ -89,6 +97,14 @@ class CartController {
    async updateGuestCart(req, res, next) {
       try {
          const { cartId, productId, quantity } = req.body;
+
+         // Check stock
+         const book = await Book.findById(productId);
+         if (!book)
+            return res.status(404).json({ errorCode: 'BOOK_NOT_FOUND' });
+         if (quantity > book.stock)
+            return res.status(400).json({ errorCode: 'NOT_ENOUGH_STOCK' });
+
          await CartService.updateCart(null, cartId, productId, quantity);
          return res.status(200).json({});
       }
