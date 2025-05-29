@@ -1,6 +1,7 @@
 const Cart = require('../app/models/Cart');
 const AppError = require('../utils/appError');
 const BookService = require('./bookService');
+const Book = require('../app/models/Book');
 
 class CartService {
 
@@ -221,6 +222,13 @@ class CartService {
             // if product exists in user cart, update quantity
             if (productIndex > -1) {
                userCart.products[productIndex].quantity += item.quantity;
+               
+               //Check stock
+               const book = await Book.findById(userCart.products[productIndex].productId);
+               if (!book)
+                  return res.status(404).json({ errorCode: 'BOOK_NOT_FOUND' });
+               if (userCart.products[productIndex].quantity > book.stock)
+                  userCart.products[productIndex].quantity = book.stock
             }
             else { // if not exists, add new product to user cart
                userCart.products.push(item);
