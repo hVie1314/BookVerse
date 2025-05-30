@@ -86,17 +86,20 @@
                 // Xóa tham số khỏi URL
                 window.history.replaceState({}, document.title, '/my-orders');
                 
+                // Xóa URL thanh toán đã lưu khi thanh toán thành công
+                localStorage.removeItem(`momo_payment_url_${orderId}`);
+                
                 // Hiển thị thông báo thành công
                 eventBus.emit('show-alert', {
-                show: true,
-                type: 'success',
-                title: 'Thanh toán thành công',
-                message: 'Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn sẽ sớm được giao.',
-                autoClose: true,
-                duration: 5000
+                    show: true,
+                    type: 'success',
+                    title: 'Thanh toán thành công',
+                    message: 'Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn sẽ sớm được giao.',
+                    autoClose: true,
+                    duration: 5000
                 });
             }
-            },
+        },
         methods: {
             async fetchOrders() {
                 try {
@@ -332,8 +335,19 @@
                 }).format(price).replace('₫', 'đ');
             },
             
+           // Thay thế toàn bộ phương thức handlePayment
             async handlePayment(orderId, amount) {
                 try {
+                    // Kiểm tra xem đã có URL thanh toán được lưu cho đơn hàng này chưa
+                    const savedPaymentUrl = localStorage.getItem(`momo_payment_url_${orderId}`);
+                    
+                    if (savedPaymentUrl) {
+                        console.log('Sử dụng lại URL thanh toán đã lưu:', savedPaymentUrl);
+                        // Sử dụng lại URL đã lưu
+                        window.location.href = savedPaymentUrl;
+                        return;
+                    }
+                    
                     // Hiển thị trạng thái loading
                     eventBus.emit('show-alert', {
                         show: true,
@@ -344,7 +358,7 @@
                     });
                     
                     // Sử dụng trực tiếp orderId hiện tại thay vì tạo đơn hàng mới
-                    console.log('Tạo yêu cầu thanh toán cho đơn hàng hiện tại:', orderId);
+                    console.log('Tạo yêu cầu thanh toán cho đơn hàng:', orderId);
                     
                     // Tạo yêu cầu thanh toán MoMo trực tiếp với đơn hàng hiện tại
                     const paymentResponse = await OrderService.createMomoPayment(orderId, amount);
@@ -361,6 +375,9 @@
                                         (paymentResponse.data.data && paymentResponse.data.data.url);
                         
                         console.log('URL thanh toán MoMo:', paymentUrl);
+                        
+                        // Lưu URL thanh toán vào localStorage cho lần sau sử dụng
+                        localStorage.setItem(`momo_payment_url_${orderId}`, paymentUrl);
                         
                         // Lưu orderId hiện tại để kiểm tra sau này
                         localStorage.setItem('pendingOrderId', orderId);
@@ -383,13 +400,21 @@
                 } catch (error) {
                     console.error('Lỗi khi thanh toán:', error);
                     
-                    eventBus.emit('show-alert', {
-                        show: true,
-                        type: 'error',
-                        title: 'Lỗi thanh toán',
-                        message: 'Đã xảy ra lỗi khi xử lý thanh toán. Vui lòng thử lại sau.',
-                        autoClose: true
-                    });
+                    // Nếu lỗi là 400 Bad Request, có thể đơn hàng đã có thanh toán đang xử lý
+                    if (error.response && error.response.status === 400) {
+                        this.toast.warning("Đơn hàng này đang trong quá trình thanh toán hoặc đã được thanh toán.", {
+                            timeout: 3000
+                        });
+                    } else {
+                        // Lỗi khác
+                        eventBus.emit('show-alert', {
+                            show: true,
+                            type: 'error',
+                            title: 'Lỗi thanh toán',
+                            message: 'Đã xảy ra lỗi khi xử lý thanh toán. Vui lòng thử lại sau.',
+                            autoClose: true
+                        });
+                    }
                 }
             },
             
