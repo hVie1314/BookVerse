@@ -130,15 +130,15 @@
         </div>
 
         <div class="form-group">
-          <label class="label_input_create_product"
-            >Giá (VNĐ) <span class="required">*</span></label
-          >
+          <label class="label_input_create_product">
+            Giá (VNĐ) <span class="required">*</span>
+          </label>
           <input
             type="number"
-            v-model="book.price"
-            placeholder="Nhập giá sách"
             class="form-input"
+            v-model.number="book.price"
             :class="{ error: errors.price }"
+            placeholder="Nhập giá sách"
             min="0"
           />
           <div v-if="errors.price" class="error-message">
@@ -147,9 +147,40 @@
         </div>
 
         <div class="form-group">
-          <label class="label_input_create_product"
-            >Mô tả <span class="required">*</span></label
-          >
+          <label class="label_input_create_product">
+            Số lượng tồn kho
+          </label>
+          <input
+            type="number"
+            class="form-input"
+            v-model.number="book.stock"
+            min="0"
+            placeholder="Nhập số lượng tồn kho"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="label_input_create_product">
+            Số lượng đã bán
+          </label>
+          <input
+            type="number"
+            class="form-input"
+            v-model.number="book.sold"
+            readonly
+            disabled
+            title="Số lượng đã bán mặc định là 0 khi tạo sản phẩm mới"
+          />
+          <div class="note-message">
+            <i class="fas fa-info-circle"></i>
+            Số lượng đã bán mặc định là 0 khi tạo sản phẩm mới
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label_input_create_product">
+            Mô tả <span class="required">*</span>
+          </label>
           <textarea
             v-model="book.description"
             placeholder="Nhập mô tả sách"
@@ -196,7 +227,7 @@ export default {
         description: "",
         price: 0,
         // Giá trị mặc định theo yêu cầu
-        stock: "Còn hàng",
+        stock: 0,
         sold: 0,
         image: "",
       },
@@ -415,18 +446,6 @@ export default {
         isValid = false;
       }
 
-      if (this.imageUrls.length === 0 && !this.uploadedFiles.length) {
-        this.errors.image = "Vui lòng thêm ít nhất một hình ảnh";
-
-        eventBus.emit("show-alert", {
-          show: true,
-          type: "error",
-          title: "Thiếu hình ảnh",
-          message: "Vui lòng thêm ít nhất một hình ảnh cho sản phẩm",
-          autoClose: true,
-        });
-      }
-
       return isValid;
     },
 
@@ -465,70 +484,104 @@ export default {
       return this.imageUrls.filter((url) => !url.startsWith("data:"));
     },
 
-    async submitForm() {
-      if (!this.validateForm()) {
-        return;
-      }
+    // Sửa phương thức submitForm()
+  // Tìm và thay thế phương thức submitForm với phiên bản đã sửa sau:
+async submitForm() {
+  if (!this.validateForm()) {
+    return;
+  }
 
-      this.loading = true;
+  this.loading = true;
 
-      try {
-        // 1. Upload các file ảnh đã chọn
-        const uploadedUrls = await this.uploadImages();
+  try {
+    // 1. Upload các file ảnh đã chọn
+    const uploadedUrls = await this.uploadImages();
 
-        // 2. Kết hợp URL đã upload và URL bên ngoài
-        const externalUrls = this.getExternalUrls();
-        console.log("External URLs:", externalUrls);
-        const allImageUrls = [...uploadedUrls, ...externalUrls];
-        console.log("Tất cả URLs:", allImageUrls);
+    // 2. Kết hợp URL đã upload và URL bên ngoài
+    const externalUrls = this.getExternalUrls();
+    console.log("External URLs:", externalUrls);
+    const allImageUrls = [...uploadedUrls, ...externalUrls];
+    console.log("Tất cả URLs:", allImageUrls);
 
-        // 3. Chuẩn bị dữ liệu sách
-        const bookData = {
-          title: this.book.title,
-          author: this.book.author,
-          category: this.selectedCategory,
-          description: this.book.description,
-          price: parseFloat(this.book.price),
-          stock: "Còn hàng",
-          sold: 0,
-          image:
-            allImageUrls.length > 0
-              ? `[${allImageUrls.map((url) => `'${url}'`).join(", ")}]`
-              : "",
-        };
+    // 3. Chuẩn bị dữ liệu sách
+    const bookData = {
+      title: this.book.title,
+      author: this.book.author,
+      category: this.selectedCategory,
+      description: this.book.description,
+      price: parseFloat(this.book.price),
+      stock: this.book.stock || 0, // Sử dụng giá trị mặc định nếu không có
+      sold: 0,
+      image:
+        allImageUrls.length > 0
+          ? `[${allImageUrls.map((url) => `'${url}'`).join(", ")}]`
+          : "",
+    };
 
-        console.log("Chuỗi image cuối cùng:", bookData.image);
-        console.log("Gửi dữ liệu sách mới:", bookData);
+    console.log("Chuỗi image cuối cùng:", bookData.image);
+    console.log("Gửi dữ liệu sách mới:", bookData);
 
-        // 4. Gọi API tạo sách mới với access token
-        const response = await BookService.createBook(bookData);
+    // 4. Gọi API tạo sách mới với access token
+    const response = await BookService.createBook(bookData);
 
-        console.log("Kết quả API tạo sách:", response.data);
+    // Kiểm tra response trước khi truy cập thuộc tính
+    console.log("Kết quả API tạo sách:", response.data);
 
-        // 5. Thông báo tạo sách thành công
-        this.$toast.success("Tạo sách thành công!", {
-          timeout: 3000,
-          closeOnClick: true,
-        });
+    // 5. Không kiểm tra response.data.success nữa mà xử lý trực tiếp
+    // Nếu đến được đây nghĩa là API call thành công và sách đã được tạo
+    this.toast.success("Tạo sách thành công!", {
+      timeout: 1500,
+      closeOnClick: true,
+    });
 
-        // 6. Thông báo cho component cha về việc tạo sách thành công
-        this.$emit("book-created");
-      } catch (error) {
-        console.error("Lỗi khi tạo sách mới:", error);
+    // 6. Thông báo cho component cha về việc tạo sách thành công
+    this.$emit("book-created");
+    
+    // 7. Reset form
+    this.resetForm();
+  } catch (error) {
+    console.error("Lỗi khi tạo sách mới:", error);
 
-        eventBus.emit("show-alert", {
-          show: true,
-          type: "error",
-          title: "Lỗi",
-          message:
-            error.response?.data?.message ||
-            "Không thể tạo sách mới. Vui lòng thử lại sau.",
-          autoClose: true,
-        });
-      } finally {
-        this.loading = false;
-      }
-    },
+    eventBus.emit("show-alert", {
+      show: true,
+      type: "error",
+      title: "Lỗi",
+      message:
+        error.response?.data?.message ||
+        "Không thể tạo sách mới. Vui lòng thử lại sau.",
+      autoClose: true,
+    });
+  } finally {
+    this.loading = false;
+  }
+},
+
+// Thêm phương thức resetForm để xóa form sau khi thêm sách thành công
+resetForm() {
+  this.book = {
+    title: "",
+    author: "",
+    description: "",
+    price: 0,
+    stock: 0,
+    sold: 0,
+    image: "",
+  };
+  this.selectedCategory = "";
+  this.imageUrls = [];
+  this.uploadedFiles = [];
+  this.newImageUrl = "";
+  this.previewImage = null;
+  this.currentMainImageIndex = 0;
+  this.errors = {
+    title: "",
+    author: "",
+    price: "",
+    description: "",
+    category: "",
+    image: "",
+  };
+}
   },
 };
 </script>
@@ -849,6 +902,26 @@ export default {
 .form-input,
 .form-textarea {
   font-family: "Montserrat", sans-serif; /* Thêm font-family cho form */
+}
+
+.note-message {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.note-message i {
+  color: #4d2900;
+}
+
+input:disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+  color: #999;
+  border-color: #ddd;
 }
 
 @media (max-width: 991px) {

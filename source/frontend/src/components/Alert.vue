@@ -127,6 +127,9 @@
         if (newVal && this.autoClose && this.shouldAutoClose) {
           this.setAutoClose();
         }
+      },
+      $route() {
+        this.$emit('update:show', false);
       }
     },
     methods: {

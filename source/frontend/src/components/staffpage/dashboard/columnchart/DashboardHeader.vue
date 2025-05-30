@@ -1,7 +1,7 @@
 <template>
   <header class="dashboard-header">
     <h2 class="dashboard-title">
-      Doanh thu và số lượng đơn hàng
+      Biểu đồ doanh thu và số lượng đơn hàng theo thời gian
     </h2>
   </header>
 </template>

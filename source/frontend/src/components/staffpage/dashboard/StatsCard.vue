@@ -121,7 +121,7 @@ export default {
 
 .card-title {
   color: #4d4d4d;
-  font-family: Inter, sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 14px;
   margin-bottom: 20px;
   font-weight: normal;
@@ -129,7 +129,7 @@ export default {
 
 .card-value {
   color: #4d2900;
-  font-family: Inter, sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 30px;
@@ -145,7 +145,7 @@ export default {
   display: flex;
   align-items: center;
   margin-bottom: 15px;
-  font-family: Inter, sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 10px;
   color: rgba(0, 0, 0, 0.7);
 }
@@ -187,7 +187,7 @@ export default {
   bottom: 20px;
   right: 25px;
   color: #0d8f1a;
-  font-family: "Open Sans", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 28px;
   font-weight: 600;
   margin: 0;
@@ -265,7 +265,7 @@ export default {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 5;
-  font-family: Inter, sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: #4d2900;

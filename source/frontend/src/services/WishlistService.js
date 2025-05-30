@@ -155,14 +155,14 @@ export default {
                 .then(response => {
                     eventBus.emit('wishlist-updated');
                     toast.success("Đã thêm sản phẩm vào danh sách yêu thích", {
-                        timeout: 2500
+                        timeout: 1500
                     });
                     return response;
                 })
                 .catch(error => {
                     if (error.response && error.response.status === 401) {
                         toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", {
-                            timeout: 2500
+                            timeout: 1500
                         });
                     }
                     return Promise.reject(error);
@@ -173,7 +173,7 @@ export default {
                 .then(response => {
                     eventBus.emit('wishlist-updated');
                     toast.success("Đã thêm sản phẩm vào danh sách yêu thích", {
-                        timeout: 2500
+                        timeout: 1500
                     });
                     return response;
                 });
@@ -188,7 +188,7 @@ export default {
                 .then(response => {
                     eventBus.emit('wishlist-updated');
                     toast.success("Đã xóa sản phẩm khỏi danh sách yêu thích", {
-                        timeout: 2500
+                        timeout: 1500
                     });
                     return response;
                 });
@@ -198,7 +198,7 @@ export default {
                 .then(response => {
                     eventBus.emit('wishlist-updated');
                     toast.success("Đã xóa sản phẩm khỏi danh sách yêu thích", {
-                        timeout: 2500
+                        timeout: 1500
                     });
                     return response;
                 });

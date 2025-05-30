@@ -59,7 +59,7 @@ import UserTable from './UserTable.vue';
 import UserProfile from './useredit/UserProfile.vue';
 import UserService from '@/services/UserService';
 import eventBus from '@/eventBus.js';
-
+import { useToast } from 'vue-toastification';
 export default {
   name: 'UserEdit',
   components: {
@@ -85,6 +85,10 @@ export default {
   },
   created() {
     this.fetchAllUsers();
+  },
+  setup() {
+    const toast = useToast();
+    return { toast };
   },
   methods: {
     async fetchAllUsers() {
@@ -309,13 +313,6 @@ export default {
             return;
           }
           
-          // Hiển thị cảnh báo thêm
-          const confirmDelete = confirm(`Bạn đang xóa một tài khoản ADMIN! Hành động này có thể ảnh hưởng đến hệ thống. Bạn có chắc chắn muốn tiếp tục?`);
-          if (!confirmDelete) {
-            this.showDeleteConfirm = false;
-            this.userToDelete = null;
-            return;
-          }
         }
         await UserService.deleteUser(this.userToDelete.id);
         
@@ -325,23 +322,17 @@ export default {
         this.totalUsers = this.allUsers.length;
         
         // Hiển thị thông báo thành công
-        eventBus.emit('show-alert', {
-          show: true,
-          type: 'success',
-          title: 'Thành công',
-          message: `Đã xóa người dùng ${this.userToDelete.name} thành công`,
-          autoClose: true
+        this.toast.success(`Đã xóa người dùng ${this.userToDelete.name} thành công!`, {
+          timeout: 1500,
+          closeOnClick: true
         });
       } catch (error) {
         console.error('Lỗi khi xóa người dùng:', error);
         
         // Hiển thị thông báo lỗi
-        eventBus.emit('show-alert', {
-          show: true,
-          type: 'error',
-          title: 'Lỗi',
-          message: 'Không thể xóa người dùng. Vui lòng thử lại sau.',
-          autoClose: true
+        this.toast.error('Không thể xóa người dùng. Vui lòng thử lại sau.', {
+          timeout: 1500,
+          closeOnClick: true
         });
       } finally {
         this.showDeleteConfirm = false;

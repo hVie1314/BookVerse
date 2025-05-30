@@ -166,7 +166,21 @@ export default {
     
     // Tìm kiếm sách theo từ khóa, danh mục, tác giả, giá...
     searchBooks(params) {
-        return Api().get('book/search', { params });
+        // Đảm bảo params là object
+        const searchParams = params || {};
+        
+        // Log thông tin tìm kiếm để debug
+        console.log('Tìm kiếm sách với tham số:', searchParams);
+        
+        return Api().get('book/search', { params: searchParams })
+            .then(response => {
+            console.log('Kết quả tìm kiếm sách:', response.data);
+            return response;
+            })
+            .catch(error => {
+            console.error('Lỗi khi tìm kiếm sách:', error);
+            throw error;
+            });
     },
     
     // Lấy danh sách danh mục

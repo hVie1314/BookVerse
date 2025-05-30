@@ -211,12 +211,12 @@ export default {
           });
           
           this.toast.success("Đã ẩn đánh giá!", {
-            timeout: 3000
+            timeout: 1500
           });
         } catch (error) {
           console.error('Lỗi khi ẩn đánh giá:', error);
           this.toast.error("Không thể ẩn đánh giá. Vui lòng thử lại sau.", {
-            timeout: 3000
+            timeout: 1500
           });
         }
       },
@@ -278,13 +278,13 @@ export default {
             });
             
             this.toast.success("Đã cập nhật đánh giá thành công!", {
-              timeout: 3000
+              timeout: 1500
             });
             
           } catch (error) {
             console.error('Lỗi khi cập nhật đánh giá:', error);
             this.toast.error("Không thể cập nhật đánh giá. Vui lòng thử lại sau.", {
-              timeout: 3000
+              timeout: 1500
             });
           }
         },
@@ -375,7 +375,7 @@ export default {
             
             // Thông báo thành công
             this.toast.success("Đã xóa đánh giá thành công!", {
-              timeout: 3000
+              timeout: 1500
             });
             
             // Phát sự kiện để cập nhật danh sách đánh giá
@@ -389,7 +389,7 @@ export default {
             
             // Thông báo lỗi
             this.toast.error("Không thể xóa đánh giá. Vui lòng thử lại sau.", {
-              timeout: 3000
+              timeout: 1500
             });
           }
         }
