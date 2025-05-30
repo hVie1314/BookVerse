@@ -1,6 +1,6 @@
 <template>
   <section class="top-books">
-    <h2 class="section-title">Top 10 sách bán chạy nhất</h2>
+    <h2 class="section-title">Top 10 sách bán chạy nhất mọi thời đại</h2>
     
     <div v-if="loading" class="loading-container">
       <div class="loading-spinner"></div>
@@ -124,7 +124,7 @@ export default {
 
 .section-title {
   color: #837373;
-  font-family: Montserrat, sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 25px;
   margin-bottom: 20px;
   padding-bottom: 20px;

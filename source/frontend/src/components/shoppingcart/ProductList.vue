@@ -40,6 +40,7 @@
 
 <script>
 import ProductCard from "./ProductCard.vue";
+import eventBus from '@/eventBus';
 
 export default {
   name: "ProductList",
@@ -100,13 +101,42 @@ export default {
       this.$emit('selection-changed', this.selectedItems);
     },
     removeSelectedItems() {
-      if (this.selectedItems.length === 0) return;
-      
-      // Confirm before deleting multiple items
-      if (confirm(`Bạn có chắc muốn xóa ${this.selectedItems.length} sản phẩm đã chọn khỏi giỏ hàng?`)) {
-        this.$emit('remove-selected', this.selectedItems);
-      }
-    }
+  if (this.selectedItems.length === 0) return;
+  
+  // Thay thế confirm với eventBus để hiển thị hộp thoại xác nhận
+  const handleConfirm = () => {
+    // Gọi event để xóa các sản phẩm đã chọn
+    this.$emit('remove-selected', this.selectedItems);
+    
+    // Hủy đăng ký sự kiện sau khi xử lý
+    eventBus.off('confirm', handleConfirm);
+    eventBus.off('cancel', handleCancel);
+  };
+  
+  const handleCancel = () => {
+    console.log("Đã hủy xóa sản phẩm đã chọn");
+    
+    // Hủy đăng ký sự kiện
+    eventBus.off('confirm', handleConfirm);
+    eventBus.off('cancel', handleCancel);
+  };
+  
+  // Đăng ký lắng nghe sự kiện
+  eventBus.on('confirm', handleConfirm);
+  eventBus.on('cancel', handleCancel);
+  
+  // Hiển thị alert xác nhận
+  eventBus.emit('show-alert', {
+    show: true,
+    type: 'error',
+    title: 'Xác nhận xóa sản phẩm',
+    message: `Bạn có chắc muốn xóa ${this.selectedItems.length} sản phẩm đã chọn khỏi giỏ hàng?`,
+    autoClose: false,
+    showChoices: true,
+    confirmText: 'Xóa',
+    cancelText: 'Hủy'
+  });
+}
   },
   watch: {
     // Reset selected items when products change

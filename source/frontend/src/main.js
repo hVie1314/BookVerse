@@ -13,7 +13,7 @@ const app = createApp(App)
 // Cấu hình cho toast
 const toastOptions = {
     position: 'top-right',
-    timeout: 5000,
+    timeout: 1500,
     closeOnClick: true,
     pauseOnFocusLoss: true,
     pauseOnHover: true,

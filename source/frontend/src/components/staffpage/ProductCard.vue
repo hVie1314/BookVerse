@@ -43,6 +43,7 @@
 
 <script>
 import BookService from '@/services/BookService';
+import { useToast } from 'vue-toastification';
 export default {
   name: 'ProductCard',
   props: {
@@ -62,6 +63,10 @@ export default {
         <path d="M27.5375 8.25552L26.5914 17.7546C26.5086 18.5866 26.4672 19.0026 26.1988 19.318C25.9624 19.5957 25.6059 19.8189 25.1763 19.9583C24.6883 20.1166 24.0655 20.1166 22.8198 20.1166H18.0801C16.8345 20.1166 16.2117 20.1166 15.7237 19.9583C15.294 19.8189 14.9376 19.5957 14.7012 19.318C14.4328 19.0026 14.3914 18.5866 14.3085 17.7546L13.3625 8.25552M11 8.25552H29.9M25.175 8.25552L24.8554 7.6135C24.5455 6.99133 24.3905 6.68024 24.1033 6.45025C23.8495 6.24714 23.5237 6.08994 23.1557 5.99304C22.7388 5.8833 22.249 5.8833 21.2693 5.8833H19.6307C18.651 5.8833 18.1612 5.8833 17.7444 5.99304C17.3763 6.08994 17.0505 6.24714 16.7967 6.45025C16.5094 6.68024 16.3545 6.99133 16.0447 7.6135L15.725 8.25552M22.8125 11.4185V16.9537M18.0875 11.4185V16.9537" stroke="white" stroke-linecap="round" stroke-linejoin="round"></path>
       </svg>`
     };
+  },
+  setup() {
+    const toast = useToast();
+    return { toast };
   },
   methods: {
     // Xử lý hiển thị ảnh sách
@@ -121,14 +126,20 @@ export default {
         await BookService.deleteBook(bookId);
         
         // Hiển thị thông báo thành công
-        alert('Xóa sách thành công!');
+        this.toast.success("Đã xóa sách thành công!", {
+          timeout: 1500,
+          closeOnClick: true
+        });
         
         // Refresh danh sách sách sau khi xóa
         this.$emit('book-deleted', bookId);
       } catch (error) {
         // Xử lý lỗi
         console.error('Lỗi khi xóa sách:', error);
-        alert('Có lỗi xảy ra khi xóa sách: ' + (error.response?.data?.message || error.message));
+        this.toast.error("Có lỗi xảy ra khi xóa sách. Vui lòng thử lại sau.", {
+          timeout: 1500,
+          closeOnClick: true
+        });
       } finally {
         // Tắt loading
         this.loading = false;

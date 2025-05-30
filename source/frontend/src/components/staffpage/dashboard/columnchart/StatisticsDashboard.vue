@@ -177,36 +177,37 @@ export default {
           }
         },
         yaxis: [
-          {
-            title: {
-              text: 'Doanh thu',
-              style: {
-                fontWeight: 600
-              }
-            },
-            labels: {
-              formatter: (val) => `${val} triệu`,
-              style: {
-                colors: '#4a3e3e'
-              }
+        {
+          title: {
+            text: 'Doanh thu',
+            style: {
+              fontWeight: 600
             }
           },
-          {
-           opposite: true,
-            title: {
-              text: 'Số lượng đơn hàng',
-              style: {
-                fontWeight: 600
-              }
-            },
-            labels: {
-              formatter: (val) => Math.round(val).toString(),
-              style: {
-                colors: '#4a3e3e'
-              }
+          labels: {
+            formatter: (val) => `${val} triệu`,
+            style: {
+              colors: '#4a3e3e'
             }
           }
-        ],
+        },
+        {
+          opposite: true,
+          min: 0, // Thêm dòng này để đảm bảo trục y bắt đầu từ 0
+          title: {
+            text: 'Số lượng đơn hàng',
+            style: {
+              fontWeight: 600
+            }
+          },
+          labels: {
+            formatter: (val) => Math.round(val).toString(),
+            style: {
+              colors: '#4a3e3e'
+            }
+          }
+        }
+      ],
         tooltip: {
           shared: true,
           intersect: false,
@@ -489,12 +490,13 @@ export default {
           },
           {
             ...this.chartOptions.yaxis[1],
+            min: 0, // Đảm bảo giá trị min luôn là 0
             max: maxOrders
           }
         ]
       };
       
-      // Cập nhật series
+      // Phần còn lại giữ nguyên
       this.chartSeries = [
         {
           name: 'Tổng doanh thu',

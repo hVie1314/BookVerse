@@ -219,6 +219,7 @@ import ProductCard from "./ProductCard.vue";
 import ProductCreate from "./ProductCreate.vue";
 import eventBus from "@/eventBus.js";
 import ProductEditPage from "./productedit/ProductEditPage.vue";
+import { useToast } from "vue-toastification";
 
 export default {
   name: "ProductManagement",
@@ -246,8 +247,8 @@ export default {
       sortOption: "default",
       sortOptions: [
         { value: "default", label: "Mặc định" },
-        { value: "price-asc", label: "Giá: Thấp đến cao" },
-        { value: "price-desc", label: "Giá: Cao đến thấp" },
+        { value: "price-asc", label: "Giá thấp đến cao" },
+        { value: "price-desc", label: "Giá cao đến thấp" },
         { value: "bestseller", label: "Bán chạy nhất" },
         { value: "newest", label: "Mới nhất" },
       ],
@@ -259,6 +260,10 @@ export default {
       showDeleteConfirm: false,
       bookToDelete: null,
     };
+  },
+  setup() {
+    const toast = useToast();
+    return { toast };
   },
   computed: {
     hasActiveFilters() {
@@ -352,50 +357,44 @@ export default {
       }
     },
 
+    // Cải thiện phương thức fetchRecentlyAddedBooks
     async fetchRecentlyAddedBooks() {
       this.loading = true;
       try {
-        // Giống như trong NewBooks.vue - sử dụng getRecentlyAddedBooks
-        const response = await BookService.getRecentlyAddedBooks(
-          this.itemsPerPage * 5
-        ); // Lấy đủ số sách để phân trang
-
+        console.log("Đang lấy sách mới nhập...");
+        
+        // Tăng limit để đảm bảo lấy được sách vừa thêm
+        const response = await BookService.getRecentlyAddedBooks(50);
+        
         // Xử lý linh hoạt với nhiều cấu trúc có thể có từ response
         let books = [];
 
-        if (
-          response.data &&
-          response.data.success &&
-          response.data.data &&
-          response.data.data.books
-        ) {
-          // Cấu trúc từ responseFormatterMiddleware
+        if (response.data && response.data.success && response.data.data && response.data.data.books) {
           books = response.data.data.books;
         } else if (response.data && response.data.books) {
-          // Cấu trúc trả về trực tiếp từ controller
           books = response.data.books;
         } else if (Array.isArray(response.data)) {
-          // Mảng sách trực tiếp
           books = response.data;
         } else {
+          console.warn("Định dạng dữ liệu không mong đợi:", response.data);
           throw new Error("Định dạng dữ liệu không hợp lệ từ API");
         }
 
         console.log("Sách mới nhập:", books);
 
-        // Cập nhật danh sách sách
-        this.books = books;
+        // Lưu trữ tất cả sách mới để phân trang client-side
+        this._allNewBooks = [...books];
 
         // Cập nhật thông tin phân trang
         this.totalBooks = books.length;
         this.totalPages = Math.ceil(this.totalBooks / this.itemsPerPage);
 
-        // Thực hiện phân trang ngay nếu có nhiều sách
-        if (this.totalBooks > this.itemsPerPage) {
-          const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-          const endIndex = startIndex + this.itemsPerPage;
-          this.books = books.slice(startIndex, endIndex);
-        }
+        // Phân trang client-side
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        this.books = books.slice(startIndex, endIndex);
+
+        console.log(`Đã tải ${this.books.length} sách. Tổng số: ${this.totalBooks}, Trang: ${this.currentPage}/${this.totalPages}`);
       } catch (error) {
         console.error("Lỗi khi lấy sách mới nhập:", error);
         this.error = "Không thể tải danh sách sách mới. Vui lòng thử lại sau.";
@@ -406,7 +405,7 @@ export default {
         this.loading = false;
       }
     },
-    // Lấy sách từ API - cập nhật để hỗ trợ các tùy chọn lọc mới
+    // Lấy sách từ API - cập nhật để hỗ trợ tìm kiếm nâng cao
     async fetchBooks() {
       // Nếu đang lọc sản phẩm mới nhập, gọi phương thức riêng
       if (this.showRecentlyAdded) {
@@ -417,70 +416,117 @@ export default {
       this.loading = true;
 
       try {
-        // Chuẩn bị các tham số tìm kiếm
-        const searchParams = {
+        // Chuẩn bị các tham số cơ bản
+        const baseParams = {
           page: this.currentPage,
           limit: this.itemsPerPage,
         };
 
-        // Thêm bộ lọc tìm kiếm nếu có từ khóa
-        if (this.searchQuery && this.searchQuery.trim()) {
-          searchParams.keyword = this.searchQuery.trim();
+        // Chuyển đổi sortOption sang định dạng backend yêu cầu
+        switch (this.sortOption) {
+          case "price-asc":
+            baseParams.sortBy = "price_asc";
+            break;
+          case "price-desc":
+            baseParams.sortBy = "price_desc";
+            break;
+          case "bestseller":
+            baseParams.sortBy = "bestseller";
+            break;
+          case "newest":
+            baseParams.sortBy = "newest";
+            break;
+          default:
+            baseParams.sortBy = "default";
         }
 
         // Thêm bộ lọc danh mục nếu đã chọn
         if (this.selectedCategory) {
-          searchParams.categories = this.selectedCategory;
+          baseParams.categories = this.selectedCategory;
         }
 
-        // Chuyển đổi sortOption sang định dạng backend yêu cầu
-        switch (this.sortOption) {
-          case "price-asc":
-            searchParams.sortBy = "price_asc";
-            break;
-          case "price-desc":
-            searchParams.sortBy = "price_desc";
-            break;
-          case "bestseller":
-            searchParams.sortBy = "bestseller";
-            break;
-          case "newest":
-            searchParams.sortBy = "newest";
-            break;
-          default:
-            searchParams.sortBy = "default";
-        }
+        // Xác định có phải là tìm kiếm từ thanh tìm kiếm không
+        const isSearchQuery = this.searchQuery && this.searchQuery.trim() !== '';
 
-        console.log("Tìm kiếm sách với tham số:", searchParams);
-
-        // Gọi API searchBooks
-        const response = await BookService.searchBooks(searchParams);
-
-        if (response.data && response.data.success) {
-          // Cập nhật dữ liệu từ API response
-          const responseData = response.data.data;
-
-          // Cập nhật danh sách sách
-          this.books = responseData.books || [];
-
-          // Cập nhật thông tin phân trang từ API
-          if (responseData.pagination) {
-            const pagination = responseData.pagination;
-            this.totalPages = pagination.totalPages || 1;
-            this.totalBooks = pagination.totalBooks || 0;
-            this.currentPage = pagination.currentPage || 1;
-          } else {
-            this.totalBooks = this.books.length;
-            this.totalPages = 1;
+        if (isSearchQuery) {
+          // NẾU LÀ TÌM KIẾM: thực hiện 2 lần API call riêng biệt
+          
+          // Lần 1: Tìm theo keyword (tiêu đề sách)
+          const keywordParams = { ...baseParams, keyword: this.searchQuery.trim() };
+          console.log('Tìm kiếm theo tiêu đề:', keywordParams);
+          const keywordResponse = await BookService.searchBooks(keywordParams);
+          
+          // Lấy kết quả từ tìm kiếm keyword
+          let allBooks = [];
+          let totalCount = 0;
+          
+          if (keywordResponse.data && keywordResponse.data.success) {
+            const keywordBooks = keywordResponse.data.data.books || [];
+            allBooks = [...keywordBooks];
+            totalCount = keywordResponse.data.data.pagination?.totalBooks || keywordBooks.length;
+            console.log(`Tìm thấy ${keywordBooks.length} sách theo tiêu đề`);
           }
+          
+          // Lần 2: Tìm theo author (tác giả)
+          const authorParams = { ...baseParams, author: this.searchQuery.trim() };
+          console.log('Tìm kiếm theo tác giả:', authorParams);
+          const authorResponse = await BookService.searchBooks(authorParams);
+          
+          if (authorResponse.data && authorResponse.data.success) {
+            const authorBooks = authorResponse.data.data.books || [];
+            console.log(`Tìm thấy ${authorBooks.length} sách theo tác giả`);
+            
+            // Kết hợp kết quả, loại bỏ trùng lặp
+            for (const authorBook of authorBooks) {
+              if (!allBooks.some(book => book._id === authorBook._id)) {
+                allBooks.push(authorBook);
+              }
+            }
+            
+            // Cập nhật tổng số sách
+            totalCount = Math.max(totalCount, authorResponse.data.data.pagination?.totalBooks || 0) + 
+                         Math.min(authorBooks.length, this.itemsPerPage);
+          }
+          
+          // Cập nhật dữ liệu
+          this.books = allBooks;
+          this.totalBooks = totalCount;
+          this.totalPages = Math.ceil(totalCount / this.itemsPerPage);
+          
+          console.log(`Tổng cộng: ${this.books.length} sách (đã lọc trùng), trang ${this.currentPage}/${this.totalPages}`);
         } else {
-          console.error(
-            "Cấu trúc dữ liệu API không như mong đợi:",
-            response.data
-          );
-          this.books = [];
-          this.totalBooks = 0.0;
-          this.totalPages = 0;
+          // TÌM KIẾM THÔNG THƯỜNG: chỉ thực hiện 1 lần API call
+          console.log("Tìm kiếm thông thường với tham số:", baseParams);
+          
+          // Gọi API searchBooks
+          const response = await BookService.searchBooks(baseParams);
+
+          if (response.data && response.data.success) {
+            // Cập nhật dữ liệu từ API response
+            const responseData = response.data.data;
+
+            // Cập nhật danh sách sách
+            this.books = responseData.books || [];
+
+            // Cập nhật thông tin phân trang từ API
+            if (responseData.pagination) {
+              const pagination = responseData.pagination;
+              this.totalPages = pagination.totalPages || 1;
+              this.totalBooks = pagination.totalBooks || 0;
+              this.currentPage = pagination.currentPage || 1;
+            } else {
+              this.totalBooks = this.books.length;
+              this.totalPages = 1;
+            }
+          } else {
+            console.error(
+              "Cấu trúc dữ liệu API không như mong đợi:",
+              response.data
+            );
+            this.books = [];
+            this.totalBooks = 0;
+            this.totalPages = 0;
+          }
         }
       } catch (error) {
         console.error("Lỗi khi lấy dữ liệu sách:", error);
@@ -646,24 +692,18 @@ export default {
       try {
         await BookService.deleteBook(this.bookToDelete._id);
 
-        eventBus.emit("show-alert", {
-          show: true,
-          type: "success",
-          title: "Xóa thành công",
-          message: `Sách "${this.bookToDelete.title}" đã được xóa`,
-          autoClose: true,
+        this.toast.success("Đã xóa sách thành công!", {
+          timeout: 1500,
+          closeOnClick: true,
         });
 
         this.fetchBooks();
       } catch (error) {
         console.error("Lỗi khi xóa sách:", error);
 
-        eventBus.emit("show-alert", {
-          show: true,
-          type: "error",
-          title: "Lỗi",
-          message: "Không thể xóa sách. Vui lòng thử lại sau.",
-          autoClose: true,
+        this.toast.error("Không thể xóa sách. Vui lòng thử lại sau.", {
+          timeout: 1500,
+          closeOnClick: true,
         });
       } finally {
         this.showDeleteConfirm = false;
@@ -672,17 +712,19 @@ export default {
     },
 
     handleBookCreated() {
-      eventBus.emit("show-alert", {
-        show: true,
-        type: "success",
-        title: "Thành công",
-        message: "Sách đã được thêm thành công",
-        autoClose: true,
-      });
+      // Thông báo đã có
 
-      // Đóng form và làm mới danh sách, tự động bật chế độ hiển thị sản phẩm mới nhập
+      // Đóng form
       this.closeProductForm();
+      
+      // Đảm bảo hiển thị sách mới nhập và reset về trang đầu tiên
+      this.selectedCategory = null; // Reset category filter
+      this.searchQuery = "";       // Reset search query
+      this.sortOption = "default"; // Reset sort option
       this.showRecentlyAdded = true;
+      this.currentPage = 1;
+      
+      // Gọi API ngay lập tức
       this.fetchBooks();
     },
   },
@@ -770,6 +812,7 @@ export default {
   font-family: "Montserrat", sans-serif;
 }
 
+/* Style cho dropdown button */
 .dropdown-button {
   background-color: transparent;
   border: none;
@@ -786,11 +829,16 @@ export default {
   color: #333;
 }
 
-.dropdown-button {
-  width: 100%;
+.dropdown-button span {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
+  padding-right: 10px; /* Tạo khoảng cách giữa text và icon */
+}
+
+.dropdown-button i {
+  flex-shrink: 0; /* Ngăn icon bị co lại khi không đủ không gian */
 }
 
 .dropdown-content {

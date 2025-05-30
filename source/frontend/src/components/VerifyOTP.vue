@@ -211,7 +211,7 @@ export default {
         this.loading = true;
         
         // Lưu OTP vào localStorage để sử dụng cho bước reset password
-        localStorage.setItem('reset_password_otp', this.otp);
+        localStorage.setItem('resetPasswordOtp', this.otp);
         
         // Thêm log để debug
         console.log('OTP hợp lệ, chuẩn bị chuyển đến trang reset-password với email:', this.email);

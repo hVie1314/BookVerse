@@ -271,7 +271,7 @@ export default {
           // Chuyển hướng sau khi hiển thị alert (delay 2 giây)
           setTimeout(() => {
             this.$router.push('/login');
-          }, 2000);
+          }, 1500);
         } else {
           // Xử lý lỗi từ API
           if (response.data.errorCode === 'USER_ALREADY_EXISTS') {
