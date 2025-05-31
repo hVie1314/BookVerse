@@ -2,6 +2,7 @@ require('dotenv').config(); // load env variables from .env file
 
 const path = require('path');
 const express = require('express');
+const cors = require('cors');
 const morgan = require('morgan');
 const methodOverride = require('method-override');
 
@@ -30,6 +31,14 @@ app.use(morgan('combined'));
 
 // method override
 app.use(methodOverride('_method'));
+
+// cors
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || '*', // allow all origins by default, can be set to specific origin
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'], 
+    credentials: true
+}));
 
 // routes init
 route(app);
