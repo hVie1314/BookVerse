@@ -9,7 +9,7 @@
                       <FooterLogo />
                     </div>
                     <div class="footer-column-wrapper">
-                      <FooterColumn title="Tài khoản">
+                      <FooterColumn title="TÀI KHOẢN">
                         <div>
                          <router-link to="/login" class="footer-link">Đăng nhập/ Tạo mới tài khoản</router-link>
                         </div>
@@ -22,7 +22,7 @@
                       </FooterColumn>
                     </div>
                     <div class="footer-column-wrapper">
-                      <FooterColumn title="Dịch vụ">
+                      <FooterColumn title="DỊCH VỤ">
                         <div>
                           <router-link to="/category" class="footer-link">Mua bán trực tuyến</router-link>
                         </div>
@@ -35,7 +35,7 @@
                       </FooterColumn>
                     </div>
                     <div class="footer-column-wrapper">
-                      <FooterColumn title="Hỗ trợ">
+                      <FooterColumn title="HỖ TRỢ">
                         <div>
                           <span class="text-white">Chính sách đổi - trả - hoàn tiền</span>
                         </div>

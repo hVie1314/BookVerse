@@ -4,7 +4,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;900&display=swap"
     />
     <section class="about-us-container">
-      <h2 class="about-us-title">Về chúng tôi</h2>
+      <h2 class="about-us-title">VỀ CHÚNG TÔI</h2>
       <div class="stats-grid">
         <StatItem value="35" label="thể loại sách" />
         <StatItem value="1567" label="đầu sách" />

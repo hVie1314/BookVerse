@@ -4,7 +4,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;900&display=swap"
     />
     <section class="shipping-container">
-      <h2 class="shipping-title">Vận chuyển</h2>
+      <h2 class="shipping-title">VẬN CHUYỂN</h2>
       <p class="shipping-description">
         Chúng tôi làm việc không kể ngày lễ và cuối tuần! Khách hàng có thể nhận
         được hàng trong ngày khi ở khu vực thành phố Hồ Chí Minh. Khách hàng ở các
