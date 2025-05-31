@@ -31,7 +31,8 @@ export default () => {
     const token = localStorage.getItem('token');
     
     const instance = axios.create({
-        baseURL: "http://localhost:3000",
+        //baseURL: "https://bookverse-hcmus.vercel.app",
+        baseURL: process.env.VUE_APP_ROOT_API || "https://bookverse-hcmus.vercel.app",
         timeout: 30000,
         headers: {
             'Content-Type': 'application/json',
