@@ -1,5 +1,5 @@
 {
-  "name": "BookVerse",
+  "name": "BookVers",
   "version": "1.0.0",
   "description": "BookVerse Project - Introduction to Software Engineering",
   "homepage": "https://github.com/hVie1314/BookVerse#readme",
@@ -22,6 +22,7 @@
   "dependencies": {
     "axios": "^1.9.0",
     "bcryptjs": "^3.0.2",
+    "BookVers": "file:",
     "BookVerse": "file:",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
