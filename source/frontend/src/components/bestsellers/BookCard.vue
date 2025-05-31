@@ -1,0 +1,668 @@
+<template>
+    <article class="book-card" @click="navigateToDetail">
+        <!-- Nút xóa sách khỏi danh sách yêu thích (hiện có) -->
+        <button 
+            v-if="isWishlistPage" 
+            class="remove-wishlist-button" 
+            @click.stop="removeFromFavorites"
+            title="Xóa khỏi danh sách yêu thích"
+        >
+            <i class="fa-solid fa-trash"></i>
+        </button>
+
+        <!-- Thêm biểu tượng trái tim ở góc trái trên cùng -->
+        <button 
+            class="wishlist-button" 
+            @click.stop="addToFavorites"
+            title="Thêm vào danh sách yêu thích"
+        >
+            <i :class="['fa-heart', isInWishlist ? 'fa-solid liked' : 'fa-regular']"></i>
+        </button>
+
+        <img 
+            :src="image" 
+            :alt="title" 
+            class="book-image" 
+            @error="handleImageError" 
+        />
+        <div class="book-detail-info">
+            <div class="price-container">
+                <p class="current-price">{{ price }}</p>
+                <p v-if="originalPrice" class="original-price">{{ originalPrice }}</p>
+            </div>
+            <h3 class="book-title">{{ title }}</h3>
+            <p class="book-author">{{ author }}</p>
+            
+            <!-- Thêm hiển thị sao đánh giá - chỉ hiển thị khi rating > 0 -->
+            <div class="book-rating">
+                <!-- Chỉ hiển thị sao khi rating > 0 -->
+                <template v-if="rating > 0">
+                    <div class="star-rating">
+                        <i v-for="index in 5" :key="index" 
+                        :class="[index <= Math.floor(rating) ? 'fas fa-star filled-star' : 'far fa-star empty-star']">
+                        </i>
+                    </div>
+                    <span class="rating-count">({{ rating }})</span>
+                </template>
+                <!-- Giữ phần tử trống khi không có rating để duy trì không gian -->
+                <div v-else class="rating-placeholder"></div>
+            </div>
+            
+            <!-- Phần hiển thị số lượng đã bán -->
+            <div class="book-sold">
+                <template v-if="showProgressBar">
+                    <!-- Hiển thị progress bar với số lượng đã bán bên trong -->
+                    <div class="progress-container">
+                        <div class="progress-info-container">
+                            <div class="progress-bar" :style="`width: ${calculateProgressWidth()}%`">
+                                <span class="sold-text">Đã bán {{ sold }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
+                    <!-- Hiển thị số lượng đã bán kiểu cũ -->
+                    <div class="sold-title">
+                        Đã bán 
+                    </div>
+                    <div class="sold-text">
+                        {{ sold }}
+                    </div>
+                </template>
+            </div>
+        </div>
+    </article>
+</template>
+
+<script>
+import CartService from '@/services/CartService';
+// import AuthenticationService from '@/services/AuthenticationService';
+import eventBus from '@/eventBus.js';
+import WishlistService from '@/services/WishlistService';
+export default {
+    name: "BookCard",
+    props: {
+        bookId: {
+            type: [String, Number],
+            required: true
+        },
+        image: {
+            type: String,
+            required: true,
+        },
+        price: {
+            type: String,
+            required: true,
+        },
+        originalPrice: {
+            type: String,
+            default: "",
+        },
+        title: {
+            type: String,
+            required: true,
+        },
+        author: {
+            type: String,
+            required: true,
+        },
+        cartText: {
+            type: String,
+            required: true,
+        },
+        sold: {
+            type: [String, Number], // Chấp nhận cả String và Number
+            default: "0",
+            validator: function(value) {
+                // Chuyển đổi thành String nếu là Number
+                return (typeof value === 'number' || typeof value === 'string');
+            }
+        },
+        isWishlistPage: {
+            type: Boolean,
+            default: false
+        },
+        product: {
+            type: Object,
+            required: false,
+        },
+        isSelected: {
+            type: Boolean,
+            default: false
+        },
+        rating: {
+            type: Number,
+            default: 0
+        },
+        showProgressBar: {
+            type: Boolean,
+            default: false
+        }
+    },
+    data() {
+        return {
+            isInWishlist: false,
+            fallbackImage: '/images/default-book-cover.jpg'
+        };
+    },
+    mounted() {
+        this.checkWishlistStatus();
+        
+        // Lắng nghe sự kiện cập nhật danh sách yêu thích
+        eventBus.on('wishlist-updated', this.checkWishlistStatus);
+        eventBus.on('wishlist-loaded', () => this.checkWishlistStatus());
+    },
+    beforeUnmount() {
+        // Hủy đăng ký sự kiện khi component bị hủy
+        eventBus.off('wishlist-updated', this.checkWishlistStatus);
+        eventBus.off('wishlist-loaded', this.checkWishlistStatus);
+    },
+    methods: {
+        calculateProgressWidth() {
+            // Tính toán dựa trên số lượng đã bán với tối đa 1000 cuốn
+            const soldCount = parseInt(this.sold) || 0;
+            // Tính phần trăm: số lượng đã bán / 1000 * 100
+            // Đảm bảo tối thiểu 10% để hiển thị được text "Đã bán X"
+            const percentage = Math.max(10, Math.min((soldCount / 1000) * 100, 100));
+            return percentage;
+        },
+        async checkWishlistStatus() {
+            try {
+                const isInWishlist = await WishlistService.checkProductInWishlist(this.bookId);
+                this.isInWishlist = isInWishlist;
+            } catch (error) {
+                console.error('Lỗi khi kiểm tra trạng thái wishlist:', error);
+            }
+        },
+        handleImageError(e) {
+            // Chuyển sang ảnh dự phòng khi ảnh gốc lỗi
+            e.target.src = '/images/default-book-cover.jpg';
+        },
+        navigateToDetail() {
+            this.$router.push({
+                name: 'product-detail',
+                params: { id: this.bookId }
+            });
+        },
+
+        async addToCart() {
+            try {
+                await CartService.addToCart({ bookId: this.bookId, quantity: 1 });
+                // Thông báo thành công (nếu bạn đang sử dụng toast notification)
+                if (this.$toast) {
+                    this.$toast.success("Đã thêm sách vào giỏ hàng");
+                }
+                
+                // Emit sự kiện để cập nhật số lượng giỏ hàng
+                eventBus.emit('cart-updated');
+                
+                console.log("Đã thêm sách ID:", this.bookId, "vào giỏ hàng");
+            } catch (error) {
+                console.error("Lỗi khi thêm sách vào giỏ hàng:", error);
+                if (this.$toast) {
+                    this.$toast.error("Không thể thêm sách vào giỏ hàng");
+                }
+            }
+        },
+        async addToFavorites() {
+            try {
+                if (this.isInWishlist) {
+                    // Nếu đã có trong wishlist, xóa khỏi wishlist
+                    await WishlistService.removeFromWishlist(this.bookId);
+                    this.isInWishlist = false;
+                    
+                    if (this.$toast) {
+                        this.$toast.success("Đã xóa sách khỏi danh sách yêu thích");
+                    }
+                    
+                    // Phát sự kiện để cập nhật UI wishlist
+                    eventBus.emit('wishlist-updated');
+                    
+                    // Thêm dòng này: Thông báo cho component cha rằng sách đã bị xóa 
+                    // (giống như hàm removeFromFavorites)
+                    this.$emit('remove-from-wishlist', this.bookId);
+                } else {
+                    // Nếu chưa có, thêm vào wishlist
+                    await WishlistService.addToWishlist(this.bookId);
+                    this.isInWishlist = true;
+                    
+                    if (this.$toast) {
+                        this.$toast.success("Đã thêm sách vào danh sách yêu thích");
+                    }
+                    
+                    // Phát sự kiện để cập nhật UI wishlist
+                    eventBus.emit('wishlist-updated');
+                }
+            } catch (error) {
+                console.error("Lỗi khi thao tác với danh sách yêu thích:", error);
+                
+                // Xử lý lỗi với thông báo cụ thể
+                let errorMessage = 'Không thể thực hiện thao tác. Vui lòng thử lại sau.';
+                if (error.response) {
+                    if (error.response.status === 401) {
+                        errorMessage = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
+                    }
+                }
+                
+                if (this.$toast) {
+                    this.$toast.error(errorMessage);
+                }
+            }
+        },
+        async removeFromFavorites() {
+            try {
+                await WishlistService.removeFromWishlist(this.bookId);
+                this.isInWishlist = false;
+                
+                if (this.$toast) {
+                    this.$toast.success("Đã xóa sách khỏi danh sách yêu thích");
+                }
+                
+                // Phát sự kiện để cập nhật UI wishlist
+                eventBus.emit('wishlist-updated');
+                
+                // Thông báo cho component cha rằng sách đã bị xóa
+                this.$emit('remove-from-wishlist', this.bookId);
+            } catch (error) {
+                console.error("Lỗi khi xóa sách khỏi danh sách yêu thích:", error);
+                
+                let errorMessage = 'Không thể xóa sách khỏi danh sách yêu thích. Vui lòng thử lại sau.';
+                if (error.response && error.response.status === 401) {
+                    errorMessage = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
+                }
+                
+                if (this.$toast) {
+                    this.$toast.error(errorMessage);
+                }
+            }
+        },
+        
+    },
+};
+</script>
+  
+<style scoped>
+.remove-wishlist-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    opacity: 1; /* Thay đổi từ 0 thành 1 để luôn hiển thị */
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+
+.remove-wishlist-button:hover {
+    background-color: #ff3333;
+    transform: scale(1.1);
+}
+
+.remove-wishlist-button i {
+    font-size: 14px;
+    color: #4d2900;
+    transition: color 0.3s ease; /* Thêm transition cho màu */
+}
+
+.remove-wishlist-button:hover i {
+    color: white; /* Màu chữ trắng khi hover */
+}
+.fa-heart.liked {
+    color: #e74c3c; /* Màu đỏ khi đã yêu thích */
+    opacity: 1;
+}
+
+.fa-heart.fa-solid {
+    transform: scale(1.1); /* Hiệu ứng hơi phóng to khi đã like */
+}
+.book-card {
+    width: 18%;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.25);
+    box-sizing: border-box;
+    position: relative;
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.book-image {
+    padding-top: 10px;
+    width: 100%;
+    height: 200px;
+    object-fit: contain;
+    border-radius: 8px 8px 0 0;
+    transition: transform 0.4s ease;
+}
+
+.book-card:hover .book-image {
+    transform: scale(1.05);
+}
+
+.book-detail-info {
+    padding: 15px;
+    padding-left: 20px;
+    padding-right: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.price-container {
+    margin-top: 0;
+}
+
+.current-price {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: #755e47;
+    text-align: right;
+}
+
+.original-price {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 400;
+    font-size: 15px;
+    color: #d70000;
+    text-decoration: line-through;
+    margin-top: 5px;
+}
+
+.book-title {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    color: #755e47;
+    margin-top: 10px;
+
+    /* Thiết lập chiều cao cố định 3 dòng */
+    display: -webkit-box;
+    /* -webkit-line-clamp: 3; */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    
+    /* Đảm bảo luôn chiếm đúng 3 dòng */
+    line-height: 1.3;
+    height: 46.8px; /* = 1.3 * 12px * 3 dòng */
+    min-height: 46.8px;
+    max-height: 46.8px;
+    margin-bottom: 0;
+}
+
+.book-author {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    color: #8b7b6a;
+    margin-top: 5px;
+
+    /* Thiết lập chiều cao cố định 2 dòng */
+    display: -webkit-box;
+    /* -webkit-line-clamp: 2; */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    
+    /* Đảm bảo luôn chiếm đúng 2 dòng */
+    line-height: 1.3;
+    height: 31.2px; /* = 1.3 * 12px * 2 dòng */
+    min-height: 31.2px;
+    max-height: 31.2px;
+    margin-bottom: 0;
+}
+
+.cart-button {
+    color: #fff;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    padding: 8px 10px;
+    border-radius: 5px;
+    box-shadow: 0px 5px 8px rgba(225, 106, 0, 0.19);
+    
+    background-color: #4d2900;
+    border: none;
+    cursor: pointer;
+    width: 75%;
+    transition: all 0.3s ease;
+}
+
+.cart-button:hover {
+    background-color: #755e47;
+    box-shadow: 0px 5px 12px rgba(225, 106, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.heart-icon {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+}
+
+@media (max-width: 991px) {
+    .book-card {
+        width: calc(50% - 20px);
+    }
+}
+
+@media (max-width: 640px) {
+    .book-card {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+.footer-card-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;   
+}
+
+.book-sold {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 100;
+    font-size: 12px;
+    color: #8b7b6a;
+    margin-top: 10px;
+    margin-bottom: 0;
+    display: flex;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.book-card:hover .book-sold {
+    color: #4d2900;
+}
+
+.sold-text {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: #8b7b6a;
+}
+
+/* Hiệu ứng cho icon heart */
+.fa-heart {
+    color: #4d2900;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.fa-heart:hover {
+    color: #e74c3c;
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+/* Hiệu ứng nền gradient cho card khi hover */
+/* .book-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(to right, #4d2900, #a67c52);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+} */
+
+.book-card:hover::before {
+    opacity: 1;
+}
+
+.wishlist-button {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 35px; /* Tăng từ 28px lên 35px */
+    height: 35px; /* Tăng từ 28px lên 35px */
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.wishlist-button:hover {
+    background-color: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.wishlist-button .fa-heart {
+    font-size: 18px; /* Tăng từ 14px lên 18px */
+    color: #4d2900;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.wishlist-button .fa-heart.liked {
+    color: #e74c3c;
+    opacity: 1;
+}
+
+.wishlist-button:hover .fa-heart {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Giữ lại CSS hiện có cho remove-wishlist-button */
+.remove-wishlist-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    /* CSS hiện có... */
+}
+
+.book-rating {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    margin-bottom: 3px;
+}
+
+.star-rating {
+    display: flex;
+    gap: 2px;
+}
+
+.filled-star {
+    color: #FFD700; /* Màu vàng */
+    font-size: 12px;
+}
+
+.empty-star {
+    color: #D3D3D3; /* Màu xám nhạt */
+    font-size: 12px;
+}
+
+.rating-count {
+    font-size: 12px;
+    color: #8b7b6a;
+    margin-left: 5px;
+}
+
+/* Thêm styles mới cho progress bar */
+.progress-container {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.progress-info-container {
+    width: 100%;
+    border-radius: 15px;
+    background-color: #f2f2f2;
+    height: 20px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    border-radius: 15px;
+    background-color: rgba(76, 41, 0, 0.8);
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 90px;
+    transition: width 0.5s ease;
+}
+
+.progress-bar .sold-text {
+    color: #ffffff;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    padding: 0 10px;
+    white-space: nowrap;
+}
+
+.book-card:hover .progress-bar {
+    background-color: rgba(117, 94, 71, 0.9);
+}
+
+/* Điều chỉnh style cho trường hợp có progress bar */
+.book-sold {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.book-rating {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    margin-bottom: 3px;
+    height: 20px; /* Chiều cao cố định */
+    min-height: 20px;
+}
+
+.rating-placeholder {
+    height: 20px; /* Giữ không gian cố định khi không có rating */
+    width: 100%;
+}
+</style>
+  

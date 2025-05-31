@@ -1,0 +1,29 @@
+<!-- Tạo file bridge.html trong thư mục public -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Đang xử lý kết quả thanh toán...</title>
+    <meta charset="UTF-8">
+    <script>
+        // Khi trang này tải xong
+        window.onload = function() {
+            // Lấy pendingOrderId từ localStorage
+            const orderId = localStorage.getItem('pendingOrderId');
+            
+            if (orderId) {
+                // Chuyển hướng về trang callback trong ứng dụng với orderId
+                window.location.href = '/payment/callback?orderId=' + orderId;
+            } else {
+                // Trường hợp không tìm thấy orderId
+                window.location.href = '/payment/callback?error=missing_order_id';
+            }
+        };
+    </script>
+</head>
+<body>
+    <div style="text-align: center; margin-top: 50px; font-family: Arial, sans-serif;">
+        <h2>Đang xử lý kết quả thanh toán...</h2>
+        <p>Vui lòng đợi trong giây lát, bạn sẽ được chuyển hướng tự động.</p>
+    </div>
+</body>
+</html>
