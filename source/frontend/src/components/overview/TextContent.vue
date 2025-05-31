@@ -1,6 +1,6 @@
 <template>
   <article class="text-content">
-    <h1 class="heading">Kho tàng sách lớn</h1>
+    <h1 class="heading">KHO TÀNG SÁCH LỚN</h1>
     <p class="description">
       Trong cửa hàng của chúng tôi, bạn có thể tìm thấy cuốn sách phù hợp với
       mọi sở thích với giá tốt và thủ tục gọn gàng.
