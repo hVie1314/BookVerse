@@ -72,122 +72,122 @@ import CartService from '@/services/CartService';
 import eventBus from '@/eventBus.js';
 
 export default {
-  name: "BestSeller",
-  components: {
+    name: "BestSeller",
+    components: {
     BookCard
-  },
-  data() {
+    },
+    data() {
     return {
-      books: [],
-      loading: true,
-      error: null,
-      currentPage: 1,
-      booksPerPage: 5,
-      totalBooks: 20 // Giới hạn tổng số sách cần lấy
+        books: [],
+        loading: true,
+        error: null,
+        currentPage: 1,
+        booksPerPage: 5,
+        totalBooks: 20 // Giới hạn tổng số sách cần lấy
     };
-  },
-  computed: {
-    // Tính số trang dựa trên số sách và số sách mỗi trang
-    totalPages() {
-      return Math.ceil(this.books.length / this.booksPerPage);
     },
-    // Lấy sách cho trang hiện tại
-    currentPageBooks() {
-      const startIndex = (this.currentPage - 1) * this.booksPerPage;
-      const endIndex = startIndex + this.booksPerPage;
-      return this.books.slice(startIndex, endIndex);
-    }
-  },
-  methods: {
-    // Các phương thức giữ nguyên như trước
-    async fetchTopSellingBooks() {
-      this.loading = true;
-      try {
-        const response = await BookService.getTopSellingBooks(this.totalBooks);
-        
-        // Xử lý linh hoạt với nhiều cấu trúc có thể có từ response
-        if (response.data && response.data.success && response.data.data && response.data.data.books) {
-          // Cấu trúc từ responseFormatterMiddleware
-          this.books = response.data.data.books.map(book => this.formatBookData(book));
-        } else if (response.data && response.data.books) {
-          // Cấu trúc trả về trực tiếp từ controller
-          this.books = response.data.books.map(book => this.formatBookData(book));
-        } else if (Array.isArray(response.data)) {
-          // Mảng sách trực tiếp
-          this.books = response.data.map(book => this.formatBookData(book));
-        } else {
-          throw new Error("Định dạng dữ liệu không hợp lệ từ API");
+    computed: {
+        // Tính số trang dựa trên số sách và số sách mỗi trang
+        totalPages() {
+            return Math.ceil(this.books.length / this.booksPerPage);
+        },
+        // Lấy sách cho trang hiện tại
+        currentPageBooks() {
+            const startIndex = (this.currentPage - 1) * this.booksPerPage;
+            const endIndex = startIndex + this.booksPerPage;
+            return this.books.slice(startIndex, endIndex);
         }
-        
-        this.loading = false;
-      } catch (error) {
-        console.error("Error fetching top selling books:", error);
-        this.error = "Không thể tải danh sách sách bán chạy. Vui lòng thử lại sau.";
-        this.loading = false;
-      }
     },
-
-    formatBookData(book) {
-      // Xử lý ảnh từ chuỗi mảng thành URL đầu tiên
-      let imageUrl = '/images/default-book-cover.jpg';
-      
-      if (book.image) {
-        try {
-          // Kiểm tra nếu image là chuỗi mảng
-          if (book.image.startsWith('[') && book.image.endsWith(']')) {
-            // Parse chuỗi thành mảng
-            const imageArray = JSON.parse(book.image.replace(/'/g, '"'));
-            // Lấy URL đầu tiên nếu có
-            if (imageArray && imageArray.length > 0) {
-              imageUrl = imageArray[0];
+    methods: {
+        // Các phương thức giữ nguyên như trước
+        async fetchTopSellingBooks() {
+            this.loading = true;
+            try {
+                const response = await BookService.getTopSellingBooks(this.totalBooks);
+            
+                // Xử lý linh hoạt với nhiều cấu trúc có thể có từ response
+                if (response.data && response.data.success && response.data.data && response.data.data.books) {
+                // Cấu trúc từ responseFormatterMiddleware
+                this.books = response.data.data.books.map(book => this.formatBookData(book));
+                } else if (response.data && response.data.books) {
+                // Cấu trúc trả về trực tiếp từ controller
+                this.books = response.data.books.map(book => this.formatBookData(book));
+                } else if (Array.isArray(response.data)) {
+                // Mảng sách trực tiếp
+                this.books = response.data.map(book => this.formatBookData(book));
+                } else {
+                throw new Error("Định dạng dữ liệu không hợp lệ từ API");
+                }
+            
+                this.loading = false;
+            } catch (error) {
+                console.error("Error fetching top selling books:", error);
+                this.error = "Không thể tải danh sách sách bán chạy. Vui lòng thử lại sau.";
+                this.loading = false;
             }
-          } else {
-            // Nếu image không phải chuỗi mảng, sử dụng trực tiếp
-            imageUrl = book.image;
-          }
-        } catch (error) {
-          console.error("Lỗi xử lý URL hình ảnh:", error);
-        }
-      }
-      
-      return {
-        id: book._id,
-        image: imageUrl,
-        price: book.price,
-        originalPrice: book.originalPrice > book.price ? book.originalPrice : null,
-        title: book.title,
-        author: book.author,
-        sold: String(book.sold || 0),
-        rating: book.rating || 0
-      };
-    },
-    
-    nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
-      }
-    },
-    previousPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-      }
-    },
-    
-    async addToCart(bookId) {
-      try {
-        await CartService.addToCart({ bookId, quantity: 1 });
-        this.$toast.success("Đã thêm sách vào giỏ hàng");
+        },
 
-        eventBus.emit("cart-updated"); // Phát sự kiện để cập nhật giỏ hàng
-      } catch (error) {
-        console.error("Error adding book to cart:", error);
-        this.$toast.error("Không thể thêm sách vào giỏ hàng.");
-      }
+        formatBookData(book) {
+            // Xử lý ảnh từ chuỗi mảng thành URL đầu tiên
+            let imageUrl = '/images/default-book-cover.jpg';
+        
+            if (book.image) {
+                try {
+                    // Kiểm tra nếu image là chuỗi mảng
+                    if (book.image.startsWith('[') && book.image.endsWith(']')) {
+                        // Parse chuỗi thành mảng
+                        const imageArray = JSON.parse(book.image.replace(/'/g, '"'));
+                        // Lấy URL đầu tiên nếu có
+                        if (imageArray && imageArray.length > 0) {
+                            imageUrl = imageArray[0];
+                        }
+                    } else {
+                        // Nếu image không phải chuỗi mảng, sử dụng trực tiếp
+                        imageUrl = book.image;
+                    }
+                } catch (error) {
+                    console.error("Lỗi xử lý URL hình ảnh:", error);
+                }
+            }
+      
+            return {
+                id: book._id,
+                image: imageUrl,
+                price: book.price,
+                originalPrice: book.originalPrice > book.price ? book.originalPrice : null,
+                title: book.title,
+                author: book.author,
+                sold: String(book.sold || 0),
+                rating: book.rating || 0
+            };
+        },
+    
+        nextPage() {
+            if (this.currentPage < this.totalPages) {
+            this.currentPage++;
+            }
+        },
+        previousPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+            }
+        },
+    
+        async addToCart(bookId) {
+            try {
+                await CartService.addToCart({ bookId, quantity: 1 });
+                this.$toast.success("Đã thêm sách vào giỏ hàng");
+
+                eventBus.emit("cart-updated"); // Phát sự kiện để cập nhật giỏ hàng
+            } catch (error) {
+                console.error("Error adding book to cart:", error);
+                this.$toast.error("Không thể thêm sách vào giỏ hàng.");
+            }
+        }
+    },
+    mounted() {
+        this.fetchTopSellingBooks();
     }
-  },
-  mounted() {
-    this.fetchTopSellingBooks();
-  }
 };
 </script>
 
