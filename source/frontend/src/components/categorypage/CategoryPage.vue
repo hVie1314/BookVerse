@@ -1,57 +1,57 @@
 <template>
     <div class="category-page">
-      <Nav />
-      <main class="category-content">
+        <Nav />
+        <main class="category-content">
         <div class="category-container">
-          <div class="page-header">
-            <h1 class="page-title" :class="{ 'wishlist-title': $route.query.wishlist === 'true' }">
-              {{ pageTitle }}
-            </h1>
-            <div v-if="$route.query.search" class="search-info">
-              Kết quả tìm kiếm cho: <span class="search-term">"{{ $route.query.search }}"</span>
+            <div class="page-header">
+                <h1 class="page-title" :class="{ 'wishlist-title': $route.query.wishlist === 'true' }">
+                {{ pageTitle }}
+                </h1>
+                <div v-if="$route.query.search" class="search-info">
+                Kết quả tìm kiếm cho: <span class="search-term">"{{ $route.query.search }}"</span>
+                </div>
             </div>
-        </div>
           
-          <div class="category-layout" :class="{ 'wishlist-layout': $route.query.wishlist === 'true' }">
-            <!-- Thêm v-if để ẩn filter sidebar khi ở chế độ wishlist -->
-            <div class="filter-sidebar" v-if="$route.query.wishlist !== 'true'">
-              <CategoryFilter @filter-change="applyFilter" />
-              <PriceFilter @price-filter-change="applyPriceFilter" />
-              <RatingFilter @rating-filter-change="applyRatingFilter" />
-            </div>
+            <div class="category-layout" :class="{ 'wishlist-layout': $route.query.wishlist === 'true' }">
+                <!-- Thêm v-if để ẩn filter sidebar khi ở chế độ wishlist -->
+                <div class="filter-sidebar" v-if="$route.query.wishlist !== 'true'">
+                    <CategoryFilter @filter-change="applyFilter" />
+                <PriceFilter @price-filter-change="applyPriceFilter" />
+                <RatingFilter @rating-filter-change="applyRatingFilter" />
+                </div>
             
-            <div class="products-container" :class="{ 'full-width': $route.query.wishlist === 'true' }">
-              <BookCatalog ref="bookCatalog" />
+                <div class="products-container" :class="{ 'full-width': $route.query.wishlist === 'true' }">
+                <BookCatalog ref="bookCatalog" />
+                </div>
             </div>
-          </div>
         </div>
-      </main>
-      <Footer />
+        </main>
+        <Footer />
     </div>
 </template>
   
 <script>
-  import Nav from '../navbar/Nav.vue';
-  import Footer from '../footer/footer.vue';
-  import CategoryFilter from './CategoryFilter.vue';
-  import PriceFilter from './PriceFilter.vue';
-  import RatingFilter from './RatingFilter.vue';
-  import BookCatalog from './BookCatalog.vue';
+    import Nav from '../navbar/Nav.vue';
+    import Footer from '../footer/footer.vue';
+    import CategoryFilter from './CategoryFilter.vue';
+    import PriceFilter from './PriceFilter.vue';
+    import RatingFilter from './RatingFilter.vue';
+    import BookCatalog from './BookCatalog.vue';
   
-  export default {
-    name: 'CategoryPage',
-    components: {
-      Nav,
-      Footer,
-      CategoryFilter,
-      PriceFilter,
-      RatingFilter,
-      BookCatalog
+    export default {
+        name: 'CategoryPage',
+        components: {
+        Nav,
+        Footer,
+        CategoryFilter,
+        PriceFilter,
+        RatingFilter,
+        BookCatalog
     },
     data() {
-      return {
-        filters: {}
-      };
+        return {
+            filters: {}
+        };
     },
     computed:{
       pageTitle() {
