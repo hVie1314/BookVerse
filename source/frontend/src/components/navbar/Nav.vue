@@ -322,59 +322,59 @@ export default {
         	}
       	},
       	clearSearch() {
-        this.searchQuery = ''; // Xóa nội dung tìm kiếm
-        // Focus lại vào ô input sau khi xóa
-        this.$nextTick(() => {
-          const searchInput = document.querySelector('.search-input');
-          if (searchInput) searchInput.focus();
-        });
-      },
-      async getCartItemCount() {
-        try {
-          let cartData = null;
+        	this.searchQuery = ''; // Xóa nội dung tìm kiếm
+        	// Focus lại vào ô input sau khi xóa
+        	this.$nextTick(() => {
+          		const searchInput = document.querySelector('.search-input');
+          		if (searchInput) searchInput.focus();
+        	});
+      	},
+      	async getCartItemCount() {
+        	try {
+          		let cartData = null;
+	
+          		if (AuthenticationService.isLoggedIn()) {
+            		const userId = AuthenticationService.getCurrentUser().id;
+            		const response = await CartService.getUserCart(userId);
+            		cartData = response.data;
+          		} else {
+            		const guestCartId = localStorage.getItem('guestCartId');
+            		if (guestCartId) {
+              			const response = await CartService.getGuestCart(guestCartId);
+              			cartData = response.data;
+            		}
+          		}
           
-          if (AuthenticationService.isLoggedIn()) {
-            const userId = AuthenticationService.getCurrentUser().id;
-            const response = await CartService.getUserCart(userId);
-            cartData = response.data;
-          } else {
-            const guestCartId = localStorage.getItem('guestCartId');
-            if (guestCartId) {
-              const response = await CartService.getGuestCart(guestCartId);
-              cartData = response.data;
-            }
-          }
-          
-          // Kiểm tra nhiều cấu trúc dữ liệu có thể có
-          if (cartData && cartData.items && Array.isArray(cartData.items)) {
-            // Đếm số lượng sản phẩm riêng biệt, không phải tổng số lượng
-            this.cartItemCount = cartData.items.length;
-          } else if (cartData && cartData.products && Array.isArray(cartData.products)) {
-            this.cartItemCount = cartData.products.length;
-          } else if (cartData && cartData.cart && cartData.cart.items) {
-            this.cartItemCount = cartData.cart.items.length;
-          } else if (cartData && cartData.data && cartData.data.products && Array.isArray(cartData.data.products)) {
-            this.cartItemCount = cartData.data.products.length;
-          } else {
-            this.cartItemCount = 0;
-            console.log("No items in cart or invalid cart data structure:", cartData);
-          }
-        } catch (error) {
-          this.cartItemCount = 0;
-        }
-      },
-      // Method để chuyển đến trang giỏ hàng
-      navigateToCart() {
-        this.$router.push('/cart');
-      }
-  },
-  // Kiểm tra trạng thái đăng nhập khi route thay đổi
-  watch: {
-    '$route'() {
-      this.checkLoginStatus();
-      this.getCartItemCount(); // Cập nhật lại số lượng khi chuyển trang
-    }
-  },
+          		// Kiểm tra nhiều cấu trúc dữ liệu có thể có
+				if (cartData && cartData.items && Array.isArray(cartData.items)) {
+					// Đếm số lượng sản phẩm riêng biệt, không phải tổng số lượng
+					this.cartItemCount = cartData.items.length;
+				} else if (cartData && cartData.products && Array.isArray(cartData.products)) {
+					this.cartItemCount = cartData.products.length;
+				} else if (cartData && cartData.cart && cartData.cart.items) {
+					this.cartItemCount = cartData.cart.items.length;
+				} else if (cartData && cartData.data && cartData.data.products && Array.isArray(cartData.data.products)) {
+					this.cartItemCount = cartData.data.products.length;
+				} else {
+					this.cartItemCount = 0;
+					console.log("No items in cart or invalid cart data structure:", cartData);
+				}
+        	} catch (error) {
+          		this.cartItemCount = 0;
+        	}
+      	},
+      	// Method để chuyển đến trang giỏ hàng
+      	navigateToCart() {
+        	this.$router.push('/cart');
+      	}
+  	},
+  	// Kiểm tra trạng thái đăng nhập khi route thay đổi
+  	watch: {
+    	'$route'() {
+      		this.checkLoginStatus();
+      		this.getCartItemCount(); // Cập nhật lại số lượng khi chuyển trang
+    	}
+  	},
 }
 </script>
 
@@ -382,494 +382,494 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;900&display=swap');
 
 .header-container {
-  width: 100%;
-  position: fixed;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  background-color: rgb(244, 235, 225);
+  	width: 100%;
+  	position: fixed;
+  	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+	background-color: rgb(244, 235, 225);
 }
 
 .header-content{
-  display: flex ;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0px;
-  width: 85%;
-  padding: 0 20px;
-  box-sizing: border-box;
+	display: flex ;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0px;
+	width: 85%;
+	padding: 0 20px;
+	box-sizing: border-box;
 }
 
 .logo-section {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  margin-top: 25px;
-  transition: all 0.3s ease;
+	display: flex;
+	align-items: center;
+	text-decoration: none;
+	margin-top: 25px;
+	transition: all 0.3s ease;
 }
 
 .logo-section:hover {
-  transform: scale(1.05);
+  	transform: scale(1.05);
 }
 
 .logo-section:hover .brand-name {
-  color: #724e4e;
-  text-shadow: 0px 2px 4px rgba(114, 78, 78, 0.2);
+	color: #724e4e;
+	text-shadow: 0px 2px 4px rgba(114, 78, 78, 0.2);
 }
 
 .logo-icon-wrapper {
-  transition: transform 0.4s ease;
+  	transition: transform 0.4s ease;
 }
 
 .logo-section:hover .logo-icon-wrapper {
-  transform: rotate(5deg);
-  filter: drop-shadow(0px 3px 5px rgba(77, 41, 0, 0.3));
+  	transform: rotate(5deg);
+  	filter: drop-shadow(0px 3px 5px rgba(77, 41, 0, 0.3));
 }
 
 .brand-name {
-  font-family: "Montserrat", sans-serif;
-  font-weight: 900;
-  font-size: 30px;
-  color: #4d2900;
-  margin-left: 10px;
-  margin-top: 0;
-  margin-bottom: 0;
-  text-decoration: none;
+	font-family: "Montserrat", sans-serif;
+	font-weight: 900;
+	font-size: 30px;
+	color: #4d2900;
+	margin-left: 10px;
+	margin-top: 0;
+	margin-bottom: 0;
+	text-decoration: none;
 }
 
 .search-section {
-  flex: 1; /* Cho phép phần tìm kiếm mở rộng */
-  max-width: 600px; /* Giới hạn chiều rộng tối đa */
-  margin: 0 20px; /* Căn chỉnh khoảng cách */
-  margin-top: 30px;
+	flex: 1; /* Cho phép phần tìm kiếm mở rộng */
+	max-width: 600px; /* Giới hạn chiều rộng tối đa */
+	margin: 0 20px; /* Căn chỉnh khoảng cách */
+	margin-top: 30px;
 }
 
 .search-icon {
-  width: 445px;
-  height: 39px;
+  	width: 445px;
+  	height: 39px;
 }
 
 .menu-section {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  font-size: 20px;
-  color: rgba(57, 31, 0, 1);
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	font-size: 20px;
+	color: rgba(57, 31, 0, 1);
 }
 
 .menu-icon {
-  width: 184px;
-  height: 35px;
+	width: 184px;
+	height: 35px;
 }
 
 .icon-container, .user-menu-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	cursor: pointer;
+	position: relative;
 }
 
 .icon-label {
-  font-size: 12px;
-  margin-top: 25px;
-  font-family: "Montserrat", sans-serif;
-  font-weight: 500;
-  color: #4d2900;
-  text-align: center;
+	font-size: 12px;
+	margin-top: 25px;
+	font-family: "Montserrat", sans-serif;
+	font-weight: 500;
+	color: #4d2900;
+	text-align: center;
 }
 
 /* Style cho popup menu */
 .auth-popup {
-  position: absolute;
-  top: 100%;
-  right: -20px;
-  z-index: 1000;
-  margin-top: 10px;
+	position: absolute;
+	top: 100%;
+	right: -20px;
+	z-index: 1000;
+	margin-top: 10px;
 }
 
 .icon-container, .user-menu-container {
-  margin-top: 40px;
+  	margin-top: 40px;
 }
 
 @media (max-width: 991px) {
-  .search-section {
-    width: 300px;
-  }
+  	.search-section {
+    	width: 300px;
+  	}
 
-  .search-icon {
-    width: 300px;
-  }
+  	.search-icon {
+    	width: 300px;
+  	}
 }
 
 @media (max-width: 640px) {
-  .search-section {
-    display: none;
-  }
+  	.search-section {
+    	display: none;
+  	}
 }
 
 /* Hiệu ứng hover cho icon-container (heart và cart) */
 .icon-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	cursor: pointer;
+	transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	position: relative;
 }
 
 .icon-container:hover {
-  transform: translateY(-4px);
+  	transform: translateY(-4px);
 }
 
 .icon-container:hover i {
-  color: #724e4e;
-  filter: drop-shadow(0 0 2px rgba(114, 78, 78, 0.3));
+  	color: #724e4e;
+  	filter: drop-shadow(0 0 2px rgba(114, 78, 78, 0.3));
 }
 
 .icon-container:hover .icon-label {
-  color: #724e4e;
-  font-weight: 700;
+  	color: #724e4e;
+  	font-weight: 700;
 }
 
 /* Hiệu ứng riêng cho user-menu-container */
 .user-menu-container {
-  position: relative;
-  cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  z-index: 1000;
+  	position: relative;
+  	cursor: pointer;
+  	transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  	z-index: 1000;
 }
 
 
 .user-menu-container:hover {
-  transform: translateY(-4px);
+  	transform: translateY(-4px);
 }
 
 .user-menu-container:hover i {
-  color: #724e4e;
-  filter: drop-shadow(0 0 2px rgba(114, 78, 78, 0.3));
+  	color: #724e4e;
+  	filter: drop-shadow(0 0 2px rgba(114, 78, 78, 0.3));
 }
 
 .user-menu-container:hover .icon-label {
-  color: #724e4e;
-  font-weight: 700;
+  	color: #724e4e;
+  	font-weight: 700;
 }
 
 /* Hiệu ứng indicator */
 .icon-container::after,
 .user-menu-container::after {
-  content: '';
-  position: absolute;
-  bottom: -5px;
-  left: 50%;
-  width: 0;
-  height: 3px;
-  background-color: #724e4e;
-  transition: all 0.3s ease;
-  transform: translateX(-50%);
-  opacity: 0;
-  border-radius: 3px;
+	content: '';
+	position: absolute;
+	bottom: -5px;
+	left: 50%;
+	width: 0;
+	height: 3px;
+	background-color: #724e4e;
+	transition: all 0.3s ease;
+	transform: translateX(-50%);
+	opacity: 0;
+	border-radius: 3px;
 }
 
 .icon-container:hover::after,
 .user-menu-container:hover::after {
-  width: 60%;
-  opacity: 1;
+  	width: 60%;
+  	opacity: 1;
 }
 
 /* Thêm hiệu ứng cho icons */
 i.fa-heart, 
 i.fa-cart-shopping,
 i.fa-user {
-  transition: transform 0.3s ease, color 0.3s ease, filter 0.3s ease;
+	transition: transform 0.3s ease, color 0.3s ease, filter 0.3s ease;
 }
 
 i.fa-heart:hover {
-  transform: scale(1.1) translateY(-2px);
-  animation: heartBeat 1.5s infinite;
+  	transform: scale(1.1) translateY(-2px);
+  	animation: heartBeat 1.5s infinite;
 }
 
 i.fa-cart-shopping:hover {
-  transform: scale(1.1) rotate(5deg);
+  	transform: scale(1.1) rotate(5deg);
 }
 
 i.fa-user:hover {
-  transform: scale(1.1);
+  	transform: scale(1.1);
 }
 
 i.fa-heart, i.fa-cart-shopping, i.fa-user, i.fa-bars {
-  position: relative;
-  transition: transform 0.3s ease, color 0.3s ease, filter 0.3s ease;
-  /* Thuộc tính này đảm bảo icon luôn giữ không gian của nó */
-  transform-origin: center center;
-  z-index: 1;
-  display: inline-block; /* Đảm bảo transform không ảnh hưởng đến layout */
-  will-change: transform; /* Tối ưu hiệu suất cho animation */
+	position: relative;
+	transition: transform 0.3s ease, color 0.3s ease, filter 0.3s ease;
+	/* Thuộc tính này đảm bảo icon luôn giữ không gian của nó */
+	transform-origin: center center;
+	z-index: 1;
+	display: inline-block; /* Đảm bảo transform không ảnh hưởng đến layout */
+	will-change: transform; /* Tối ưu hiệu suất cho animation */
 }
 
 /* Sửa hiệu ứng hover cho từng icon để không đẩy layout */
 i.fa-heart:hover {
-  transform: scale(1.1) translateY(-2px);
-  animation: heartBeat 1.5s infinite;
-  z-index: 2;
+  	transform: scale(1.1) translateY(-2px);
+  	animation: heartBeat 1.5s infinite;
+  	z-index: 2;
 }
 
 i.fa-cart-shopping:hover {
-  transform: scale(1.1) rotate(5deg);
-  z-index: 2;
+  	transform: scale(1.1) rotate(5deg);
+  	z-index: 2;
 }
 
 i.fa-user:hover {
-  transform: scale(1.1);
-  z-index: 2;
+  	transform: scale(1.1);
+  	z-index: 2;
 }
 
 /* Đảm bảo container của icon giữ nguyên kích thước và vị trí */
 .icon-container, .user-menu-container {
-  /* Giữ nguyên các thuộc tính hiện có */
-  transform-style: preserve-3d; /* Tối ưu hiệu ứng 3D */
+  	/* Giữ nguyên các thuộc tính hiện có */
+  	transform-style: preserve-3d; /* Tối ưu hiệu ứng 3D */
 }
 
 @keyframes heartBeat {
-  0% {
-    transform: scale(1);
-  }
-  15% {
-    transform: scale(1.15) translateY(-2px);
-  }
-  30% {
-    transform: scale(1) translateY(0);
-  }
-  45% {
-    transform: scale(1.1) translateY(-1px);
-  }
-  60% {
-    transform: scale(1);
-  }
+  	0% {
+    	transform: scale(1);
+  	}
+  	15% {
+    	transform: scale(1.15) translateY(-2px);
+  	}
+  	30% {
+    	transform: scale(1) translateY(0);
+  	}
+  	45% {
+    	transform: scale(1.1) translateY(-1px);
+  	}
+  	60% {
+    	transform: scale(1);
+  	}
 }
 
 /* Hiệu ứng cho icon-label */
 .icon-label {
-  font-size: 12px;
-  margin-top: 25px;
-  font-family: "Montserrat", sans-serif;
-  font-weight: 500;
-  color: #4d2900;
-  text-align: center;
-  transition: color 0.3s ease, font-weight 0.3s ease;
+	font-size: 12px;
+	margin-top: 25px;
+	font-family: "Montserrat", sans-serif;
+	font-weight: 500;
+	color: #4d2900;
+	text-align: center;
+	transition: color 0.3s ease, font-weight 0.3s ease;
 }
 
 i.fa-bars{
-  cursor: pointer;
+  	cursor: pointer;
 }
 
 .search-form {
-  width: 100%;
+  	width: 100%;
 }
 
 .search-bar {
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid rgba(105, 103, 100, 0.59);
-  padding: 0 10px;
+	position: relative;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	border-bottom: 1px solid rgba(105, 103, 100, 0.59);
+	padding: 0 10px;
 }
 
 .search-icon-left {
-  color: #4d2900;
-  font-size: 18px;
-  margin-right: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+	color: #4d2900;
+	font-size: 18px;
+	margin-right: 10px;
+	cursor: pointer;
+	transition: all 0.3s ease;
 }
 
 .search-input {
-  width: 100%;
-  height: 39px;
-  border: none;
-  background: transparent;
-  font-family: "Montserrat", sans-serif;
-  font-size: 18px;
-  color: #4d2900;
-  padding: 0 40px 0 5px;
-  outline: none;
+	width: 100%;
+	height: 39px;
+	border: none;
+	background: transparent;
+	font-family: "Montserrat", sans-serif;
+	font-size: 18px;
+	color: #4d2900;
+	padding: 0 40px 0 5px;
+	outline: none;
 }
 
 .search-input::placeholder {
-  color: rgba(0, 0, 0, 0.35);
+  	color: rgba(0, 0, 0, 0.35);
 }
 
 .search-icon-left.search-hover,
 .search-icon-left:hover {
-  color: #724e4e;
-  transform: scale(1.2);
-  filter: drop-shadow(0 0 2px rgba(114, 78, 78, 0.3));
+  	color: #724e4e;
+  	transform: scale(1.2);
+  	filter: drop-shadow(0 0 2px rgba(114, 78, 78, 0.3));
 }
 
 /* Hiệu ứng khi click */
 .search-icon-left:active {
-  transform: scale(0.9);
-  transition: transform 0.1s ease;
+  	transform: scale(0.9);
+  	transition: transform 0.1s ease;
 }
 
 /* Thêm animation khi thực hiện tìm kiếm */
 @keyframes searchPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.3); }
-  100% { transform: scale(1); }
+  	0% { transform: scale(1); }
+  	50% { transform: scale(1.3); }
+  	100% { transform: scale(1); }
 }
 
 .search-icon-left.searching {
-  animation: searchPulse 0.5s ease-in-out;
+  	animation: searchPulse 0.5s ease-in-out;
 }
 
 .search-button {
-  position: absolute;
-  right: 10px;
-  background: none;
-  border: none;
-  color: #4d2900;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 8px;
-  transition: transform 0.3s ease;
+	position: absolute;
+	right: 10px;
+	background: none;
+	border: none;
+	color: #4d2900;
+	cursor: pointer;
+	font-size: 18px;
+	padding: 8px;
+	transition: transform 0.3s ease;
 }
 
 .search-button:hover {
-  transform: scale(1.1);
-  color: #724e4e;
+	transform: scale(1.1);
+	color: #724e4e;
 }
 
 .clear-button {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  background-color: #e0e0e0;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.3s ease;
+	background-color: #e0e0e0;
 }
 
 .clear-button:hover {
-  background-color: #dc5d72; /* Màu đỏ khi hover */
+  	background-color: #dc5d72; /* Màu đỏ khi hover */
 }
 
 .clear-button i {
-  font-size: 14px;
-  color: #333; /* Màu mặc định */
+	font-size: 14px;
+	color: #333; /* Màu mặc định */
 }
 
 .clear-button:hover i {
-  color: #ffffff; /* Màu trắng khi hover */
+  	color: #ffffff; /* Màu trắng khi hover */
 }
 
 .clear-button-container {
-  position: absolute;
-  right: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  z-index: 10;
+	position: absolute;
+	right: 10px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	cursor: pointer;
+	z-index: 10;
 }
 
 /* Style cho label "Xóa" */
 .clear-label {
-  font-size: 12px;
-  margin-top: 12px;
-  font-family: "Montserrat", sans-serif;
-  font-weight: 500;
-  color: transparent; /* Ban đầu trong suốt */
-  text-align: center;
-  transition: color 0.3s ease, transform 0.3s ease;
-  position: absolute;
-  top: 100%;
-  transform: translateY(-5px);
-  opacity: 0;
-  pointer-events: none; /* Không can thiệp vào các sự kiện hover */
+	font-size: 12px;
+	margin-top: 12px;
+	font-family: "Montserrat", sans-serif;
+	font-weight: 500;
+	color: transparent; /* Ban đầu trong suốt */
+	text-align: center;
+	transition: color 0.3s ease, transform 0.3s ease;
+	position: absolute;
+	top: 100%;
+	transform: translateY(-5px);
+	opacity: 0;
+	pointer-events: none; /* Không can thiệp vào các sự kiện hover */
 }
 
 .clear-button-container:hover .clear-label {
-  color: #dc5d72; /* Màu chữ "Xóa" khi hiện lên */
-  transform: translateY(0); 
-  opacity: 1;
+	color: #dc5d72; /* Màu chữ "Xóa" khi hiện lên */
+	transform: translateY(0); 
+	opacity: 1;
 }
 
 /* Điều chỉnh vị trí thanh tìm kiếm để có không gian cho label */
 .search-bar {
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid rgba(105, 103, 100, 0.59);
-  padding: 0 10px;
-  margin-bottom: 20px; /* Thêm margin để có không gian cho chữ "Xóa" */
+	position: relative;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	border-bottom: 1px solid rgba(105, 103, 100, 0.59);
+	padding: 0 10px;
+	margin-bottom: 20px; /* Thêm margin để có không gian cho chữ "Xóa" */
 }
 
 .cart-icon-container {
-  position: relative;
-  width: 24px; /* Kích thước cố định cho container */
-  height: 24px; /* Kích thước cố định cho container */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+	position: relative;
+	width: 24px; /* Kích thước cố định cho container */
+	height: 24px; /* Kích thước cố định cho container */
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .cart-badge {
-  position: absolute;
-  top: -20px;
-  right: -2px;
-  background-color: #f84c4c;
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: bold;
-  border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
-  animation: badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-  z-index: 2; /* Đảm bảo badge hiển thị trên các phần tử khác */
+	position: absolute;
+	top: -20px;
+	right: -2px;
+	background-color: #f84c4c;
+	color: white;
+	border-radius: 50%;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: bold;
+	border: 2px solid white;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	transition: all 0.3s ease;
+	animation: badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+	z-index: 2; /* Đảm bảo badge hiển thị trên các phần tử khác */
 }
 
 /* Đảm bảo icon cart có vị trí nhất quán */
 .fa-cart-shopping {
-  display: block;
-  position: relative;
-  z-index: 1;
+	display: block;
+	position: relative;
+	z-index: 1;
 }
 
 @keyframes badge-pop {
-  0% {
-    transform: scale(0);
-  }
-  80% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
+  	0% {
+    	transform: scale(0);
+  	}
+  	80% {
+    	transform: scale(1.2);
+  	}
+  	100% {
+    	transform: scale(1);
+  	}
 }
 
 /* Hiệu ứng khi hover vào icon giỏ hàng */
 .icon-container:hover .cart-badge {
-  transform: scale(1.2);
-  background-color: #ff3333;
+	transform: scale(1.2);
+	background-color: #ff3333;
 }
 
 .logo-section {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  margin-top: 25px;
-  transition: all 0.3s ease;
-  cursor: pointer; /* Thêm con trỏ pointer để hiển thị là có thể click */
+	display: flex;
+	align-items: center;
+	text-decoration: none;
+	margin-top: 25px;
+	transition: all 0.3s ease;
+	cursor: pointer; /* Thêm con trỏ pointer để hiển thị là có thể click */
 }
 </style>
