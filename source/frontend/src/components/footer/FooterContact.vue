@@ -63,74 +63,74 @@
         flex-shrink: 0;
     }
   
-  .address-text {
-    display: flex;
-    margin-top: 8px;
-    font-size: 13px;
-    gap: 5px;
-  }
-  
-  .address-title {
-    text-decoration: underline;
-    width: 50%;
-    font-weight: 600;
-  }
-
-  .address-detail {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    white-space: normal;
-    color: white;
-  }
-
-  @media (max-width: 991px) {
-    .contact-container {
-      margin-top: 40px;
+    .address-text {
+        display: flex;
+        margin-top: 8px;
+        font-size: 13px;
+        gap: 5px;
     }
   
-    .phone-number {
-      margin-left: 9px;
+    .address-title {
+        text-decoration: underline;
+        width: 50%;
+        font-weight: 600;
     }
-  }
 
-   /* Style cho link địa chỉ */
-  .address-link {
-    color: white;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-    margin-left: -25px;
-  }
-  
-  .address-link:hover {
-    color: #f0f0f0;
-  }
-  
-  .address-link::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 1px;
-    bottom: -2px;
-    left: 0;
-    background-color: white;
-    transition: width 0.3s ease;
-  }
-  
-  .address-link:hover::after {
-    width: 100%;
-  }
+    .address-detail {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        color: white;
+    }
 
-  @media (max-width: 991px) {
-    .contact-container {
-      margin-top: 40px;
+    @media (max-width: 991px) {
+        .contact-container {
+            margin-top: 40px;
+        }
+  
+        .phone-number {
+            margin-left: 9px;
+        }
+    }
+
+    /* Style cho link địa chỉ */
+    .address-link {
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+        margin-left: -25px;
     }
   
-    .phone-number {
-      margin-left: 9px;
+    .address-link:hover {
+        color: #f0f0f0;
     }
-  }
-  </style>
+  
+    .address-link::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 1px;
+        bottom: -2px;
+        left: 0;
+        background-color: white;
+        transition: width 0.3s ease;
+    }
+  
+    .address-link:hover::after {
+        width: 100%;
+    }
+
+    @media (max-width: 991px) {
+        .contact-container {
+            margin-top: 40px;
+        }
+  
+        .phone-number {
+            margin-left: 9px;
+        }
+    }
+</style>
   
