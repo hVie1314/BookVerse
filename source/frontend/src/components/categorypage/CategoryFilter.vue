@@ -1,35 +1,35 @@
 <template>
     <section class="filter-card">
-      <h2 class="filter-title">Danh mục</h2>
+        <h2 class="filter-title">Danh mục</h2>
 
-      <div v-if="loading" class="loading-message">
-        <i class="fa-solid fa-spinner fa-spin"></i> Đang tải danh mục...
-      </div>
-
-      <div v-else-if="error" class="error-message">
-        {{ error }}
-      </div>
-
-      <div v-else-if="categories.length === 0" class="empty-message">
-        Không có danh mục nào
-      </div>
-
-      <!-- Categories list -->
-      <div 
-        v-else
-        v-for="category in categories" 
-        :key="category._id"
-        class="category-item"
-        :class="{ active: selectedCategories.includes(category.categoryName) }"
-        @click="selectCategory(category.categoryName)"
-      >
-        <div class="checkbox">
-          <i v-if="selectedCategories.includes(category.categoryName)" class="fa-solid fa-check"></i>
+        <div v-if="loading" class="loading-message">
+            <i class="fa-solid fa-spinner fa-spin"></i> Đang tải danh mục...
         </div>
-        <p class="category-name">{{ category.categoryName }}</p>
-      </div>
+
+        <div v-else-if="error" class="error-message">
+            {{ error }}
+        </div>
+
+        <div v-else-if="categories.length === 0" class="empty-message">
+            Không có danh mục nào
+        </div>
+
+        <!-- Categories list -->
+        <div 
+            v-else
+            v-for="category in categories" 
+            :key="category._id"
+            class="category-item"
+            :class="{ active: selectedCategories.includes(category.categoryName) }"
+            @click="selectCategory(category.categoryName)"
+            >
+            <div class="checkbox">
+                <i v-if="selectedCategories.includes(category.categoryName)" class="fa-solid fa-check"></i>
+            </div>
+            <p class="category-name">{{ category.categoryName }}</p>
+        </div>
     </section>
-  </template>
+</template>
   
 <script>
     import BookService from '@/services/BookService';

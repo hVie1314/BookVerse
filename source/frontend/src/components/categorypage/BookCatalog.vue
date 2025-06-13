@@ -59,34 +59,34 @@
             <p>Đang cập nhật danh sách yêu thích...</p>
         </div>
     
-    <div v-if="loading" class="loading-indicator">
-      <div class="spinner"></div>
-      <p>Đang tải sách...</p>
-    </div>
+        <div v-if="loading" class="loading-indicator">
+            <div class="spinner"></div>
+            <p>Đang tải sách...</p>
+        </div>
     
-    <div v-else-if="error" class="error-message">
-      {{ error }}
-    </div>
-    <div v-else-if="isWishlistPage && books.length === 0" class="empty-wishlist">
-        <i class="fa-regular fa-heart fa-3x"></i>
-        <p>Danh sách yêu thích của bạn đang trống</p>
-        <router-link to="/category" class="browse-books-btn">Khám phá sách</router-link>
-    </div>
-    <div v-else>
-      <BookGrid 
-            :books="books" 
-            :isWishlistPage="isWishlistPage"  
-            @remove-from-wishlist="handleRemoveFromWishlist"
-        />
+        <div v-else-if="error" class="error-message">
+            {{ error }}
+        </div>
+        <div v-else-if="isWishlistPage && books.length === 0" class="empty-wishlist">
+            <i class="fa-regular fa-heart fa-3x"></i>
+            <p>Danh sách yêu thích của bạn đang trống</p>
+            <router-link to="/category" class="browse-books-btn">Khám phá sách</router-link>
+        </div>
+        <div v-else>
+            <BookGrid 
+                :books="books" 
+                :isWishlistPage="isWishlistPage"  
+                @remove-from-wishlist="handleRemoveFromWishlist"
+            />
     
-      <Pagination
-        :currentPage="currentPage"
-        :totalPages="totalPages"
-        @page-change="handlePageChange"
-      />
+            <Pagination
+                :currentPage="currentPage"
+                :totalPages="totalPages"
+                @page-change="handlePageChange"
+            />
+        </div>
     </div>
-  </div>
-  </template>
+</template>
   
 <script>
     import BookGrid from './BookGrid.vue';
@@ -447,55 +447,55 @@
                     const timestamp = new Date().getTime();
                     const response = await WishlistService.getWishlist(timestamp);
                     
-                    if (response.data && response.data.success && response.data.data) {
-                        // Xử lý dữ liệu wishlist
-                        const wishlistData = response.data.data.wishlist || response.data.data;
-                        let products = [];
-                        
-                        if (wishlistData && wishlistData.products && Array.isArray(wishlistData.products)) {
-                        products = wishlistData.products;
-                        }
-                        
-                        // Cập nhật danh sách sản phẩm
-                        this.wishlistAllBooks = products.map(item => {
-                        if (item.productId && typeof item.productId === 'object') {
-                            // Xử lý hình ảnh sách
-                            let image = item.productId.image;
-                            if (typeof image === 'string' && image.startsWith('[') && image.endsWith(']')) {
-                            try {
-                                const images = JSON.parse(image.replace(/'/g, '"'));
-                                image = images[0];
-                            } catch (e) {
-                                console.error('Lỗi xử lý ảnh:', e);
-                            }
+                        if (response.data && response.data.success && response.data.data) {
+                            // Xử lý dữ liệu wishlist
+                            const wishlistData = response.data.data.wishlist || response.data.data;
+                            let products = [];
+                            
+                            if (wishlistData && wishlistData.products && Array.isArray(wishlistData.products)) {
+                            products = wishlistData.products;
                             }
                             
-                            return {
-                            _id: item.productId._id,
-                            id: item.productId._id,
-                            title: item.productId.title,
-                            author: item.productId.author,
-                            price: item.productId.price,
-                            image: image,
-                            };
+                            // Cập nhật danh sách sản phẩm
+                            this.wishlistAllBooks = products.map(item => {
+                                if (item.productId && typeof item.productId === 'object') {
+                                    // Xử lý hình ảnh sách
+                                    let image = item.productId.image;
+                                    if (typeof image === 'string' && image.startsWith('[') && image.endsWith(']')) {
+                                    try {
+                                        const images = JSON.parse(image.replace(/'/g, '"'));
+                                        image = images[0];
+                                    } catch (e) {
+                                        console.error('Lỗi xử lý ảnh:', e);
+                                    }
+                                    }
+                                    
+                                    return {
+                                    _id: item.productId._id,
+                                    id: item.productId._id,
+                                    title: item.productId.title,
+                                    author: item.productId.author,
+                                    price: item.productId.price,
+                                    image: image,
+                                    };
+                                }
+                            return null;
+                            }).filter(book => book !== null);
+                            
+                            // Cập nhật thông tin phân trang
+                            this.totalBooks = this.wishlistAllBooks.length;
+                            this.totalPages = Math.ceil(this.totalBooks / this.wishlistBooksPerPage);
+                            
+                            // Xử lý trường hợp trang hiện tại không còn sản phẩm
+                            if (this.wishlistAllBooks.length === 0) {
+                            this.currentPage = 1;
+                            } else if (this.currentPage > this.totalPages) {
+                            this.currentPage = this.totalPages;
+                            }
+                            
+                            // Thực hiện phân trang
+                            this.paginateWishlistBooks();
                         }
-                        return null;
-                        }).filter(book => book !== null);
-                        
-                        // Cập nhật thông tin phân trang
-                        this.totalBooks = this.wishlistAllBooks.length;
-                        this.totalPages = Math.ceil(this.totalBooks / this.wishlistBooksPerPage);
-                        
-                        // Xử lý trường hợp trang hiện tại không còn sản phẩm
-                        if (this.wishlistAllBooks.length === 0) {
-                        this.currentPage = 1;
-                        } else if (this.currentPage > this.totalPages) {
-                        this.currentPage = this.totalPages;
-                        }
-                        
-                        // Thực hiện phân trang
-                        this.paginateWishlistBooks();
-                    }
                     }
                     
                     // Phát sự kiện để các component khác cũng cập nhật
@@ -751,49 +751,49 @@
     }
 
     .wishlist-loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.8);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(2px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
 }
 
 .wishlist-spinner {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  margin-bottom: 15px;
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
 }
 
 .wishlist-spinner-circle {
-  width: 100%;
-  height: 100%;
-  border: 4px solid rgba(77, 41, 0, 0.1);
-  border-top-color: #4d2900;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+    width: 100%;
+    height: 100%;
+    border: 4px solid rgba(77, 41, 0, 0.1);
+    border-top-color: #4d2900;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
 .wishlist-loading-overlay p {
-  font-family: "Montserrat", sans-serif;
-  font-size: 16px;
-  color: #4d2900;
-  margin-top: 10px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    color: #4d2900;
+    margin-top: 10px;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 </style>
