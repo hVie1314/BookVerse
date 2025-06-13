@@ -582,175 +582,175 @@
     font-weight: 600;
 }
 .empty-wishlist {
-  text-align: center;
-  padding: 40px;
-  color: #4d2900;
-  background-color: rgba(244, 235, 225, 0.5);
-  border-radius: 8px;
-  margin: 20px 0;
+    text-align: center;
+    padding: 40px;
+    color: #4d2900;
+    background-color: rgba(244, 235, 225, 0.5);
+    border-radius: 8px;
+    margin: 20px 0;
 }
 
 .empty-wishlist i {
-  color: #724e4e;
-  margin-bottom: 15px;
+    color: #724e4e;
+    margin-bottom: 15px;
 }
 
 .empty-wishlist p {
-  font-family: "Montserrat", sans-serif;
-  font-size: 18px;
-  margin-bottom: 20px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    margin-bottom: 20px;
 }
 
 .browse-books-btn {
-  display: inline-block;
-  background-color: #4d2900;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 5px;
-  text-decoration: none;
-  font-family: "Montserrat", sans-serif;
-  font-weight: 600;
-  transition: all 0.3s ease;
+    display: inline-block;
+    background-color: #4d2900;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
 .browse-books-btn:hover {
-  background-color: #724e4e;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #724e4e;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-    .carousel {
-            width: 100%;
-            border-radius: 16px;
-            overflow: visible;
-            background-color: transparent;
-            margin-bottom: 30px;
-    }
+.carousel {
+    width: 100%;
+    border-radius: 16px;
+    overflow: visible;
+    background-color: transparent;
+    margin-bottom: 30px;
+}
 
-    .carousel-inner {
+.carousel-inner {
     background-color: transparent; 
     overflow: hidden;
     border-radius: 8px;
-    }
+}
 
-    .banner {
+.banner {
     height: auto;
     width: 100%;
     object-fit: cover;
     margin: 0;
     border-radius: 0; /* Ghi đè border-radius từ class .banner cũ */
-    }
+}
 
-    .carousel-control-prev,
-    .carousel-control-next {
-        width: 40px;
-        height: 40px;
-        background-color: rgba(255, 255, 255, 0.95);
-        border-radius: 50%;
-        top: 50%;
-        transform: translateY(-50%);
-        opacity: 0.8;
-        transition: all 0.3s ease;
-        position: absolute;
-        z-index: 10;
-    }
+.carousel-control-prev,
+.carousel-control-next {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    position: absolute;
+    z-index: 10;
+}
 
-    .carousel-control-prev {
+.carousel-control-prev {
     left: 0;
     transform: translateX(-50%) translateY(-50%);
-    }
+}
 
-    .carousel-control-next {
+.carousel-control-next {
     right: 0;
     transform: translateX(50%) translateY(-50%);
-    }
+}
 
-    .carousel-control-prev:hover,
-    .carousel-control-next:hover {
-        background-color: rgba(255, 255, 255, 0.95);
-        opacity: 1;
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    }
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    background-color: rgba(255, 255, 255, 0.95);
+    opacity: 1;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
 
-    .carousel-control-prev:hover {
+.carousel-control-prev:hover {
     transform: translateX(-50%) translateY(-50%) scale(1.15);
-    }
+}
 
-    .carousel-control-next:hover {
+.carousel-control-next:hover {
     transform: translateX(50%) translateY(-50%) scale(1.15);
-    }
+}
 
-    .carousel-control-prev-icon,
-    .carousel-control-next-icon {
-        background-color: #000;
-        width: 18px; /* Giảm từ kích thước mặc định 20px */
-        height: 18px; /* Giảm từ kích thước mặc định 20px */
-        filter: invert(1); /* Làm cho icon màu đen thay vì màu trắng mặc định */
-        opacity: 0.7;
-    }
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: #000;
+    width: 18px; /* Giảm từ kích thước mặc định 20px */
+    height: 18px; /* Giảm từ kích thước mặc định 20px */
+    filter: invert(1); /* Làm cho icon màu đen thay vì màu trắng mặc định */
+    opacity: 0.7;
+}
 
-    /* Tùy chọn: Thêm hiệu ứng opacity khi hover */
-    .carousel-control-prev:hover .carousel-control-prev-icon,
-    .carousel-control-next:hover .carousel-control-next-icon {
-        opacity: 1;
-    }
+/* Tùy chọn: Thêm hiệu ứng opacity khi hover */
+.carousel-control-prev:hover .carousel-control-prev-icon,
+.carousel-control-next:hover .carousel-control-next-icon {
+    opacity: 1;
+}
 
-    /* Giảm kích thước của nút điều khiển */
-    .carousel-control-prev,
-    .carousel-control-next {
-        width: 35px; /* Giảm từ 40px */
-        height: 35px; /* Giảm từ 40px */
-    }
+/* Giảm kích thước của nút điều khiển */
+.carousel-control-prev,
+.carousel-control-next {
+    width: 35px; /* Giảm từ 40px */
+    height: 35px; /* Giảm từ 40px */
+}
 
-    .carousel-indicators {
+.carousel-indicators {
     margin-bottom: 1rem;
-    }
+}
 
-    .carousel-indicators [data-bs-target] {
+.carousel-indicators [data-bs-target] {
     width: 12px;
     height: 12px;
     border-radius: 50%;
     background-color: rgba(77, 41, 0, 0.5);
     margin: 0 5px;
-    }
+}
 
-    .carousel-indicators .active {
+.carousel-indicators .active {
     background-color: #4d2900;
     transform: scale(1.2);
-    }
+}
 
-    .book-catalog {
-        width: 100%;
-    }
+.book-catalog {
+    width: 100%;
+}
 
-    .catalog-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
+.catalog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
 
-    .results-count {
-        font-family: "Montserrat", sans-serif;
-        font-size: 14px;
-        color: #666;
-    }
+.results-count {
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    color: #666;
+}
 
-    .sort-select {
-        padding: 8px 12px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-family: "Montserrat", sans-serif;
-        font-size: 14px;
-        color: #333;
-        background-color: #fff;
-    }
+.sort-select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+}
 
-    .sort-select:focus {
-        outline: none;
-        border-color: #4d2900;
-    }
+.sort-select:focus {
+    outline: none;
+    border-color: #4d2900;
+}
 
-    .wishlist-loading-overlay {
+.wishlist-loading-overlay {
     position: fixed;
     top: 0;
     left: 0;
