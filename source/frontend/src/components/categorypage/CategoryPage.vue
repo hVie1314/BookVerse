@@ -103,23 +103,23 @@
 
 <style scoped>
     .wishlist-layout {
-    /* Điều chỉnh layout khi ở chế độ wishlist */
-    flex-direction: column;
-}
+        /* Điều chỉnh layout khi ở chế độ wishlist */
+        flex-direction: column;
+    }
 
-.products-container.full-width {
-    /* Chiếm toàn bộ chiều rộng khi không có filter sidebar */
-    width: 100%;
-    max-width: 100%;
-}
+    .products-container.full-width {
+        /* Chiếm toàn bộ chiều rộng khi không có filter sidebar */
+        width: 100%;
+        max-width: 100%;
+    }
 
-/* Tùy chọn: Thêm style riêng cho tiêu đề trang wishlist */
-.page-title.wishlist-title {
-    color: #724e4e;
-    border-bottom: 2px solid #4d2900;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-}
+    /* Tùy chọn: Thêm style riêng cho tiêu đề trang wishlist */
+    .page-title.wishlist-title {
+        color: #724e4e;
+        border-bottom: 2px solid #4d2900;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
     .category-page {
         width: 100%;
         min-height: 100vh;
@@ -192,16 +192,14 @@
     }
 
     .search-info {
-      font-family: "Montserrat", sans-serif;
-      font-size: 14px;
-      color: #666;
-      margin-top: 10px;
+        font-family: "Montserrat", sans-serif;
+        font-size: 14px;
+        color: #666;
+        margin-top: 10px;
     }
     
     .search-term {
-      font-weight: 700;
-      color: #4d2900;
-    }
-
-    
+        font-weight: 700;
+        color: #4d2900;
+    }   
 </style>
