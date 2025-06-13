@@ -1,68 +1,68 @@
 <template>
-  <section class="recommended-section">
-    <div v-if="loading" class="loading-message">
-      <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
-    </div>
-    
-    <div v-else-if="error" class="error-message">
-      {{ error }}
-    </div>
-    
-    <div v-else class="recommended-container">
-      <!-- Navigation Arrow Left - Trực tiếp thay vì dùng component -->
-      <button 
-        v-if="books.length > booksPerPage && currentPage > 1"
-        @click="previousPage" 
-        class="carousel-control-prev"
-        type="button"
-      >
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-      </button>
-      
-      <div class="best-seller-content">
-        <h2 class="carousel-title">TOP SÁCH BÁN CHẠY</h2>
-        
-        <div class="book-grid">
-          <BookCard
-            v-for="book in currentPageBooks"
-            :key="book.id"
-            :bookId="book.id"
-            :image="book.image"
-            :price="`${book.price.toLocaleString('vi-VN')} đ`"
-            :originalPrice="book.originalPrice ? `${book.originalPrice.toLocaleString('vi-VN')} đ` : ''"
-            :title="book.title"
-            :author="book.author"
-            :cartText="'Thêm vào giỏ hàng'"
-            :sold="String(book.sold)"
-            :rating="book.rating || 0"
-            :showProgressBar="true"
-          />
+    <section class="recommended-section">
+        <div v-if="loading" class="loading-message">
+            <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
         </div>
-      </div>
-      
-      <!-- Navigation Arrow Right - Trực tiếp thay vì dùng component -->
-      <button 
-        v-if="books.length > booksPerPage && currentPage < totalPages"
-        @click="nextPage" 
-        class="carousel-control-next"
-        type="button"
-      >
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-      </button>
-    </div>
     
-    <!-- Pagination Indicators -->
-    <div v-if="books.length > 0" class="pagination-dots">
-      <span 
-        v-for="page in totalPages" 
-        :key="page"
-        :class="['pagination-dot', { active: currentPage === page }]"
-        @click="currentPage = page"
-      ></span>
-    </div>
-  </section>
+        <div v-else-if="error" class="error-message">
+            {{ error }}
+        </div>
+    
+        <div v-else class="recommended-container">
+            <!-- Navigation Arrow Left - Trực tiếp thay vì dùng component -->
+            <button 
+                v-if="books.length > booksPerPage && currentPage > 1"
+                @click="previousPage" 
+                class="carousel-control-prev"
+                type="button"
+                >
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+      
+            <div class="best-seller-content">
+                <h2 class="carousel-title">TOP SÁCH BÁN CHẠY</h2>
+        
+                <div class="book-grid">
+                    <BookCard
+                        v-for="book in currentPageBooks"
+                        :key="book.id"
+                        :bookId="book.id"
+                        :image="book.image"
+                        :price="`${book.price.toLocaleString('vi-VN')} đ`"
+                        :originalPrice="book.originalPrice ? `${book.originalPrice.toLocaleString('vi-VN')} đ` : ''"
+                        :title="book.title"
+                        :author="book.author"
+                        :cartText="'Thêm vào giỏ hàng'"
+                        :sold="String(book.sold)"
+                        :rating="book.rating || 0"
+                        :showProgressBar="true"
+                    />
+                </div>
+            </div>
+      
+            <!-- Navigation Arrow Right - Trực tiếp thay vì dùng component -->
+            <button 
+                v-if="books.length > booksPerPage && currentPage < totalPages"
+                @click="nextPage" 
+                class="carousel-control-next"
+                type="button"
+                >
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    
+        <!-- Pagination Indicators -->
+        <div v-if="books.length > 0" class="pagination-dots">
+            <span 
+                v-for="page in totalPages" 
+                :key="page"
+                :class="['pagination-dot', { active: currentPage === page }]"
+                @click="currentPage = page"
+            ></span>
+        </div>
+    </section>
 </template>
 
 <script>
