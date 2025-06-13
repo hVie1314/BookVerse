@@ -4,6 +4,8 @@ const bcrypt = require('bcryptjs');
 const { redisClient } = require('../../configs/db/redis');
 
 class UserController {
+
+    // [GET] /user/customer
     async getAllCustomer(req, res, next) {        
         try {
             const customers = await user.find({ role: 'user' });
@@ -19,6 +21,7 @@ class UserController {
         }
     }
 
+    // [GET] /user/staff
     async getAllStaff(req, res, next) {        
         try {
             const staffs = await user.find({ role: 'staff' });
@@ -34,6 +37,7 @@ class UserController {
         }
     }
 
+    // [GET] /user/admin
     async getAllAdmin(req, res, next) {        
         try {
             const admins = await user.find({ role: 'admin' });
@@ -49,6 +53,7 @@ class UserController {
         }
     }
 
+    // [GET] /user/:userId
     async getUserById(req, res, next) {
         try {
             const foundUser = await user.findById(req.params.userId);
@@ -64,6 +69,7 @@ class UserController {
         }
     }
 
+    // [PUT] /user/:userId
     async updateUserInfo(req, res, next) {
         try {
             const userId = req.params.userId;
@@ -152,6 +158,7 @@ class UserController {
         }
     }
 
+    // [DELETE] /user/:userId
     async deleteUser(req, res, next) {
         try {
             const deleted = await user.findByIdAndDelete(req.params.userId);
