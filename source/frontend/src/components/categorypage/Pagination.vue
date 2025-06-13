@@ -4,7 +4,7 @@
             class="pagination-button" 
             :disabled="currentPage === 1"
             @click="changePage(currentPage - 1)"
-            >
+        >
             <i class="fa-solid fa-chevron-left"></i>
         </button>
       
@@ -15,7 +15,7 @@
             class="page-number"
             :class="{ active: currentPage === page }"
             @click="changePage(page)"
-            >
+        >
             {{ page }}
         </button>
         </div>
@@ -24,7 +24,7 @@
             class="pagination-button" 
             :disabled="currentPage === totalPages"
             @click="changePage(currentPage + 1)"
-            >
+        >
             <i class="fa-solid fa-chevron-right"></i>
         </button>
     </div>
