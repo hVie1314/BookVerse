@@ -1,62 +1,62 @@
 <template>
     <article class="order-item" :class="status">
-      <h3 class="order-status" :class="status">{{ statusText }}</h3>
-      <div class="order-content">
-        <hr class="divider" />
-        <div v-for="(product, index) in products" :key="index">
-          <OrderItemProduct :product="product" />
-          <hr class="divider" />
+        <h3 class="order-status" :class="status">{{ statusText }}</h3>
+        <div class="order-content">
+            <hr class="divider" />
+            <div v-for="(product, index) in products" :key="index">
+                <OrderItemProduct :product="product" />
+                <hr class="divider" />
+            </div>
+            <OrderItemFooter
+                :total="total"
+                :showActions="showActions"
+                :cancelMessage="cancelMessage"
+                @pay="$emit('pay')"
+                @cancel="$emit('cancel')"
+            />
         </div>
-        <OrderItemFooter
-          :total="total"
-          :showActions="showActions"
-          :cancelMessage="cancelMessage"
-          @pay="$emit('pay')"
-          @cancel="$emit('cancel')"
-        />
-      </div>
     </article>
 </template>
   
 <script>
-  import OrderItemProduct from './OrderItemProduct.vue'
-  import OrderItemFooter from './OrderItemFooter.vue'
+    import OrderItemProduct from './OrderItemProduct.vue'
+    import OrderItemFooter from './OrderItemFooter.vue'
   
-  export default {
-    name: 'OrderItem',
-    components: {
-      OrderItemProduct,
-      OrderItemFooter
-    },
-    props: {
-      status: {
-        type: String,
-        required: true,
-        validator: value => ['pending', 'success', 'cancelled'].includes(value)
-      },
-      statusText: {
-        type: String,
-        required: true
-      },
-      products: {
-        type: Array,
-        required: true
-      },
-      total: {
-        type: String,
-        required: true
-      },
-      showActions: {
-        type: Boolean,
-        default: false
-      },
-      cancelMessage: {
-        type: String,
-        default: ''
-      }
-    },
-    emits: ['pay', 'cancel']
-  }
+    export default {
+        name: 'OrderItem',
+        components: {
+            OrderItemProduct,
+        OrderItemFooter
+        },
+        props: {
+            status: {
+                type: String,
+                required: true,
+                validator: value => ['pending', 'success', 'cancelled'].includes(value)
+            },
+            statusText: {
+                type: String,
+                required: true
+            },
+            products: {
+                type: Array,
+                required: true
+            },
+            total: {
+                type: String,
+                required: true
+            },
+            showActions: {
+                type: Boolean,
+                default: false
+            },
+            cancelMessage: {
+                type: String,
+                default: ''
+            }
+        },
+        emits: ['pay', 'cancel']
+    }
 </script>
   
 <style scoped>
