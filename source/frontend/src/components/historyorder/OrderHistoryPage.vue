@@ -1,37 +1,37 @@
 <template>
     <div class="page-container">
-      <Nav />
-      <main class="order-history-page">
-        <div class="content-wrapper">
-          <OrderCategoryTabs @change-category="filterByStatus" :activeCategory="activeCategory" />
-          <OrderSearchBar @search="filterBySearch" />
-          
-          <div v-if="loading" class="loading-indicator">
-            <div class="spinner"></div>
-            <p>Đang tải đơn hàng...</p>
-          </div>
-          
-          <div v-else-if="filteredOrders.length === 0" class="no-orders">
-            <p>Không tìm thấy đơn hàng nào.</p>
-          </div>
-          
-          <template v-else>
-            <OrderItem
-              v-for="order in filteredOrders"
-              :key="order._id"
-              :status="order.orderStatus"
-              :statusText="getStatusText(order.orderStatus)"
-              :products="formatProducts(order.items)"
-              :total="formatPrice(order.totalAmount)"
-              :showActions="order.orderStatus === 'pending'"
-              :cancelMessage="order.cancelReason"
-              @pay="handlePayment(order._id, order.totalAmount)"
-              @cancel="handleCancel(order._id)"
-            />
-          </template>
-        </div>
-      </main>
-      <footer-form />
+        <Nav />
+            <main class="order-history-page">
+                <div class="content-wrapper">
+                    <OrderCategoryTabs @change-category="filterByStatus" :activeCategory="activeCategory" />
+                    <OrderSearchBar @search="filterBySearch" />
+            
+                    <div v-if="loading" class="loading-indicator">
+                        <div class="spinner"></div>
+                        <p>Đang tải đơn hàng...</p>
+                    </div>
+            
+                    <div v-else-if="filteredOrders.length === 0" class="no-orders">
+                        <p>Không tìm thấy đơn hàng nào.</p>
+                    </div>
+            
+                    <template v-else>
+                        <OrderItem
+                            v-for="order in filteredOrders"
+                            :key="order._id"
+                            :status="order.orderStatus"
+                            :statusText="getStatusText(order.orderStatus)"
+                            :products="formatProducts(order.items)"
+                            :total="formatPrice(order.totalAmount)"
+                            :showActions="order.orderStatus === 'pending'"
+                            :cancelMessage="order.cancelReason"
+                            @pay="handlePayment(order._id, order.totalAmount)"
+                            @cancel="handleCancel(order._id)"
+                        />
+                    </template>
+                </div>
+            </main>
+        <footer-form />
     </div>
 </template>
   
@@ -471,68 +471,68 @@
 
             // Thêm vào OrderHistoryPage.vue
             async processCancelOrder(orderId, reason) {
-            try {
-                console.log('Bắt đầu xử lý hủy đơn hàng');
-                eventBus.emit('show-alert', {
-                    show: true,
-                    type: 'info',
-                    title: 'Đang xử lý',
-                    message: 'Đang hủy đơn hàng, vui lòng đợi...',
-                    autoClose: false
-                });
-                
-                // Gửi yêu cầu hủy đơn hàng với lý do từ người dùng
-                console.log('Gửi API hủy đơn hàng:', orderId);
-                console.log('Lý do hủy từ người dùng:', reason);
-                const cancelResponse = await OrderService.createCancelRequest(orderId, reason);
-                console.log('Kết quả hủy đơn hàng:', cancelResponse.data);
-                
-                // Cập nhật UI đơn hàng
-                console.log('Cập nhật UI trạng thái đơn hàng');
-                const orderIndex = this.orders.findIndex(order => order._id === orderId);
-                
-                if (orderIndex !== -1) {
-                    // Cập nhật đơn hàng với Vue 3 không cần $set
-                    this.orders[orderIndex] = {
-                        ...this.orders[orderIndex],
-                        orderStatus: 'cancelled',
-                        cancelReason: reason
-                    };
+                try {
+                    console.log('Bắt đầu xử lý hủy đơn hàng');
+                    eventBus.emit('show-alert', {
+                        show: true,
+                        type: 'info',
+                        title: 'Đang xử lý',
+                        message: 'Đang hủy đơn hàng, vui lòng đợi...',
+                        autoClose: false
+                    });
                     
-                    // Cập nhật lại mảng đã lọc
-                    this.filterByStatus(this.activeCategory);
+                    // Gửi yêu cầu hủy đơn hàng với lý do từ người dùng
+                    console.log('Gửi API hủy đơn hàng:', orderId);
+                    console.log('Lý do hủy từ người dùng:', reason);
+                    const cancelResponse = await OrderService.createCancelRequest(orderId, reason);
+                    console.log('Kết quả hủy đơn hàng:', cancelResponse.data);
+                    
+                    // Cập nhật UI đơn hàng
+                    console.log('Cập nhật UI trạng thái đơn hàng');
+                    const orderIndex = this.orders.findIndex(order => order._id === orderId);
+                    
+                    if (orderIndex !== -1) {
+                        // Cập nhật đơn hàng với Vue 3 không cần $set
+                        this.orders[orderIndex] = {
+                            ...this.orders[orderIndex],
+                            orderStatus: 'cancelled',
+                            cancelReason: reason
+                        };
+                        
+                        // Cập nhật lại mảng đã lọc
+                        this.filterByStatus(this.activeCategory);
+                    }
+                    
+                    // Đóng thông báo loading
+                    eventBus.emit('close-alert');
+                    
+                    // Đợi một chút để đảm bảo thông báo loading đã đóng
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                    // Hiển thị thông báo thành công
+                    this.toast.success('Đơn hàng đã được hủy thành công!', {
+                        position: 'top-right',
+                        timeout: 1500,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined
+                    });
+                    
+                } catch (error) {
+                    console.error('Lỗi khi hủy đơn hàng:', error);
+                    eventBus.emit('show-alert', {
+                        show: true,
+                        type: 'error',
+                        title: 'Lỗi',
+                        message: 'Đã xảy ra lỗi khi hủy đơn hàng. Vui lòng thử lại sau.',
+                        autoClose: true
+                    });
+                    
+                    // Nếu lỗi, vẫn cần cập nhật lại danh sách đơn hàng để đảm bảo dữ liệu đồng bộ
+                    await this.fetchOrders();
                 }
-                
-                // Đóng thông báo loading
-                eventBus.emit('close-alert');
-                
-                // Đợi một chút để đảm bảo thông báo loading đã đóng
-                await new Promise(resolve => setTimeout(resolve, 300));
-                
-                // Hiển thị thông báo thành công
-                this.toast.success('Đơn hàng đã được hủy thành công!', {
-                    position: 'top-right',
-                    timeout: 1500,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined
-                });
-                
-            } catch (error) {
-                console.error('Lỗi khi hủy đơn hàng:', error);
-                eventBus.emit('show-alert', {
-                    show: true,
-                    type: 'error',
-                    title: 'Lỗi',
-                    message: 'Đã xảy ra lỗi khi hủy đơn hàng. Vui lòng thử lại sau.',
-                    autoClose: true
-                });
-                
-                // Nếu lỗi, vẫn cần cập nhật lại danh sách đơn hàng để đảm bảo dữ liệu đồng bộ
-                await this.fetchOrders();
             }
-        }
         }
     }
 </script>
