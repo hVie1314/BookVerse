@@ -47,78 +47,78 @@
         PriceFilter,
         RatingFilter,
         BookCatalog
-    },
-    data() {
-        return {
-            filters: {}
-        };
-    },
-    computed:{
-      pageTitle() {
-        if (this.$route.query.wishlist === 'true') {
-          return 'Danh sách yêu thích';
-        } else if (this.$route.query.search) {
-          return 'Kết quả tìm kiếm';
-        } else {
-          return 'Danh mục sản phẩm';
+        },
+        data() {
+            return {
+                filters: {}
+            };
+        },
+        computed:{
+            pageTitle() {
+                if (this.$route.query.wishlist === 'true') {
+                    return 'Danh sách yêu thích';
+                } else if (this.$route.query.search) {
+                    return 'Kết quả tìm kiếm';
+                } else {
+                    return 'Danh mục sản phẩm';
+                }
+            }
+        },
+        mounted() {
+            if (this.$route.query.wishlist === 'true') {
+                this.$refs.bookCatalog && this.$refs.bookCatalog.fetchWishlistBooks();
+            }
+        },
+        watch: {
+        '$route.query.wishlist'(newVal) {
+                if (newVal === 'true' && this.$refs.bookCatalog) {
+                    this.$refs.bookCatalog.fetchWishlistBooks();
+                }
+            }
+        },
+        methods: {
+            applyFilter(filter) {
+                this.filters = { ...this.filters, ...filter };
+                this.$refs.bookCatalog.applyFilters(this.filters);
+            },
+            applyPriceFilter(priceFilter) {
+                this.filters = { 
+                    ...this.filters, 
+                    minPrice: priceFilter.min, 
+                    maxPrice: priceFilter.max 
+                };
+            this.$refs.bookCatalog.applyFilters(this.filters);
+            },
+            applyRatingFilter(ratingFilter) {
+                if (ratingFilter.rating === null) {
+                    delete this.filters.minRating;
+                } else {
+                    this.filters = { ...this.filters, minRating: ratingFilter.rating };
+                }
+            this.$refs.bookCatalog.applyFilters(this.filters);
+            }
         }
-      }
-    },
-    mounted() {
-      if (this.$route.query.wishlist === 'true') {
-          this.$refs.bookCatalog && this.$refs.bookCatalog.fetchWishlistBooks();
-      }
-    },
-    watch: {
-      '$route.query.wishlist'(newVal) {
-        if (newVal === 'true' && this.$refs.bookCatalog) {
-          this.$refs.bookCatalog.fetchWishlistBooks();
-        }
-      }
-    },
-    methods: {
-      applyFilter(filter) {
-        this.filters = { ...this.filters, ...filter };
-        this.$refs.bookCatalog.applyFilters(this.filters);
-      },
-      applyPriceFilter(priceFilter) {
-        this.filters = { 
-          ...this.filters, 
-          minPrice: priceFilter.min, 
-          maxPrice: priceFilter.max 
-        };
-        this.$refs.bookCatalog.applyFilters(this.filters);
-      },
-      applyRatingFilter(ratingFilter) {
-        if (ratingFilter.rating === null) {
-          delete this.filters.minRating;
-        } else {
-          this.filters = { ...this.filters, minRating: ratingFilter.rating };
-        }
-        this.$refs.bookCatalog.applyFilters(this.filters);
-      }
     }
-  }
 </script>
 
 <style scoped>
     .wishlist-layout {
-  /* Điều chỉnh layout khi ở chế độ wishlist */
-  flex-direction: column;
+    /* Điều chỉnh layout khi ở chế độ wishlist */
+    flex-direction: column;
 }
 
 .products-container.full-width {
-  /* Chiếm toàn bộ chiều rộng khi không có filter sidebar */
-  width: 100%;
-  max-width: 100%;
+    /* Chiếm toàn bộ chiều rộng khi không có filter sidebar */
+    width: 100%;
+    max-width: 100%;
 }
 
 /* Tùy chọn: Thêm style riêng cho tiêu đề trang wishlist */
 .page-title.wishlist-title {
-  color: #724e4e;
-  border-bottom: 2px solid #4d2900;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
+    color: #724e4e;
+    border-bottom: 2px solid #4d2900;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
 }
     .category-page {
         width: 100%;
