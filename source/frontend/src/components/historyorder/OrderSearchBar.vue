@@ -1,14 +1,14 @@
 <template>
     <section class="order-history-search">
-      <div class="search-group">
-        <img src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/4aa1ba0c641c654f3bebdb67ddd39e9ee7950d8f?placeholderIfAbsent=true" alt="Search icon" class="search-icon" />
-        <input 
-          type="text"
-          class="search-input"
-          placeholder="Bạn có thể tìm kiếm theo mã đơn hàng"
-          v-model="searchQuery"
-          @input="onSearch"
-        />
+        <div class="search-group">
+            <img src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/4aa1ba0c641c654f3bebdb67ddd39e9ee7950d8f?placeholderIfAbsent=true" alt="Search icon" class="search-icon" />
+            <input 
+                type="text"
+                class="search-input"
+                placeholder="Bạn có thể tìm kiếm theo mã đơn hàng"
+                v-model="searchQuery"
+                @input="onSearch"
+            />
       </div>
     </section>
 </template>
