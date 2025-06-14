@@ -1,10 +1,10 @@
 <template>
-  <Alert 
-  v-model:show="alert.show" 
-  :type="alert.type" 
-  :title="alert.title" 
-  :message="alert.message" 
-  :auto-close-only="true"
+  <Alert
+    v-model:show="alert.show"
+    :type="alert.type"
+    :title="alert.title"
+    :message="alert.message"
+    :auto-close-only="true"
   />
   <div>
     <link
@@ -30,7 +30,7 @@
               @blur="usernameFocused = false"
             />
           </div>
-          
+
           <!-- Email Input -->
           <div class="input-field" :class="{ 'input-focus': emailFocused }">
             <input
@@ -41,9 +41,11 @@
               @focus="emailFocused = true"
               @blur="emailFocused = false"
             />
-            <div class="icon-container"><i class="fa-regular fa-envelope eyes"></i></div>
+            <div class="icon-container">
+              <i class="fa-regular fa-envelope eyes"></i>
+            </div>
           </div>
-          
+
           <!-- Password Input -->
           <div class="input-field" :class="{ 'input-focus': passwordFocused }">
             <input
@@ -54,16 +56,26 @@
               @focus="passwordFocused = true"
               @blur="passwordFocused = false"
             />
-            <div class="icon-container password-toggle" @click="togglePasswordVisibility">
+            <div
+              class="icon-container password-toggle"
+              @click="togglePasswordVisibility"
+            >
               <transition name="fade" mode="out-in">
-                <div v-if="isPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
-                <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
+                <div v-if="isPasswordVisible" key="visible">
+                  <i class="fa-regular fa-eye eyes"></i>
+                </div>
+                <div v-else key="hidden">
+                  <i class="fa-regular fa-eye-slash eyes"></i>
+                </div>
               </transition>
             </div>
           </div>
-          
+
           <!-- Confirm Password Input -->
-          <div class="input-field" :class="{ 'input-focus': confirmPasswordFocused }">
+          <div
+            class="input-field"
+            :class="{ 'input-focus': confirmPasswordFocused }"
+          >
             <input
               :type="isConfirmPasswordVisible ? 'text' : 'password'"
               placeholder="Xác nhận mật khẩu của bạn"
@@ -73,19 +85,30 @@
               @focus="confirmPasswordFocused = true"
               @blur="confirmPasswordFocused = false"
             />
-            <div class="icon-container password-toggle" @click="toggleConfirmPasswordVisibility">
+            <div
+              class="icon-container password-toggle"
+              @click="toggleConfirmPasswordVisibility"
+            >
               <transition name="fade" mode="out-in">
-                <div v-if="isConfirmPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
-                <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
+                <div v-if="isConfirmPasswordVisible" key="visible">
+                  <i class="fa-regular fa-eye eyes"></i>
+                </div>
+                <div v-else key="hidden">
+                  <i class="fa-regular fa-eye-slash eyes"></i>
+                </div>
               </transition>
             </div>
           </div>
-          
-          <button class="registration-button" type="submit">Tạo tài khoản</button>
-          
+
+          <button class="registration-button" type="submit">
+            Tạo tài khoản
+          </button>
+
           <p class="sign-in-prompt">
             Bạn đã có tài khoản?
-            <router-link to="/login" class="sign-in-link">Đăng nhập ngay</router-link>
+            <router-link to="/login" class="sign-in-link"
+              >Đăng nhập ngay</router-link
+            >
           </p>
         </form>
       </section>
@@ -94,35 +117,35 @@
 </template>
 
 <script>
-import AuthenticationService from '@/services/AuthenticationService';
-import Alert from '@/components/Alert.vue';
+import AuthenticationService from "@/services/AuthenticationService";
+import Alert from "@/components/Alert.vue";
 
 export default {
-  name: 'RegisterForm',
+  name: "RegisterForm",
   components: {
-    Alert
-  }, 
+    Alert,
+  },
   data() {
     return {
       alert: {
         show: false,
-        type: 'success',
-        title: 'Success',
-        message: 'Registration successful!'
+        type: "success",
+        title: "Success",
+        message: "Registration successful!",
       },
       formData: {
         username: "",
         email: "",
         password: "",
-        confirmPassword: ""
+        confirmPassword: "",
       },
       isPasswordVisible: false,
       isConfirmPasswordVisible: false,
       usernameFocused: false,
       emailFocused: false,
       passwordFocused: false,
-      confirmPasswordFocused: false
-    }
+      confirmPasswordFocused: false,
+    };
   },
   methods: {
     togglePasswordVisibility() {
@@ -137,36 +160,36 @@ export default {
         if (this.formData.password !== this.formData.confirmPassword) {
           this.alert = {
             show: true,
-            type: 'error',
-            title: 'Lỗi xác nhận',
-            message: 'Mật khẩu xác nhận không khớp!'
+            type: "error",
+            title: "Lỗi xác nhận",
+            message: "Mật khẩu xác nhận không khớp!",
           };
           return;
         }
-        
+
         // Kiểm tra độ dài mật khẩu
         if (this.formData.password.length < 8) {
           this.alert = {
             show: true,
-            type: 'error',
-            title: 'Lỗi mật khẩu',
-            message: 'Mật khẩu phải có ít nhất 8 ký tự!'
+            type: "error",
+            title: "Lỗi mật khẩu",
+            message: "Mật khẩu phải có ít nhất 8 ký tự!",
           };
           return;
         }
-        
+
         // Kiểm tra email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(this.formData.email)) {
           this.alert = {
             show: true,
-            type: 'error',
-            title: 'Lỗi email',
-            message: 'Email không hợp lệ!'
+            type: "error",
+            title: "Lỗi email",
+            message: "Email không hợp lệ!",
           };
           return;
         }
-        
+
         // Tiến hành đăng ký
         console.log("Processing registration: ", this.formData);
 
@@ -174,45 +197,47 @@ export default {
           username: this.formData.username,
           email: this.formData.email,
           password: this.formData.password,
-          role: 'user' // Thêm role mặc định khi đăng ký
+          role: "user", // Thêm role mặc định khi đăng ký
         });
-        
+
         if (response.data.success) {
           // Hiển thị alert thành công thay vì alert()
           this.alert = {
             show: true,
-            type: 'success',
-            title: 'Đăng ký thành công',
-            message: 'Tài khoản của bạn đã được tạo. Bây giờ bạn có thể đăng nhập!'
+            type: "success",
+            title: "Đăng ký thành công",
+            message:
+              "Tài khoản của bạn đã được tạo. Bây giờ bạn có thể đăng nhập!",
           };
-          
+
           // Chuyển hướng sau khi hiển thị alert (delay 2 giây)
           setTimeout(() => {
-            this.$router.push('/login');
+            this.$router.push("/login");
           }, 2000);
         } else {
           this.alert = {
             show: true,
-            type: 'error',
-            title: 'Đăng ký thất bại',
-            message: response.data.errorCode || 'Vui lòng thử lại sau'
+            type: "error",
+            title: "Đăng ký thất bại",
+            message: response.data.errorCode || "Vui lòng thử lại sau",
           };
         }
       } catch (error) {
-        console.error('Registration error:', error);
+        console.error("Registration error:", error);
         this.alert = {
           show: true,
-          type: 'error',
-          title: 'Đăng ký thất bại',
-          message: error.response?.data?.message || 
-            (error.response?.data?.errorCode === 'USER_ALREADY_EXISTS' ? 
-              'Tên đăng nhập hoặc email đã tồn tại' : 
-              'Không thể kết nối đến máy chủ')
+          type: "error",
+          title: "Đăng ký thất bại",
+          message:
+            error.response?.data?.message ||
+            (error.response?.data?.errorCode === "USER_ALREADY_EXISTS"
+              ? "Tên đăng nhập hoặc email đã tồn tại"
+              : "Không thể kết nối đến máy chủ"),
         };
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -224,7 +249,6 @@ export default {
   align-items: center;
   background-color: rgb(244, 235, 225);
 }
-
 
 .registration-card {
   position: relative;
@@ -356,16 +380,16 @@ export default {
 }
 
 .registration-button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
   background: linear-gradient(
-    90deg, 
-    rgba(255, 255, 255, 0) 0%, 
-    rgba(255, 255, 255, 0.2) 50%, 
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
     rgba(255, 255, 255, 0) 100%
   );
   transition: left 0.6s;
@@ -405,7 +429,7 @@ export default {
 }
 
 .sign-in-link::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -2px;
   left: 0;
@@ -420,16 +444,19 @@ export default {
 }
 
 /* Transitions */
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
   transform: scale(0.9);
 }
 
-.fade-enter-to, .fade-leave-from {
+.fade-enter-to,
+.fade-leave-from {
   opacity: 1;
   transform: scale(1);
 }
