@@ -4,14 +4,18 @@
       <transition name="fade-alert">
         <div class="alert-container" :class="type">
           <!-- Nút đóng đặt ở góc trên bên phải -->
-          <button v-if="shouldShowCloseButton" @click="closeAlert" class="alert-close">
+          <button
+            v-if="shouldShowCloseButton"
+            @click="closeAlert"
+            class="alert-close"
+          >
             <i class="fa-solid fa-times"></i>
           </button>
           <!-- Success check icon at the top of alert -->
           <div v-if="type === 'success'" class="success-check-container">
             <i class="fa-light fa-circle-check success-check-icon"></i>
           </div>
-          
+
           <!-- Error icon for error alerts -->
           <div v-else-if="type === 'error'" class="error-icon-container">
             <i class="fa-solid fa-circle-xmark error-icon"></i>
@@ -20,10 +24,17 @@
           <div class="alert-body">
             <div class="alert-content">
               <div class="alert-title">{{ title }}</div>
-              <div class="alert-message" v-if="message === 'category'|| message === 'đặt hàng'">
+              <div
+                class="alert-message"
+                v-if="message === 'category' || message === 'đặt hàng'"
+              >
                 <span>Vui lòng </span>
-                <span class="login-link" @click="redirectToLogin">đăng nhập</span>
-                <span v-if="message.includes('category')"> để thêm sản phẩm vào danh sách yêu thích</span>
+                <span class="login-link" @click="redirectToLogin"
+                  >đăng nhập</span
+                >
+                <span v-if="message.includes('category')">
+                  để thêm sản phẩm vào danh sách yêu thích</span
+                >
                 <span v-else> để đặt hàng</span>
               </div>
               <div class="alert-message" v-else>
@@ -31,18 +42,17 @@
               </div>
 
               <div v-if="showInput" class="alert-input-container">
-                <input 
-                    ref="alertInput"
-                    v-model="inputValue" 
-                    :placeholder="inputPlaceholder || 'Nhập thông tin...'"
-                    class="alert-input"
-                    :required="inputRequired"
-                    @keyup.enter="handleConfirm"
+                <input
+                  ref="alertInput"
+                  v-model="inputValue"
+                  :placeholder="inputPlaceholder || 'Nhập thông tin...'"
+                  class="alert-input"
+                  :required="inputRequired"
+                  @keyup.enter="handleConfirm"
                 />
-            </div>
+              </div>
 
               <!-- Thêm vùng hiển thị nút tùy chọn -->
-              
             </div>
           </div>
           <div v-if="showChoices" class="alert-choices">
@@ -55,125 +65,132 @@
           </div>
         </div>
       </transition>
-      
     </div>
   </transition>
 </template>
-  
-  <script>
-  export default {
-    name: 'Alert-vue',
-    props: {
-      show: {
-        type: Boolean,
-        default: false
-      },
-      type: {
-        type: String,
-        default: 'success',
-        validator: value => ['success', 'error', 'warning', 'info'].includes(value)
-      },
-      title: {
-        type: String,
-        default: 'Success'
-      },
-      message: {
-        type: String,
-        default: 'Operation completed successfully'
-      },
-      duration: {
-        type: Number,
-        default: 3000
-      },
-      autoClose: {
-        type: Boolean,
-        default: true
-      },
-      autoCloseOnly: {
-        type: Boolean,
-        default: false
-      },
-      showChoices: { type: Boolean, default: false },
-      confirmText: { type: String, default: 'Đồng ý' },
-      cancelText: { type: String, default: 'Hủy bỏ' },
-      showInput: { type: Boolean, default: false },
-      inputPlaceholder: { type: String, default: 'Nhập thông tin...' },
-      inputRequired: { type: Boolean, default: false },
-      choices: { type: Array, default: () => [] }
-    },
-    emits: ['update:show', 'confirm', 'cancel'],
-    data() {
-      return {
-        inputValue: '' // Thêm data property
-      };
-    },
-    computed: {
-      shouldAutoClose() {
-        if (this.showChoices) return false;
-        return this.type === 'success' && 
-          (this.autoCloseOnly || 
-          this.message.includes('đăng nhập thành công') || 
-          this.message.includes('đăng xuất thành công'));
-      },
 
-      // Hiển thị nút đóng cho tất cả thông báo NGOẠI TRỪ thông báo tự đóng
-      shouldShowCloseButton() {
-        if (this.showChoices) return false;
-        return !this.shouldAutoClose;
-      }
+<script>
+export default {
+  name: "Alert-vue",
+  props: {
+    show: {
+      type: Boolean,
+      default: false,
     },
-    watch: {
-      show(newVal) {
-        if (newVal && this.autoClose && this.shouldAutoClose) {
-          this.setAutoClose();
-        }
-      }
+    type: {
+      type: String,
+      default: "success",
+      validator: (value) =>
+        ["success", "error", "warning", "info"].includes(value),
     },
-    methods: {
-      closeAlert() {
-        this.$emit('update:show', false);
-      },
-      setAutoClose() {
-        setTimeout(() => {
-          this.closeAlert();
-        }, this.duration);
-      },
-      redirectToLogin() {
-        this.closeAlert();
-        this.$router.push('/login');
-      },
-      handleConfirm() {
-        // Kiểm tra input required
-        if (this.inputRequired && this.showInput && (!this.inputValue || this.inputValue.trim() === '')) {
-          // Không cho phép xác nhận nếu input là bắt buộc mà rỗng
-          return;
-        }
-        
-        // Kiểm tra nếu có choice onClick callback
-        const confirmChoice = this.choices && this.choices.find(choice => choice.text === this.confirmText);
-        if (confirmChoice && typeof confirmChoice.onClick === 'function') {
-          confirmChoice.onClick(this.inputValue);
-        } else {
-          // Nếu không, gửi event confirm với inputValue
-          this.$emit('confirm', this.inputValue);
-          this.closeAlert();
-        }
-      },
-      handleCancel() {
-        this.$emit('cancel');
-        this.closeAlert();
-      }
+    title: {
+      type: String,
+      default: "Success",
     },
-    mounted() {
-      if (this.show && this.autoClose && this.shouldAutoClose) {
+    message: {
+      type: String,
+      default: "Operation completed successfully",
+    },
+    duration: {
+      type: Number,
+      default: 3000,
+    },
+    autoClose: {
+      type: Boolean,
+      default: true,
+    },
+    autoCloseOnly: {
+      type: Boolean,
+      default: false,
+    },
+    showChoices: { type: Boolean, default: false },
+    confirmText: { type: String, default: "Đồng ý" },
+    cancelText: { type: String, default: "Hủy bỏ" },
+    showInput: { type: Boolean, default: false },
+    inputPlaceholder: { type: String, default: "Nhập thông tin..." },
+    inputRequired: { type: Boolean, default: false },
+    choices: { type: Array, default: () => [] },
+  },
+  emits: ["update:show", "confirm", "cancel"],
+  data() {
+    return {
+      inputValue: "", // Thêm data property
+    };
+  },
+  computed: {
+    shouldAutoClose() {
+      if (this.showChoices) return false;
+      return (
+        this.type === "success" &&
+        (this.autoCloseOnly ||
+          this.message.includes("đăng nhập thành công") ||
+          this.message.includes("đăng xuất thành công"))
+      );
+    },
+
+    // Hiển thị nút đóng cho tất cả thông báo NGOẠI TRỪ thông báo tự đóng
+    shouldShowCloseButton() {
+      if (this.showChoices) return false;
+      return !this.shouldAutoClose;
+    },
+  },
+  watch: {
+    show(newVal) {
+      if (newVal && this.autoClose && this.shouldAutoClose) {
         this.setAutoClose();
       }
-    }
-  }
-  </script>
-  
-<style scoped>
+    },
+  },
+  methods: {
+    closeAlert() {
+      this.$emit("update:show", false);
+    },
+    setAutoClose() {
+      setTimeout(() => {
+        this.closeAlert();
+      }, this.duration);
+    },
+    redirectToLogin() {
+      this.closeAlert();
+      this.$router.push("/login");
+    },
+    handleConfirm() {
+      // Kiểm tra input required
+      if (
+        this.inputRequired &&
+        this.showInput &&
+        (!this.inputValue || this.inputValue.trim() === "")
+      ) {
+        // Không cho phép xác nhận nếu input là bắt buộc mà rỗng
+        return;
+      }
 
+      // Kiểm tra nếu có choice onClick callback
+      const confirmChoice =
+        this.choices &&
+        this.choices.find((choice) => choice.text === this.confirmText);
+      if (confirmChoice && typeof confirmChoice.onClick === "function") {
+        confirmChoice.onClick(this.inputValue);
+      } else {
+        // Nếu không, gửi event confirm với inputValue
+        this.$emit("confirm", this.inputValue);
+        this.closeAlert();
+      }
+    },
+    handleCancel() {
+      this.$emit("cancel");
+      this.closeAlert();
+    },
+  },
+  mounted() {
+    if (this.show && this.autoClose && this.shouldAutoClose) {
+      this.setAutoClose();
+    }
+  },
+};
+</script>
+
+<style scoped>
 .alert-input-container {
   margin: 15px 0;
   width: 100%;
@@ -222,13 +239,12 @@
 }
 
 .success {
-  border-left: 4px solid #4CAF50;
+  border-left: 4px solid #4caf50;
 }
 
 .error {
-  border-left: 4px solid #F44336;
+  border-left: 4px solid #f44336;
 }
-
 
 /* Success check icon at the top */
 .success-check-container {
@@ -240,7 +256,7 @@
 }
 
 .success-check-icon {
-  color: #4CAF50;
+  color: #4caf50;
   font-size: 100px;
 }
 
@@ -254,7 +270,7 @@
 }
 
 .error-icon {
-  color: #F44336;
+  color: #f44336;
   font-size: 100px;
 }
 
@@ -279,7 +295,7 @@
 }
 
 .alert-title {
-  font-family: 'Montserrat', sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 10px;
@@ -287,7 +303,7 @@
 }
 
 .alert-message {
-  font-family: 'Montserrat', sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 18px;
   color: #666;
   text-emphasis: center;
@@ -319,24 +335,29 @@
 }
 
 /* Animation cho overlay */
-.fade-overlay-enter-active, .fade-overlay-leave-active {
+.fade-overlay-enter-active,
+.fade-overlay-leave-active {
   transition: opacity 0.3s;
 }
 
-.fade-overlay-enter-from, .fade-overlay-leave-to {
+.fade-overlay-enter-from,
+.fade-overlay-leave-to {
   opacity: 0;
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s, transform 0.3s;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
   transform: translateY(-20px);
 }
 
-.fade-alert-enter-from, .fade-alert-leave-to {
+.fade-alert-enter-from,
+.fade-alert-leave-to {
   opacity: 0;
   transform: scale(0.9);
 }
@@ -344,7 +365,7 @@
 /* Cập nhật CSS cho login-link */
 .login-link {
   color: #4d2900;
-  font-family: 'Montserrat', sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-weight: 700; /* Đậm hơn để nổi bật */
   cursor: pointer;
   position: relative;
@@ -353,7 +374,7 @@
 }
 
 .login-link::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -2px;
   left: 0;
@@ -373,7 +394,7 @@
 
 .login-link {
   color: #4d2900;
-  font-family: 'Montserrat', sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-weight: 700;
   cursor: pointer;
   position: relative;
@@ -382,7 +403,7 @@
 }
 
 .login-link::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -2px;
   left: 0;
@@ -414,7 +435,7 @@
 .choice-button {
   padding: 10px 20px;
   border-radius: 5px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-weight: 600;
   font-size: 16px;
   cursor: pointer;
