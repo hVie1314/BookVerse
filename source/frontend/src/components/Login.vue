@@ -1,14 +1,14 @@
 <template>
-  <Alert 
-  v-model:show="alert.show" 
-  :type="alert.type" 
-  :title="alert.title" 
-  :message="alert.message" 
-  :auto-close-only="true"
+  <Alert
+    v-model:show="alert.show"
+    :type="alert.type"
+    :title="alert.title"
+    :message="alert.message"
+    :auto-close-only="true"
   />
   <main class="login-page">
     <div class="login-overlay"></div>
-    
+
     <form @submit.prevent="handleSubmit" class="login-container">
       <header class="login-header">
         <h1 class="login-title">Chào mừng trở lại</h1>
@@ -25,7 +25,9 @@
           @focus="emailFocused = true"
           @blur="emailFocused = false"
         />
-        <div class="icon-container" ><i class="fa-regular fa-envelopes eyes"></i></div>
+        <div class="icon-container">
+          <i class="fa-regular fa-envelopes eyes"></i>
+        </div>
       </div>
 
       <!-- Input Password -->
@@ -38,17 +40,28 @@
           @focus="passwordFocused = true"
           @blur="passwordFocused = false"
         />
-        <div class="icon-container password-toggle" @click="togglePasswordVisibility">
+        <div
+          class="icon-container password-toggle"
+          @click="togglePasswordVisibility"
+        >
           <transition name="fade" mode="out-in">
-            <div v-if="isPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
-            <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
+            <div v-if="isPasswordVisible" key="visible">
+              <i class="fa-regular fa-eye eyes"></i>
+            </div>
+            <div v-else key="hidden">
+              <i class="fa-regular fa-eye-slash eyes"></i>
+            </div>
           </transition>
         </div>
       </div>
 
       <div class="form-options">
         <label class="remember-me">
-          <input type="checkbox" v-model="rememberMe" class="remember-checkbox" />
+          <input
+            type="checkbox"
+            v-model="rememberMe"
+            class="remember-checkbox"
+          />
           <span class="remember-text">Ghi nhớ tài khoản</span>
         </label>
         <button type="button" class="forgot-password">Quên mật khẩu?</button>
@@ -58,160 +71,178 @@
 
       <div class="signup-prompt">
         <span class="signup-text">Chưa có tài khoản?</span>
-        <router-link to="/register" class="signup-link">Đăng ký ngay</router-link>
+        <router-link to="/register" class="signup-link"
+          >Đăng ký ngay</router-link
+        >
       </div>
     </form>
   </main>
 </template>
 
 <script>
-import AuthenticationService from '@/services/AuthenticationService';
-import Alert from '@/components/Alert.vue';
-import CartService from '@/services/CartService';
-import WishlistService from '@/services/WishlistService';
-import eventBus from '@/eventBus.js';
+import AuthenticationService from "@/services/AuthenticationService";
+import Alert from "@/components/Alert.vue";
+import CartService from "@/services/CartService";
+import WishlistService from "@/services/WishlistService";
+import eventBus from "@/eventBus.js";
 
 export default {
-  name: 'LoginForm',
+  name: "LoginForm",
   components: {
-    Alert
+    Alert,
   },
   data() {
     return {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
       rememberMe: false,
       isPasswordVisible: false, // Thêm dòng này
-      emailFocused: false,     // Biến này cũng cần thêm
+      emailFocused: false, // Biến này cũng cần thêm
       passwordFocused: false,
       alert: {
         show: false,
-        type: 'success',
-        title: '',
-        message: ''
+        type: "success",
+        title: "",
+        message: "",
       },
-    }
+    };
   },
   methods: {
-    
     togglePasswordVisibility() {
       this.isPasswordVisible = !this.isPasswordVisible;
     },
-   // Trong phương thức handleSubmit() của Login.vue
-async handleSubmit() {
-  try {
-    const response = await AuthenticationService.login({
-      username: this.email,
-      password: this.password
-    });
-    
-    console.log('Login response structure:', response.data);
-    
-    if (response.data && response.data.success) {
-      // Xử lý response theo đúng định dạng trả về từ API
-      let userData, token;
-      
-      // Phản hồi có cấu trúc: { success: true, data: { id, username, email, role, accessToken } }
-      if (response.data.data) {
-        userData = response.data.data;
-        token = response.data.data.accessToken || response.data.data.token;
-      } else {
-        userData = response.data;
-        token = response.data.accessToken || response.data.token;
-      }
-      
-      if (userData && token) {
-        // Lưu thông tin vào localStorage
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(userData));
-        
-        // Giải mã JWT token để lấy thông tin đúng userID
-        try {
-          // Token có dạng: header.payload.signature
-          const parts = token.split('.');
-          if (parts.length === 3) {
-            const payload = parts[1];
-            // Giải mã base64 url-safe để lấy payload
-            const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-            const parsedPayload = JSON.parse(decodedPayload);
-            
-            // Lấy ID từ payload của token
-            const tokenUserId = parsedPayload.id || parsedPayload.userId;
-            console.log('User ID from token:', tokenUserId);
-            
-            // Đợi một chút để đảm bảo localStorage đã được cập nhật
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Gộp giỏ hàng dựa trên ID từ token (đảm bảo tính nhất quán)
-            const guestCartId = localStorage.getItem('guestCartId');
-            if (guestCartId && tokenUserId) {
-              try {
-                // Sử dụng ID từ token để merge cart
-                await CartService.mergeGuestCartToUserCart(String(tokenUserId), guestCartId);
-                console.log('Đã merge giỏ hàng khách vào tài khoản');
-                // localStorage.removeItem('guestCartId');
-              } catch (mergeError) {
-                console.error('Lỗi khi merge giỏ hàng:', mergeError);
-                localStorage.removeItem('guestCartId');
+    // Trong phương thức handleSubmit() của Login.vue
+    async handleSubmit() {
+      try {
+        const response = await AuthenticationService.login({
+          username: this.email,
+          password: this.password,
+        });
+
+        console.log("Login response structure:", response.data);
+
+        if (response.data && response.data.success) {
+          // Xử lý response theo đúng định dạng trả về từ API
+          let userData, token;
+
+          // Phản hồi có cấu trúc: { success: true, data: { id, username, email, role, accessToken } }
+          if (response.data.data) {
+            userData = response.data.data;
+            token = response.data.data.accessToken || response.data.data.token;
+          } else {
+            userData = response.data;
+            token = response.data.accessToken || response.data.token;
+          }
+
+          if (userData && token) {
+            // Lưu thông tin vào localStorage
+            localStorage.setItem("token", token);
+            localStorage.setItem("user", JSON.stringify(userData));
+
+            // Giải mã JWT token để lấy thông tin đúng userID
+            try {
+              // Token có dạng: header.payload.signature
+              const parts = token.split(".");
+              if (parts.length === 3) {
+                const payload = parts[1];
+                // Giải mã base64 url-safe để lấy payload
+                const decodedPayload = atob(
+                  payload.replace(/-/g, "+").replace(/_/g, "/")
+                );
+                const parsedPayload = JSON.parse(decodedPayload);
+
+                // Lấy ID từ payload của token
+                const tokenUserId = parsedPayload.id || parsedPayload.userId;
+                console.log("User ID from token:", tokenUserId);
+
+                // Đợi một chút để đảm bảo localStorage đã được cập nhật
+                await new Promise((resolve) => setTimeout(resolve, 100));
+
+                // Gộp giỏ hàng dựa trên ID từ token (đảm bảo tính nhất quán)
+                const guestCartId = localStorage.getItem("guestCartId");
+                if (guestCartId && tokenUserId) {
+                  try {
+                    // Sử dụng ID từ token để merge cart
+                    await CartService.mergeGuestCartToUserCart(
+                      String(tokenUserId),
+                      guestCartId
+                    );
+                    console.log("Đã merge giỏ hàng khách vào tài khoản");
+                    // localStorage.removeItem('guestCartId');
+                  } catch (mergeError) {
+                    console.error("Lỗi khi merge giỏ hàng:", mergeError);
+                    localStorage.removeItem("guestCartId");
+                  }
+                }
+
+                try {
+                  await WishlistService.mergeWishlistAfterLogin(
+                    String(tokenUserId)
+                  );
+                  console.log(
+                    "Đã merge danh sách yêu thích của khách vào tài khoản"
+                  );
+                } catch (wishlistMergeError) {
+                  console.error(
+                    "Lỗi khi merge danh sách yêu thích:",
+                    wishlistMergeError
+                  );
+                  // Tiếp tục quá trình đăng nhập ngay cả khi merge wishlist thất bại
+                }
               }
+            } catch (tokenError) {
+              console.error("Lỗi khi giải mã token:", tokenError);
             }
 
-            try {
-              await WishlistService.mergeWishlistAfterLogin(String(tokenUserId));
-              console.log('Đã merge danh sách yêu thích của khách vào tài khoản');
-            } catch (wishlistMergeError) {
-              console.error('Lỗi khi merge danh sách yêu thích:', wishlistMergeError);
-              // Tiếp tục quá trình đăng nhập ngay cả khi merge wishlist thất bại
-            }
+            // Hiển thị thông báo thành công và chuyển hướng
+            eventBus.emit("show-alert", {
+              show: true,
+              type: "success",
+              title: "Đăng nhập thành công",
+              message: `Chào mừng ${userData.username} quay trở lại!`,
+              autoClose: true,
+            });
+
+            setTimeout(() => {
+              const redirectPath = this.$route.query.redirect || "/";
+              this.$router.push(redirectPath);
+            }, 1500);
+          } else {
+            // Xử lý trường hợp không tìm thấy userData hoặc token
+            console.error(
+              "Không tìm thấy thông tin người dùng hoặc token:",
+              response.data
+            );
+            this.alert = {
+              show: true,
+              type: "error",
+              title: "Đăng nhập thất bại",
+              message: "Không thể xác thực thông tin đăng nhập",
+            };
           }
-        } catch (tokenError) {
-          console.error('Lỗi khi giải mã token:', tokenError);
+        } else {
+          // Xử lý trường hợp đăng nhập thất bại
+          this.alert = {
+            show: true,
+            type: "error",
+            title: "Đăng nhập thất bại",
+            message: "Không thể xác thực thông tin đăng nhập",
+          };
         }
-        
-        // Hiển thị thông báo thành công và chuyển hướng
-        eventBus.emit('show-alert', {
-          show: true,
-          type: 'success',
-          title: 'Đăng nhập thành công',
-          message: `Chào mừng ${userData.username} quay trở lại!`,
-          autoClose: true
-        });
-        
-        setTimeout(() => {
-          const redirectPath = this.$route.query.redirect || '/';
-          this.$router.push(redirectPath);
-        }, 1500);
-      } else {
-        // Xử lý trường hợp không tìm thấy userData hoặc token
-        console.error('Không tìm thấy thông tin người dùng hoặc token:', response.data);
+      } catch (error) {
+        console.error("Login error:", error);
         this.alert = {
           show: true,
-          type: 'error',
-          title: 'Đăng nhập thất bại',
-          message: 'Không thể xác thực thông tin đăng nhập'
+          type: "error",
+          title: "Đăng nhập thất bại",
+          message:
+            error.response?.data?.message ||
+            "Thông tin đăng nhập không chính xác",
         };
       }
-    } else {
-      // Xử lý trường hợp đăng nhập thất bại
-      this.alert = {
-        show: true,
-        type: 'error',
-        title: 'Đăng nhập thất bại',
-        message: 'Không thể xác thực thông tin đăng nhập'
-      };
-    }
-  } catch (error) {
-    console.error('Login error:', error);
-    this.alert = {
-      show: true,
-      type: 'error',
-      title: 'Đăng nhập thất bại',
-      message: error.response?.data?.message || 'Thông tin đăng nhập không chính xác'
-    };
-  }
-}
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -456,7 +487,8 @@ async handleSubmit() {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(-50%);
   }
   50% {
@@ -493,16 +525,16 @@ async handleSubmit() {
 }
 
 .sign-in-button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
   background: linear-gradient(
-    90deg, 
-    rgba(255, 255, 255, 0) 0%, 
-    rgba(255, 255, 255, 0.2) 50%, 
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
     rgba(255, 255, 255, 0) 100%
   );
   transition: left 0.6s;
@@ -513,16 +545,19 @@ async handleSubmit() {
 }
 
 /* Transitions */
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
   transform: scale(0.9);
 }
 
-.fade-enter-to, .fade-leave-from {
+.fade-enter-to,
+.fade-leave-from {
   opacity: 1;
   transform: scale(1);
 }
@@ -533,7 +568,7 @@ async handleSubmit() {
 }
 
 .signup-link::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -2px;
   left: 0;
@@ -596,7 +631,7 @@ async handleSubmit() {
   }
 }
 
-.eyes{
-  color:#724e4e;
+.eyes {
+  color: #724e4e;
 }
 </style>
