@@ -5,7 +5,11 @@
       <p class="cart-count">Bạn có {{ itemCount }} sản phẩm trong giỏ hàng</p>
     </div>
     <div v-if="products.length === 0" class="empty-cart">
-      <p>Giỏ hàng của bạn đang trống hãy <span class="shop-link" @click="$router.push('/')">mua sắm</span> đi nào.</p>
+      <p>
+        Giỏ hàng của bạn đang trống hãy
+        <span class="shop-link" @click="$router.push('/')">mua sắm</span> đi
+        nào.
+      </p>
     </div>
     <ProductCard
       v-for="product in products"
@@ -28,20 +32,20 @@ export default {
   props: {
     products: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     itemCount: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   methods: {
     updateProductQuantity(productId, quantity) {
-      this.$emit('update-quantity', productId, quantity);
+      this.$emit("update-quantity", productId, quantity);
     },
     removeProduct(productId) {
-      this.$emit('remove-item', productId);
-    }
+      this.$emit("remove-item", productId);
+    },
   },
 };
 </script>
@@ -123,7 +127,7 @@ export default {
 }
 
 .shop-link::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -2px;
   left: 0;
