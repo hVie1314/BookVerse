@@ -13,7 +13,7 @@
         </div>
         <div class="summary-divider"></div>
         <div class="total-row">
-          <h3 class="total-label">Tổng thanh toán: </h3>
+          <h3 class="total-label">Tổng thanh toán:</h3>
           <p class="total-value">{{ formatPrice(totalPrice + shippingFee) }}</p>
         </div>
       </div>
@@ -28,30 +28,30 @@ export default {
   props: {
     totalPrice: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   data() {
     return {
-      shippingFee: 0 // Phí vận chuyển mặc định
+      shippingFee: 0, // Phí vận chuyển mặc định
     };
   },
   methods: {
     formatPrice(price) {
       // Đảm bảo price là một số hợp lệ
       const validPrice = isNaN(price) ? 0 : Number(price);
-      
-      return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND',
+
+      return new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
         minimumFractionDigits: 0, // Không hiển thị phần thập phân
-        maximumFractionDigits: 0
+        maximumFractionDigits: 0,
       }).format(validPrice);
-    }, 
+    },
     checkout() {
-      this.$emit('checkout');
-    }
-  }
+      this.$emit("checkout");
+    },
+  },
 };
 </script>
 
@@ -122,7 +122,8 @@ export default {
   text-align: right;
 }
 
-.labels, .values {
+.labels,
+.values {
   width: auto;
   min-width: 30%;
   display: flex;
@@ -149,21 +150,23 @@ export default {
     flex-direction: column; /* Thay đổi thành column để giữ nguyên trật tự */
     width: 100%;
   }
-  
-  .labels, .values {
+
+  .labels,
+  .values {
     display: flex;
     flex-direction: column; /* Hiển thị theo cột */
     width: 100%;
   }
-  
+
   /* Tạo layout có 2 cột bằng cách đặt label và giá trị trên cùng một hàng */
-  .summary-label, .summary-value {
+  .summary-label,
+  .summary-value {
     display: flex;
     justify-content: space-between;
     width: 100%;
     margin: 8px 0 !important;
   }
-  
+
   /* Đặt tổng thanh toán ở cuối */
   .total-row {
     width: 100%;
@@ -171,7 +174,7 @@ export default {
     justify-content: space-between;
     margin-top: 12px;
   }
-  
+
   /* Nút đặt hàng vẫn giữ nguyên chiều rộng */
   .checkout-button {
     width: 100%;
@@ -210,7 +213,7 @@ export default {
   width: 100%;
   transition: background-color 0.3s ease;
   height: 36px;
-} 
+}
 
 .checkout-button:hover {
   background-color: #724e4e;
