@@ -1,84 +1,130 @@
 <template>
-    <main class="profile-container">
-        <header class="profile-header">
-            <h1 class="profile-title">Hồ sơ cá nhân</h1>
-            <img :src="userAvatar" alt="avatar" class="profile-avatar" />
-        </header>
-      
-        <section class="profile-field">
-            <label class="field-label">
-                Tên đăng nhập <span class="required-star">*</span>
-            </label>
-            <div class="input-container">
-                <input type="text" v-model="userForm.username" disabled class="field-input">
-                <div class="icon-container"><i class="fa-regular fa-user eyes"></i></div>
-            </div>
-        </section>
-      
-        <section class="profile-field">
-            <label class="field-label">
-                Email <span class="required-star">*</span>
-            </label>
-            <div class="input-container">
-                <input type="email" v-model="userForm.email" disabled class="field-input">
-                <div class="icon-container"><i class="fa-regular fa-envelope eyes"></i></div>
-            </div>
-        </section>
-      
-        <section class="profile-field">
-            <label class="field-label">Mật khẩu</label>
-            <div class="input-container">
-                <input :type="isPasswordVisible ? 'text' : 'password'" v-model="userForm.password" 
-                       placeholder="••••••••" :disabled="!isEditing" class="field-input"
-                       @focus="passwordFocused = true" @blur="passwordFocused = false">
-                <div class="icon-container password-toggle" @click="togglePasswordVisibility" v-if="isEditing">
-                    <transition name="fade" mode="out-in">
-                        <div v-if="isPasswordVisible" key="visible"><i class="fa-regular fa-eye eyes"></i></div>
-                        <div v-else key="hidden"><i class="fa-regular fa-eye-slash eyes"></i></div>
-                    </transition>
-                </div>
-                <div class="icon-container" v-else><i class="fa-solid fa-lock eyes"></i></div>
-            </div>
-        </section>
-      
-        <section class="profile-field">
-            <label class="field-label">Địa chỉ</label>
-            <div class="input-container">
-                <input type="text" v-model="userForm.address" :disabled="!isEditing" class="field-input"
-                       @focus="addressFocused = true" @blur="addressFocused = false">
-                <div class="icon-container"><i class="fa-regular fa-location-dot eyes"></i></div>
-            </div>
-        </section>
-      
-        <section class="profile-field" v-if="isEditing">
-            <label class="field-label">Ảnh đại diện URL</label>
-            <div class="input-container">
-                <input type="text" v-model="userForm.avatarUrl" :disabled="!isEditing" class="field-input"
-                       @focus="avatarFocused = true" @blur="avatarFocused = false">
-                <div class="icon-container"><i class="fa-regular fa-image eyes"></i></div>
-            </div>
-        </section>
-        
-        <div class="field-note" v-if="isEditing">
-            <span class="required-star">*</span> Những thông tin này không thể thay đổi
-        </div>
+  <main class="profile-container">
+    <header class="profile-header">
+      <h1 class="profile-title">Hồ sơ cá nhân</h1>
+      <img :src="userAvatar" alt="avatar" class="profile-avatar" />
+    </header>
 
-        <div class="button-container">
-            <button v-if="!isEditing" @click="startEditing" class="edit-button">
-                <span class="button-text">Chỉnh sửa thông tin</span>
-            </button>
-            
-            <template v-else>
-                <button @click="saveChanges" class="save-button">
-                    <span class="save-button-text">Lưu thay đổi</span>
-                </button>
-                
-                <button @click="cancelEditing" class="cancel-button">
-                    <span class="button-text">Hủy</span>
-                </button>
-            </template>
+    <section class="profile-field">
+      <label class="field-label">
+        Tên đăng nhập <span class="required-star">*</span>
+      </label>
+      <div class="input-container">
+        <input
+          type="text"
+          v-model="userForm.username"
+          disabled
+          class="field-input"
+        />
+        <div class="icon-container">
+          <i class="fa-regular fa-user eyes"></i>
         </div>
-    </main>
+      </div>
+    </section>
+
+    <section class="profile-field">
+      <label class="field-label">
+        Email <span class="required-star">*</span>
+      </label>
+      <div class="input-container">
+        <input
+          type="email"
+          v-model="userForm.email"
+          disabled
+          class="field-input"
+        />
+        <div class="icon-container">
+          <i class="fa-regular fa-envelope eyes"></i>
+        </div>
+      </div>
+    </section>
+
+    <section class="profile-field">
+      <label class="field-label">Mật khẩu</label>
+      <div class="input-container">
+        <input
+          :type="isPasswordVisible ? 'text' : 'password'"
+          v-model="userForm.password"
+          placeholder="••••••••"
+          :disabled="!isEditing"
+          class="field-input"
+          @focus="passwordFocused = true"
+          @blur="passwordFocused = false"
+        />
+        <div
+          class="icon-container password-toggle"
+          @click="togglePasswordVisibility"
+          v-if="isEditing"
+        >
+          <transition name="fade" mode="out-in">
+            <div v-if="isPasswordVisible" key="visible">
+              <i class="fa-regular fa-eye eyes"></i>
+            </div>
+            <div v-else key="hidden">
+              <i class="fa-regular fa-eye-slash eyes"></i>
+            </div>
+          </transition>
+        </div>
+        <div class="icon-container" v-else>
+          <i class="fa-solid fa-lock eyes"></i>
+        </div>
+      </div>
+    </section>
+
+    <section class="profile-field">
+      <label class="field-label">Địa chỉ</label>
+      <div class="input-container">
+        <input
+          type="text"
+          v-model="userForm.address"
+          :disabled="!isEditing"
+          class="field-input"
+          @focus="addressFocused = true"
+          @blur="addressFocused = false"
+        />
+        <div class="icon-container">
+          <i class="fa-regular fa-location-dot eyes"></i>
+        </div>
+      </div>
+    </section>
+
+    <section class="profile-field" v-if="isEditing">
+      <label class="field-label">Ảnh đại diện URL</label>
+      <div class="input-container">
+        <input
+          type="text"
+          v-model="userForm.avatarUrl"
+          :disabled="!isEditing"
+          class="field-input"
+          @focus="avatarFocused = true"
+          @blur="avatarFocused = false"
+        />
+        <div class="icon-container">
+          <i class="fa-regular fa-image eyes"></i>
+        </div>
+      </div>
+    </section>
+
+    <div class="field-note" v-if="isEditing">
+      <span class="required-star">*</span> Những thông tin này không thể thay đổi
+    </div>
+
+    <div class="button-container">
+      <button v-if="!isEditing" @click="startEditing" class="edit-button">
+        <span class="button-text">Chỉnh sửa thông tin</span>
+      </button>
+
+      <template v-else>
+        <button @click="saveChanges" class="save-button">
+          <span class="save-button-text">Lưu thay đổi</span>
+        </button>
+
+        <button @click="cancelEditing" class="cancel-button">
+          <span class="button-text">Hủy</span>
+        </button>
+      </template>
+    </div>
+  </main>
 </template>
 
 <script>
@@ -92,7 +138,7 @@ export default {
     maintainEditing: {
       type: Boolean,
       default: false
-    } 
+    }
   },
   data() {
     return {
@@ -110,18 +156,22 @@ export default {
       addressFocused: false,
       avatarFocused: false,
       isPasswordVisible: false
-    }
+    };
   },
   computed: {
     userAvatar() {
-      return this.user.avatar || this.user.avatarUrl || 'https://cdn.builder.io/api/v1/image/assets/TEMP/570b2d0d0a0a8f021582986796c3b9babe6c8399?placeholderIfAbsent=true';
+      return (
+        this.user.avatar ||
+        this.user.avatarUrl ||
+        'https://cdn.builder.io/api/v1/image/assets/TEMP/570b2d0d0a0a8f021582986796c3b9babe6c8399?placeholderIfAbsent=true'
+      );
     }
   },
   created() {
     this.initializeForm();
 
     if (this.maintainEditing) {
-        this.isEditing = true;
+      this.isEditing = true;
     }
   },
   watch: {
@@ -131,14 +181,13 @@ export default {
       },
       deep: true
     },
-    // Thêm watcher để phản ứng với prop maintainEditing
     maintainEditing: {
-        immediate: true, // Đảm bảo chạy ngay khi component được tạo
-        handler(newVal) {
-            if (newVal === true) {
-                this.isEditing = true;
-            }
+      immediate: true,
+      handler(newVal) {
+        if (newVal === true) {
+          this.isEditing = true;
         }
+      }
     }
   },
   methods: {
@@ -159,35 +208,32 @@ export default {
       this.initializeForm();
     },
     saveChanges() {
-      // Tạo đối tượng chỉ chứa dữ liệu đã thay đổi
       const updatedData = {};
-      
+
       if (this.userForm.password) {
         updatedData.password = this.userForm.password;
       }
-      
+
       if (this.userForm.address !== this.user.address) {
         updatedData.address = this.userForm.address;
       }
-      
-      if (this.userForm.avatarUrl !== this.user.avatar && this.userForm.avatarUrl !== this.user.avatarUrl) {
+
+      if (
+        this.userForm.avatarUrl !== this.user.avatar &&
+        this.userForm.avatarUrl !== this.user.avatarUrl
+      ) {
         updatedData.avatar = this.userForm.avatarUrl;
       }
-      
-    //   // Kiểm tra xem có dữ liệu thay đổi không
-    //   if (Object.keys(updatedData).length > 0) {
+
       this.$emit('update-profile', updatedData);
-    //   }
-      
-    //   this.isEditing = false;
     },
     togglePasswordVisibility() {
-      if (this.isEditing) { // Chỉ toggle khi đang ở chế độ edit
+      if (this.isEditing) {
         this.isPasswordVisible = !this.isPasswordVisible;
       }
     }
   }
-}
+};
 </script>
 
 <style scoped>
