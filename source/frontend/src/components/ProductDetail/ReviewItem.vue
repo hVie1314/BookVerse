@@ -450,21 +450,21 @@ export default {
   }
   
   /* Thay bằng đoạn CSS này để tạo hình tròn hoàn hảo */
-.options-button {
-  background: none;
-  border: none;
-  color: #666;
-  cursor: pointer;
-  width: 30px;  /* Chiều rộng cụ thể */
-  height: 30px; /* Chiều cao bằng với chiều rộng */
-  border-radius: 50%;
-  font-size: 14px;
-  transition: all 0.2s;
-  z-index: 51;
-  display: flex;        /* Sử dụng flexbox để căn giữa icon */
-  align-items: center;
-  justify-content: center;
-}
+  .options-button {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    width: 30px;  /* Chiều rộng cụ thể */
+    height: 30px; /* Chiều cao bằng với chiều rộng */
+    border-radius: 50%;
+    font-size: 14px;
+    transition: all 0.2s;
+    z-index: 51;
+    display: flex;        /* Sử dụng flexbox để căn giữa icon */
+    align-items: center;
+    justify-content: center;
+  }
   
   .options-button:hover {
     background-color: rgba(0, 0, 0, 0.1);
