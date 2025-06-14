@@ -1,9 +1,9 @@
 <template>
   <div id="app">
-    <Alert 
-      v-model:show="globalAlert.show" 
-      :type="globalAlert.type" 
-      :title="globalAlert.title" 
+    <Alert
+      v-model:show="globalAlert.show"
+      :type="globalAlert.type"
+      :title="globalAlert.title"
       :message="globalAlert.message"
       :auto-close="globalAlert.autoClose"
       :duration="globalAlert.duration || 3000"
@@ -23,7 +23,7 @@
         <div class="spinner"></div>
       </div>
     </transition>
-    
+
     <!-- Content only shows when loading is done -->
     <transition name="fade-in">
       <div v-if="!loading" class="content-container">
@@ -34,14 +34,14 @@
 </template>
 
 <script>
-import AuthenticationService from '@/services/AuthenticationService';
-import eventBus from './eventBus';
-import Alert from '@/components/Alert.vue';
-import CartService from '@/services/CartService';
+import AuthenticationService from "@/services/AuthenticationService";
+import eventBus from "./eventBus";
+import Alert from "@/components/Alert.vue";
+import CartService from "@/services/CartService";
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    Alert
+    Alert,
   },
   data() {
     return {
@@ -51,20 +51,20 @@ export default {
       isLoggedIn: false,
       globalAlert: {
         show: false,
-        type: 'success',
-        title: '',
-        message: '',
+        type: "success",
+        title: "",
+        message: "",
         autoClose: true,
         duration: 3000,
         showChoices: false,
         showInput: false,
-        inputPlaceholder: '',
+        inputPlaceholder: "",
         inputRequired: false,
-        confirmText: 'Đồng ý',
-        cancelText: 'Hủy bỏ',
-        choices: []
-      }
-    }
+        confirmText: "Đồng ý",
+        cancelText: "Hủy bỏ",
+        choices: [],
+      },
+    };
   },
   // mounted() {
   //   this.$root.$on('show-alert', (alertOptions) => {
@@ -74,28 +74,30 @@ export default {
   // },
   created() {
     this.isLoggedIn = AuthenticationService.isLoggedIn();
-    
+
     // Lắng nghe sự kiện đăng xuất
-    eventBus.on('logout', this.handleLogoutEvent);
+    eventBus.on("logout", this.handleLogoutEvent);
 
     // Trong phần lắng nghe sự kiện của App.vue
-    eventBus.on('show-alert', (alertData) => {
-      console.log('Received show-alert event:', alertData);
-      console.log('Input enabled:', alertData.showInput);
-      
+    eventBus.on("show-alert", (alertData) => {
+      console.log("Received show-alert event:", alertData);
+      console.log("Input enabled:", alertData.showInput);
+
       // Đảm bảo truyền tất cả các thuộc tính đến alert
-      this.globalAlert = { 
+      this.globalAlert = {
         ...alertData,
-        show: true 
+        show: true,
       };
-      
+
       // Chỉ tự động đóng các thông báo thành công về đăng nhập
-      if (alertData.type === 'success' && 
-          alertData.message && 
-          (alertData.message.includes('đăng nhập thành công') || 
-          alertData.message.includes('đăng xuất thành công')) && 
-          !alertData.showChoices && 
-          alertData.autoClose !== false) {
+      if (
+        alertData.type === "success" &&
+        alertData.message &&
+        (alertData.message.includes("đăng nhập thành công") ||
+          alertData.message.includes("đăng xuất thành công")) &&
+        !alertData.showChoices &&
+        alertData.autoClose !== false
+      ) {
         setTimeout(() => {
           this.globalAlert.show = false;
         }, alertData.duration || 5000);
@@ -108,12 +110,12 @@ export default {
       this.loadingStartTime = Date.now();
       next();
     });
-    
+
     this.$router.afterEach(() => {
       // Tính thời gian đã trôi qua và thời gian còn lại cần hiển thị
       const elapsedTime = Date.now() - this.loadingStartTime;
       const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
-      
+
       // Đảm bảo hiệu ứng loading hiển thị đủ thời gian tối thiểu
       setTimeout(() => {
         this.loading = false;
@@ -121,76 +123,78 @@ export default {
     });
 
     if (!AuthenticationService.isLoggedIn()) {
-        CartService.ensureGuestCartId();
+      CartService.ensureGuestCartId();
     }
   },
   beforeUnmount() {
     // Clean up listener
-    eventBus.off('logout', this.handleLogoutEvent);
-    eventBus.off('show-alert');
-    eventBus.off('confirm');
-    eventBus.off('cancel');
+    eventBus.off("logout", this.handleLogoutEvent);
+    eventBus.off("show-alert");
+    eventBus.off("confirm");
+    eventBus.off("cancel");
   },
   methods: {
     handleLogoutEvent() {
       this.isLoggedIn = false;
-        this.userRole = null;
-        
-        // Chuyển hướng về trang chủ
-        this.$router.push('/');
-        
-        // Hiển thị thông báo đăng xuất thành công
-        eventBus.emit('show-alert', {
-            show: true,
-            type: 'success',
-            title: 'Đăng xuất thành công',
-            message: 'Bạn đã đăng xuất khỏi hệ thống',
-            autoClose: true
-        });
+      this.userRole = null;
+
+      // Chuyển hướng về trang chủ
+      this.$router.push("/");
+
+      // Hiển thị thông báo đăng xuất thành công
+      eventBus.emit("show-alert", {
+        show: true,
+        type: "success",
+        title: "Đăng xuất thành công",
+        message: "Bạn đã đăng xuất khỏi hệ thống",
+        autoClose: true,
+      });
     },
 
     // Thêm phương thức xử lý confirm
     handleConfirm(inputValue) {
       console.log("Alert confirm được nhấn với giá trị:", inputValue);
-      
+
       // Nếu có callback trong choices, gọi nó
       if (this.globalAlert.choices && this.globalAlert.choices.length > 0) {
-        const confirmChoice = this.globalAlert.choices.find(choice => 
-          choice.text === this.globalAlert.confirmText);
-        
-        if (confirmChoice && typeof confirmChoice.onClick === 'function') {
+        const confirmChoice = this.globalAlert.choices.find(
+          (choice) => choice.text === this.globalAlert.confirmText
+        );
+
+        if (confirmChoice && typeof confirmChoice.onClick === "function") {
           confirmChoice.onClick(inputValue);
           return;
         }
       }
-      
+
       // Emit sự kiện với input value
-      eventBus.emit('confirm', inputValue);
+      eventBus.emit("confirm", inputValue);
     },
-    
+
     // Thêm phương thức xử lý cancel
     handleCancel() {
       console.log("Alert cancel được nhấn");
-      
+
       // Nếu có callback trong choices, gọi nó
       if (this.globalAlert.choices && this.globalAlert.choices.length > 0) {
-        const cancelChoice = this.globalAlert.choices.find(choice => 
-          choice.text === this.globalAlert.cancelText);
-        
-        if (cancelChoice && typeof cancelChoice.onClick === 'function') {
+        const cancelChoice = this.globalAlert.choices.find(
+          (choice) => choice.text === this.globalAlert.cancelText
+        );
+
+        if (cancelChoice && typeof cancelChoice.onClick === "function") {
           cancelChoice.onClick();
           return;
         }
       }
-      
+
       // Emit sự kiện cancel
-      eventBus.emit('cancel');
-      
+      eventBus.emit("cancel");
+
       // Đóng alert
       this.globalAlert.show = false;
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style>
@@ -233,12 +237,17 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Transition cho loading overlay */
-.fade-out-enter-active, .fade-out-leave-active {
+.fade-out-enter-active,
+.fade-out-leave-active {
   transition: opacity 0.3s;
 }
 .fade-out-leave-to {
