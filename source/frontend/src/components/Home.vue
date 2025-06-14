@@ -2,41 +2,46 @@
   <div class="home-container">
     <!-- Thêm thanh Nav vào đây -->
     <Nav />
-    
+
     <!-- Main content của trang Home -->
     <div class="main-content">
+      <Overview_form />
+      <!-- Thêm component Overview_form vào đây -->
 
-      <Overview_form /> <!-- Thêm component Overview_form vào đây -->
-      
-      <BestSeller /> <!-- Thêm component BestSeller vào đây -->
+      <BestSeller />
+      <!-- Thêm component BestSeller vào đây -->
       <!-- Phần nội dung chính của trang Home có thể được thêm vào đây -->
-      <NewBooks /> <!-- Thêm component NewBooks vào đây -->
-      
-      <TopCategories /> <!-- Thêm component TopCategories vào đây -->
-      <AboutUsStats/>
-      <ShippingInfo/> <!-- Thêm component ShippingInfo vào đây -->
-      <ContactSection/> <!-- Thêm component ContactSection vào đây -->
+      <NewBooks />
+      <!-- Thêm component NewBooks vào đây -->
+
+      <TopCategories />
+      <!-- Thêm component TopCategories vào đây -->
+      <AboutUsStats />
+      <ShippingInfo />
+      <!-- Thêm component ShippingInfo vào đây -->
+      <ContactSection />
+      <!-- Thêm component ContactSection vào đây -->
     </div>
-    
+
     <!-- Footer section từ file footer.vue -->
     <Footer />
   </div>
 </template>
 
 <script>
-import AuthenticationService from '@/services/AuthenticationService';
-import Nav from './navbar/Nav.vue'; // Thêm import Nav component
-import Footer from './footer/footer.vue'; // Thêm import Footer component
-import eventBus from '@/eventBus.js'; // Import event bus
-import Overview_form from './overview/Overview.vue'; // Import Overview_form component
-import BestSeller from './bestsellers/BestSeller.vue';
-import NewBooks from './NewBooks.vue';
-import TopCategories from './topcategory/TopCategories.vue'; // Import TopCategories component
-import AboutUsStats from './aboutus/AboutUs.vue'; // Import AboutUsStats component
-import ShippingInfo from './ShippingInfo.vue';
-import ContactSection from './ContactSection.vue'; // Import ContactSection component
+import AuthenticationService from "@/services/AuthenticationService";
+import Nav from "./navbar/Nav.vue"; // Thêm import Nav component
+import Footer from "./footer/footer.vue"; // Thêm import Footer component
+import eventBus from "@/eventBus.js"; // Import event bus
+import Overview_form from "./overview/Overview.vue"; // Import Overview_form component
+import BestSeller from "./bestsellers/BestSeller.vue";
+import NewBooks from "./NewBooks.vue";
+import TopCategories from "./topcategory/TopCategories.vue"; // Import TopCategories component
+import AboutUsStats from "./aboutus/AboutUs.vue"; // Import AboutUsStats component
+import ShippingInfo from "./ShippingInfo.vue";
+import ContactSection from "./ContactSection.vue"; // Import ContactSection component
 export default {
-  name: 'HomePage',
+  name: "HomePage",
   components: {
     Footer,
     Nav, // Thêm Nav vào components
@@ -46,39 +51,39 @@ export default {
     TopCategories,
     AboutUsStats, // Thêm AboutUsStats vào components
     ShippingInfo, // Thêm ShippingInfo vào components
-    ContactSection
+    ContactSection,
   },
   data() {
     return {
       isLoggedIn: false,
-      showAccountMenu: false
-    }
+      showAccountMenu: false,
+    };
   },
   created() {
-    this.isLoggedIn = AuthenticationService.isLoggedIn()
+    this.isLoggedIn = AuthenticationService.isLoggedIn();
   },
   mounted() {
-    eventBus.on('user-logged-out', this.updateLoginStatus);
+    eventBus.on("user-logged-out", this.updateLoginStatus);
   },
   methods: {
     toggleAccountMenu() {
-      this.showAccountMenu = !this.showAccountMenu
+      this.showAccountMenu = !this.showAccountMenu;
     },
     logout() {
-      AuthenticationService.logout()
-      this.isLoggedIn = false
-      this.showAccountMenu = false
-      if (this.$route.path !== '/') {
-        this.$router.push('/')
+      AuthenticationService.logout();
+      this.isLoggedIn = false;
+      this.showAccountMenu = false;
+      if (this.$route.path !== "/") {
+        this.$router.push("/");
       }
-    }
+    },
   },
   watch: {
     $route() {
-      this.isLoggedIn = AuthenticationService.isLoggedIn()
-    }
-  }
-}
+      this.isLoggedIn = AuthenticationService.isLoggedIn();
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -89,7 +94,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: 'Montserrat', sans-serif;
+  font-family: "Montserrat", sans-serif;
   background-color: rgb(244, 235, 225);
 }
 
@@ -105,16 +110,16 @@ export default {
 }
 
 /* Footer styles from footer.vue */
-.footer{
-    display: flex;
-    width: 100%;
-    padding: 0px 0px;
-    flex-direction: column;
-    align-items: center;
-    box-sizing: border-box;
-    justify-content: center;
-    background-color: rgba(57, 31, 0, 1);
-  }
+.footer {
+  display: flex;
+  width: 100%;
+  padding: 0px 0px;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  justify-content: center;
+  background-color: rgba(57, 31, 0, 1);
+}
 .footer-background {
   background-color: rgba(57, 31, 0, 1);
   display: flex;
@@ -195,34 +200,35 @@ export default {
 }
 
 /* Responsive styles for footer */
-@media (min-width: 992px) and (max-width: 1366px){
+@media (min-width: 992px) and (max-width: 1366px) {
   .footer-background {
     padding: 30px 20px;
   }
-  
+
   .footer-column-wrapper {
     width: 22%;
     min-width: 140px;
   }
-  
+
   .footer-column-wrapper:not(:first-child) {
     margin-left: 10px;
   }
-  
+
   .policy-text {
     margin-right: 20px;
     margin-top: 30px;
   }
-  
+
   /* Điều chỉnh font size */
   .column-title {
     font-size: 18px;
   }
-  
-  .text-white, .column-content {
+
+  .text-white,
+  .column-content {
     font-size: 12px;
   }
-  
+
   .brand-name {
     font-size: 24px;
   }
