@@ -3,18 +3,24 @@
   <article class="product-card">
     <div class="product-info">
       <!-- Thêm router-link cho hình ảnh sản phẩm -->
-      <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-image-link">
-        <img 
-          :src="getImageSrc()" 
-          :alt="product.title || product.name" 
+      <router-link
+        :to="{ name: 'product-detail', params: { id: getProductId() } }"
+        class="product-image-link"
+      >
+        <img
+          :src="getImageSrc()"
+          :alt="product.title || product.name"
           class="product-image"
           @error="handleImageError"
         />
       </router-link>
-      
+
       <div class="product-details">
         <!-- Thêm router-link cho thông tin sản phẩm -->
-        <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-text-link">
+        <router-link
+          :to="{ name: 'product-detail', params: { id: getProductId() } }"
+          class="product-text-link"
+        >
           <h3 class="product-name">{{ getTitle() }}</h3>
           <p class="product-description">{{ getAuthor() }}</p>
         </router-link>
@@ -46,14 +52,19 @@ export default {
   methods: {
     getImageSrc() {
       // Lấy đường dẫn hình ảnh từ product hoặc product.book (nếu có)
-      let imageUrl = this.product.productId?.image || 
-                    this.product.book?.image || 
-                    this.product.image || 
-                    this.product.coverImage;
-      
+      let imageUrl =
+        this.product.productId?.image ||
+        this.product.book?.image ||
+        this.product.image ||
+        this.product.coverImage;
+
       // Nếu imageUrl là một chuỗi mảng (bắt đầu bằng [ và kết thúc bằng ])
-      if (imageUrl && typeof imageUrl === 'string' && 
-          imageUrl.startsWith('[') && imageUrl.endsWith(']')) {
+      if (
+        imageUrl &&
+        typeof imageUrl === "string" &&
+        imageUrl.startsWith("[") &&
+        imageUrl.endsWith("]")
+      ) {
         try {
           // Chuyển đổi chuỗi thành mảng JSON (thay thế dấu nháy đơn bằng dấu nháy kép)
           const imageArray = JSON.parse(imageUrl.replace(/'/g, '"'));
@@ -62,51 +73,65 @@ export default {
             imageUrl = imageArray[0];
           }
         } catch (error) {
-          console.error('Lỗi khi xử lý chuỗi hình ảnh:', error);
+          console.error("Lỗi khi xử lý chuỗi hình ảnh:", error);
         }
       }
-      
-      return imageUrl || 'https://via.placeholder.com/150?text=No+Image';
+
+      return imageUrl || "https://via.placeholder.com/150?text=No+Image";
     },
     getTitle() {
-      return this.product.book?.title || this.product.title || 'Không có tên sách';
+      return (
+        this.product.book?.title || this.product.title || "Không có tên sách"
+      );
     },
     getAuthor() {
-      return this.product.book?.author || this.product.author || 'Không có tên tác giả';
+      return (
+        this.product.book?.author ||
+        this.product.author ||
+        "Không có tên tác giả"
+      );
     },
     getPrice() {
       return this.product.book?.price || this.product.price || 0;
     },
     handleImageError(e) {
       this.imgError = true;
-      e.target.src = 'https://via.placeholder.com/150?text=No+Image';
+      e.target.src = "https://via.placeholder.com/150?text=No+Image";
     },
     increaseQuantity() {
-      this.$emit('update-quantity', this.product.cartItemId || this.product._id, this.product.quantity + 1);
+      this.$emit(
+        "update-quantity",
+        this.product.cartItemId || this.product._id,
+        this.product.quantity + 1
+      );
     },
     decreaseQuantity() {
       if (this.product.quantity > 1) {
-        this.$emit('update-quantity', this.product.cartItemId || this.product._id, this.product.quantity - 1);
+        this.$emit(
+          "update-quantity",
+          this.product.cartItemId || this.product._id,
+          this.product.quantity - 1
+        );
       }
     },
     removeItem() {
-      if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
-        this.$emit('remove', this.product.cartItemId || this.product._id);
+      if (confirm("Bạn có chắc muốn xóa sản phẩm này?")) {
+        this.$emit("remove", this.product.cartItemId || this.product._id);
       }
     },
     formatPrice(price) {
       // Đảm bảo price là một số
       const validPrice = isNaN(price) ? 0 : Number(price);
-      
-      return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
+
+      return new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
       }).format(validPrice);
     },
     getProductId() {
       return this.product.book?._id || "Không có mã sản phẩm";
     },
-  }
+  },
 };
 </script>
 
@@ -234,14 +259,15 @@ export default {
     margin-bottom: 15px;
   }
 
-  .quantity-controls, .price-info {
+  .quantity-controls,
+  .price-info {
     width: 50%;
   }
-  
+
   .quantity-controls {
     justify-content: flex-start;
   }
-  
+
   .price-info {
     justify-content: flex-end;
   }
@@ -252,11 +278,11 @@ export default {
     width: 70px;
     height: 70px;
   }
-  
+
   .product-name {
     font-size: 16px;
   }
-  
+
   .product-description {
     font-size: 12px;
   }
@@ -277,7 +303,7 @@ export default {
 }
 
 .product-text-link:hover .product-name {
-  color: #4D2900;
+  color: #4d2900;
   text-decoration: underline;
 }
 
