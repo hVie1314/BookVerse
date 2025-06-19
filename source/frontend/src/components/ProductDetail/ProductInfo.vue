@@ -1,69 +1,69 @@
 <template>
     <article class="product-info">
 
-      <div class="info-container">
-        <div class="book-info">
-          <!-- 1. Hiển thị tên sách ở đầu tiên -->
-          <h1 class="book-title">{{ book.title || 'Không có tiêu đề' }}</h1>
+        <div class="info-container">
+            <div class="book-info">
+                <!-- 1. Hiển thị tên sách ở đầu tiên -->
+                <h1 class="book-title">{{ book.title || 'Không có tiêu đề' }}</h1>
           
-          <!-- 2. Hiển thị tác giả ngay sau tên sách -->
-          <p class="book-author">{{ book.author || 'Không có tác giả' }}</p>
+                <!-- 2. Hiển thị tác giả ngay sau tên sách -->
+                <p class="book-author">{{ book.author || 'Không có tác giả' }}</p>
           
-          <!-- 3. Hiển thị rating dưới dạng sao ngay dưới tác giả -->
-          <div class="rating-container">
-              <div class="star-rating">
-                  <i v-for="index in 5" :key="index" 
-                      :class="[
-                          index <= Math.floor(averageRating) ? 'fas fa-star filled-star' : 
-                          index - averageRating < 1 && index - averageRating > 0 ? 'fas fa-star-half-alt filled-star' : 'far fa-star empty-star'
-                      ]"
-                  ></i>
-              </div>
-              <span class="rating-value">{{ averageRating.toFixed(1) }}/5</span>
-              <span class="review-count">({{ book.reviews ? book.reviews.length : 0 }} đánh giá)</span>
-          </div>
-          <p class="book-price">{{ formatPrice(book.price) }}</p>
+                <!-- 3. Hiển thị rating dưới dạng sao ngay dưới tác giả -->
+                <div class="rating-container">
+                    <div class="star-rating">
+                        <i v-for="index in 5" :key="index" 
+                            :class="[
+                            index <= Math.floor(averageRating) ? 'fas fa-star filled-star' : 
+                            index - averageRating < 1 && index - averageRating > 0 ? 'fas fa-star-half-alt filled-star' : 'far fa-star empty-star'
+                            ]"
+                        ></i>
+                    </div>
+                    <span class="rating-value">{{ averageRating.toFixed(1) }}/5</span>
+                    <span class="review-count">({{ book.reviews ? book.reviews.length : 0 }} đánh giá)</span>
+                </div>
+                <p class="book-price">{{ formatPrice(book.price) }}</p>
   
-          <div class="sold-info">
-            <p class="sold-detail-text">
-              <span class="sold-label">Đã bán</span>
-              <span class="sold-count">{{ book.sold || 0 }}</span>
-            </p>
-            <div class="progress-info-container">
-              <div class="progress-bar" :style="`width: ${calculateProgressWidth()}%`"></div>
+                <div class="sold-info">
+                    <p class="sold-detail-text">
+                        <span class="sold-label">Đã bán</span>
+                        <span class="sold-count">{{ book.sold || 0 }}</span>
+                    </p>
+                    <div class="progress-info-container">
+                        <div class="progress-bar" :style="`width: ${calculateProgressWidth()}%`"></div>
+                    </div>
+                </div>
+  
+                <section class="description-section">
+                    <h2 class="description-title">Mô tả</h2>
+                    <p class="description-text" :class="{ 'collapsed': !isExpanded }">
+                        {{ book.description || 'Không có mô tả' }}
+                    </p>
+                    <button 
+                        class="read-more" 
+                        v-if="book.description && book.description.length > 100"
+                        @click="toggleDescription">
+                        {{ isExpanded ? 'Thu gọn' : 'Đọc thêm' }}
+                    </button>
+                </section>
+  
+                <div class="quantity-section">
+                    <p class="quantity-label">Số lượng</p>
+                    <div class="quantity-selector">
+                        <div class="decrement-button" @click="decrementQuantity"></div>
+                        <span class="quantity-value">{{ quantity }}</span>
+                        <img
+                            src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/2b3e53de73fd963852263eb44cecf25179597046?placeholderIfAbsent=true"
+                            class="increment-button"
+                            alt="Increment quantity"
+                            @click="incrementQuantity"
+                        />
+                    </div>
+                </div>
             </div>
-          </div>
   
-          <section class="description-section">
-                <h2 class="description-title">Mô tả</h2>
-                <p class="description-text" :class="{ 'collapsed': !isExpanded }">
-                    {{ book.description || 'Không có mô tả' }}
-                </p>
-                <button 
-                    class="read-more" 
-                    v-if="book.description && book.description.length > 100"
-                    @click="toggleDescription">
-                    {{ isExpanded ? 'Thu gọn' : 'Đọc thêm' }}
-                </button>
-            </section>
-  
-          <div class="quantity-section">
-            <p class="quantity-label">Số lượng</p>
-            <div class="quantity-selector">
-              <div class="decrement-button" @click="decrementQuantity"></div>
-              <span class="quantity-value">{{ quantity }}</span>
-              <img
-                src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/2b3e53de73fd963852263eb44cecf25179597046?placeholderIfAbsent=true"
-                class="increment-button"
-                alt="Increment quantity"
-                @click="incrementQuantity"
-              />
-            </div>
-          </div>
+            <ProductActions :book="book" :quantity="quantity" />
         </div>
-  
-        <ProductActions :book="book" :quantity="quantity" />
-      </div>
     </article>
 </template>
   
@@ -434,5 +434,5 @@
     opacity: 1 !important;
     color: rgba(76, 41, 0, 1) !important; /* Đảm bảo màu sắc nổi bật */
     border: 1px solid transparent; /* Để dễ thấy kích thước phần tử */
-}
+    }
 </style>
