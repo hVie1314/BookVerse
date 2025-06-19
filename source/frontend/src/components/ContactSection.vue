@@ -18,51 +18,51 @@ export default {
 </script>
 
 <style scoped>
-    .contact-section {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background-color: transparent;
-        padding: 20px;
-        width: 50%;
-        margin-bottom: 40px;
-    }
+.contact-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    padding: 20px;
+    width: 50%;
+    margin-bottom: 40px;
+}
 
+.contact-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 24px;
+    color: #4d2900;
+    margin-bottom: 20px;
+    font-weight: 900;
+    width: 57%;
+    text-align: center;
+}
+
+@media (max-width: 991px) {
     .contact-title {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 24px;
-        color: #4d2900;
-        margin-bottom: 20px;
-        font-weight: 900;
-        width: 57%;
-        text-align: center;
+        font-size: 20px;
     }
+}
 
-    @media (max-width: 991px) {
-        .contact-title {
-            font-size: 20px;
-        }
+@media (max-width: 640px) {
+    .contact-title {
+        font-size: 18px;
     }
+}
 
-    @media (max-width: 640px) {
-        .contact-title {
-            font-size: 18px;
-        }
-    }
+.icon-contact-container {
+    margin-top: 30px;
+    width: 57%;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 27px;
+}
 
-    .icon-contact-container {
-        margin-top: 30px;
-        width: 57%;
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        font-size: 27px;
-    }
-
-    .icon-contact{
-        color:#4d2900;
-        
-    }
+.icon-contact{
+    color:#4d2900;
+    
+}
 </style>
   
