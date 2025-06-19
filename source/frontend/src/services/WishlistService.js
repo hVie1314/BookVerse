@@ -5,9 +5,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { useToast } from 'vue-toastification';
 
 const toast = useToast();
-export default {
-    // Thêm sản phẩm vào wishlist người dùng
-    
+
+export default {    
     // Xóa sản phẩm khỏi wishlist người dùng
     removeFromUserWishlist(userId, productId) {
         const token = localStorage.getItem('token');
