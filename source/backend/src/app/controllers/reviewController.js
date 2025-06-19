@@ -32,12 +32,12 @@ class ReviewController {
             return next(new AppError(403, 'FORBIDDEN', 'You have already reviewed this book'));
          }
 
-         // Kiểm tra rating hợp lệ
+         // Check if rating is valid
          if (rating < 1 || rating > 5) {
             return next(new AppError(400, 'INVALID_RATING', 'Rating must be between 1 and 5'));
          }
 
-         // Tạo review
+         // Create a review
          const review = new Review({
             userId,
             bookId,
@@ -46,11 +46,11 @@ class ReviewController {
          });
          await review.save();
 
-         // rating
+         // Rating
          const bookRating = await bookService.reCalcBookRating(bookId);
          book.rating = bookRating;
 
-         // Liên kết review với book
+         // Add review to book
          book.reviews.push(review._id);
          await book.save();
 
