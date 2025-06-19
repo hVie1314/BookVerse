@@ -868,6 +868,7 @@ export default {
 }
 
 .form_category.form-input,
+
 .form_category.form-textarea {
   padding-right: 40px;
   background-color: #ccc9c9;
