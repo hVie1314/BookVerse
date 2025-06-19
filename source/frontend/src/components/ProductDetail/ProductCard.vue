@@ -1,22 +1,22 @@
 <template>
     <article class="product-card">
-      <img
-        :src="product.image"
-        class="product-image"
-        alt="Product"
-      />
-      <h3 class="product-price">{{ product.price }}</h3>
-      <h2 class="product-title">{{ product.title }}</h2>
-      <p class="product-author">{{ product.author }}</p>
-  
-      <div class="cart-action">
-        <button class="add-to-cart-button">giỏ hàng</button>
         <img
-          src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/92d75261c9c7f32d62e39cade518ca9f2e8ca00d?placeholderIfAbsent=true"
-          class="cart-icon"
-          alt="Cart"
+            :src="product.image"
+            class="product-image"
+            alt="Product"
         />
-      </div>
+        <h3 class="product-price">{{ product.price }}</h3>
+        <h2 class="product-title">{{ product.title }}</h2>
+        <p class="product-author">{{ product.author }}</p>
+  
+        <div class="cart-action">
+            <button class="add-to-cart-button">giỏ hàng</button>
+            <img
+                src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/92d75261c9c7f32d62e39cade518ca9f2e8ca00d?placeholderIfAbsent=true"
+                class="cart-icon"
+                alt="Cart"
+            />
+        </div>
     </article>
 </template>
   
@@ -24,10 +24,10 @@
     export default {
         name: 'ProductCard',
         props: {
-        product: {
-            type: Object,
-            required: true
-        }
+            product: {
+                type: Object,
+                required: true
+            }
         }
     };
 </script>
@@ -44,7 +44,7 @@
     
     @media (max-width: 991px) {
         .product-card {
-        padding: 25px 20px;
+            padding: 25px 20px;
         }
     }
     
