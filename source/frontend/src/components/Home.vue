@@ -115,6 +115,7 @@ export default {
     justify-content: center;
     background-color: rgba(57, 31, 0, 1);
   }
+  
 .footer-background {
   background-color: rgba(57, 31, 0, 1);
   display: flex;
