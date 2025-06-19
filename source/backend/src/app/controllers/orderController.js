@@ -5,7 +5,7 @@ const Book = require('../models/Book');
 
 class OrderController {
 
-    // Create a new order
+    // [POST] /order/create
     async createOrder(req, res, next) {
         try {
             const { userId, items, totalAmount, paymentMethod } = req.body;
@@ -59,7 +59,8 @@ class OrderController {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error creating order'));
         }
     }
-
+    
+    // [GET] /order/history/:userId
     // Get all orders for a user
     async getAllOrdersOfUser(req, res, next) {
         try {
@@ -85,13 +86,12 @@ class OrderController {
             );
 
             res.status(200).json({ orders :  ordersWithDetails });
-
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching orders'));
         }
     }
 
-    // Get order details by order ID
+    // [GET] /order/details/:id
     async getOrderById(req, res, next) {
         try {
             // Join with Book and User collections to get book details and user details
@@ -106,7 +106,6 @@ class OrderController {
             if (!orderInfo)
                 return next(new AppError(404, 'ORDER_NOT_FOUND', 'Order not found'));
             res.status(200).json(orderInfo);
-
         } catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching order'));
         }
@@ -157,7 +156,6 @@ class OrderController {
             ));
 
             res.status(200).json({ message: 'Order cancelled successfully' });
-
         }
         catch (err) {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', err.message));
@@ -185,7 +183,6 @@ class OrderController {
             next(new AppError(500, 'INTERNAL_SERVER_ERROR', 'Error fetching order statistics'));
         }
     }
-    
 }
 
 module.exports = new OrderController();

@@ -1,8 +1,8 @@
 const AppError = require('../../utils/appError');
-const mongoose = require('mongoose');
 const Order = require('../models/Order');
 
 class StatsController {
+
     // Get revenue, order count, and customer count by month
     static async getMonthlyStats(month, year, next) {
         try {
@@ -15,27 +15,26 @@ class StatsController {
                 createdAt: { $gte: startDate, $lte: endDate }
             });
             
-
             // Get the revenue and order count as before
             const [result] = await Order.aggregate([
                 {
-                $match: {
-                    createdAt: { $gte: startDate, $lte: endDate }
-                }
+                    $match: {
+                        createdAt: { $gte: startDate, $lte: endDate }
+                    }
                 },
                 {
-                $group: {
-                    _id: null,
-                    revenue: { $sum: '$totalAmount' },
-                    orderCount: { $sum: 1 }
-                }
+                    $group: {
+                        _id: null,
+                        revenue: { $sum: '$totalAmount' },
+                        orderCount: { $sum: 1 }
+                    }
                 },
                 {
-                $project: {
-                    _id: 0,
-                    revenue: 1,
-                    orderCount: 1
-                }
+                    $project: {
+                        _id: 0,
+                        revenue: 1,
+                        orderCount: 1
+                    }
                 }
             ]);
 
@@ -51,6 +50,7 @@ class StatsController {
         }
     }
 
+    // GET /stats/report
     // Get full monthly stats, calling getMonthlyStats and calculating percentage change
     async getFullMonthlyStats(req, res, next) {
         try {
@@ -106,8 +106,8 @@ class StatsController {
         }
     }
 
-    // Get revenue statistics for a given date range (startMonth-year to endMonth-year)
     // GET /stats/revenue
+    // Get revenue statistics for a given date range
     async getRevenueByDateRange(req, res, next) {
         try {
             let { startMonth, startYear, endMonth, endYear } = req.query;

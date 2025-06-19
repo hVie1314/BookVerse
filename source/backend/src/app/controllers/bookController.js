@@ -1,5 +1,4 @@
 const Book = require('../models/Book');
-const Review = require('../models/Review');
 const Category = require('../models/Category');
 const BookService = require('../../services/bookService');
 const AppError = require('../../utils/appError');
