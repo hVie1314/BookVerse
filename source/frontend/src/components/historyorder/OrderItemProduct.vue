@@ -1,21 +1,21 @@
 <template>
     <div class="product-container">
-      <div class="product-details">
-        <!-- Thêm router-link vào hình ảnh -->
-        <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-image-link">
-          <img :src="product.image" :alt="product.title" class="product-image" @error="handleImageError" />
-        </router-link>
+        <div class="product-details">
+            <!-- Thêm router-link vào hình ảnh -->
+            <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-image-link">
+                <img :src="product.image" :alt="product.title" class="product-image" @error="handleImageError" />
+            </router-link>
         
-        <div class="product-info">
-          <!-- Thêm router-link vào tiêu đề và tác giả -->
-          <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-text-link">
-            <h4 class="product-title">{{ product.title }}</h4>
-            <p class="product-author">{{ product.author }}</p>
-          </router-link>
-          <p class="product-quantity">x{{ product.quantity }}</p>
+            <div class="product-info">
+                <!-- Thêm router-link vào tiêu đề và tác giả -->
+                <router-link :to="{ name: 'product-detail', params: { id: getProductId() }}" class="product-text-link">
+                    <h4 class="product-title">{{ product.title }}</h4>
+                    <p class="product-author">{{ product.author }}</p>
+                </router-link>
+                <p class="product-quantity">x{{ product.quantity }}</p>
+            </div>
         </div>
-      </div>
-      <p class="product-price">{{ product.price }}</p>
+        <p class="product-price">{{ product.price }}</p>
     </div>
 </template>
   
