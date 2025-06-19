@@ -223,8 +223,6 @@ export default {
     }
   },
 
-  // Thêm phương thức này vào cuối file, trước dấu đóng ngoặc nhọn cuối cùng
-
   async getRevenueByDateRange(startMonth, startYear, endMonth, endYear) {
     try {
       const response = await StatsApiService.getRevenueByDateRange(
