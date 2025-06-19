@@ -29,7 +29,6 @@ const toastOptions = {
     bodyClassName: "toast-body" // Class cho phần nội dung toast
 }
 
-
 app.use(router)
 app.use(Toast, toastOptions)
 
