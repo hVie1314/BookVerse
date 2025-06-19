@@ -11,13 +11,13 @@
                     <div class="footer-column-wrapper">
                       <FooterColumn title="TÀI KHOẢN">
                         <div>
-                         <router-link to="/login" class="footer-link">Đăng nhập/ Tạo mới tài khoản</router-link>
+                          <router-link to="/login" class="footer-link">Đăng nhập/ Tạo mới tài khoản</router-link>
                         </div>
                         <div>
                           <router-link to="/profile" class="footer-link">Thay đổi địa chỉ khách hàng</router-link>
                         </div>
                         <div>
-                           <router-link to="/my-orders" class="footer-link">Lịch sử mua hàng</router-link>
+                          <router-link to="/my-orders" class="footer-link">Lịch sử mua hàng</router-link>
                         </div>
                       </FooterColumn>
                     </div>
@@ -57,14 +57,14 @@
             </div>
             <div class="footer-content-footer">
               <p class="policy-text">
-                  Điều khoản sử dụng | Chính sách bảo mật
-                </p>
+                Điều khoản sử dụng | Chính sách bảo mật
+              </p>
             </div>
         </div>
     </footer>
-  </template>
+</template>
   
-  <script>
+<script>
   import FooterColumn from './FooterColumn.vue';
   import FooterLogo from './FooterLogo.vue';
   import FooterContact from './FooterContact.vue';
@@ -77,9 +77,9 @@
       FooterContact
     }
   };
-  </script>
+</script>
   
-  <style scoped>
+<style scoped>
 
   .footer{
     display: flex;
@@ -266,5 +266,5 @@
     padding: 5px 0;
     transition: all 0.3s ease;
   }
-  </style>
+</style>
   
