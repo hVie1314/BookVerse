@@ -11,7 +11,7 @@
                 <a href="https://www.google.com/maps/place/Tr%C6%B0%E1%BB%9Dng+%C4%90%E1%BA%A1i+h%E1%BB%8Dc+Khoa+h%E1%BB%8Dc+T%E1%BB%B1+nhi%C3%AAn,+%C4%90HQG-HCM,+C%C6%A1+s%E1%BB%9F+Linh+Trung./@10.8568212,106.7844932,13.92z/data=!4m10!1m2!2m1!1zVHLGsOG7nW5nIMSR4bqhaSBo4buNYyBraG9hIGjhu41jIHThu7Egbmhpw6pu!3m6!1s0x3174d8a1768e1d03:0x38d3ea53e0581ae0!8m2!3d10.8756461!4d106.7991699!15sCi1Ucsaw4budbmcgxJHhuqFpIGjhu41jIGtob2EgaOG7jWMgdOG7sSBuaGnDqm5aLyItdHLGsOG7nW5nIMSR4bqhaSBo4buNYyBraG9hIGjhu41jIHThu7Egbmhpw6pukgEKdW5pdmVyc2l0eZoBJENoZERTVWhOTUc5blMwVkpRMEZuU1VSWE5YWmxhUzFSUlJBQqoBYgoKL20vMDJyMTI5chABMh8QASIbMrdyRH5_kZDBbztYQEootpZWrZZduD3s659DMjEQAiItdHLGsOG7nW5nIMSR4bqhaSBo4buNYyBraG9hIGjhu41jIHThu7Egbmhpw6pu4AEA-gEECAAQRA!16s%2Fg%2F1tj5hn2m?entry=ttu&g_ep=EgoyMDI1MDUxNS4xIKXMDSoJLDEwMjExNDUzSAFQAw%3D%3D" 
                     target="_blank" 
                     class="address-link">
-                    <div class="address-detail">Phường linh trung, thành phố thủ đức, Hồ Chí Minh</div>
+                    <div class="address-detail">Phường Linh Trung, Thành Phố Thủ Đức</div>
                 </a>
             </div>
         </div>
