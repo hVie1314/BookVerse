@@ -152,28 +152,28 @@
                 }
             },
             // Phương thức mới để trích xuất URL hình ảnh đầu tiên từ chuỗi mảng
-extractFirstImageUrl(imageString) {
-    if (!imageString) {
-        return 'https://picsum.photos/seed/noimage/300/400'; // Ảnh mặc định
-    }
-    
-    try {
-        if (typeof imageString === 'string' && 
-            imageString.startsWith('[') && 
-            imageString.endsWith(']')) {
-            // Parse chuỗi thành mảng và lấy URL đầu tiên
-            const imageArray = JSON.parse(imageString.replace(/'/g, '"'));
-            if (imageArray && imageArray.length > 0) {
-                return imageArray[0];
-            }
-        }
-        // Nếu không phải chuỗi mảng, trả về nguyên gốc
-        return imageString;
-    } catch (error) {
-        console.error('Lỗi khi xử lý chuỗi hình ảnh:', error);
-        return 'https://picsum.photos/seed/error/300/400'; // Ảnh dự phòng khi lỗi
-    }
-},
+            extractFirstImageUrl(imageString) {
+                if (!imageString) {
+                    return 'https://picsum.photos/seed/noimage/300/400'; // Ảnh mặc định
+                }
+                
+                try {
+                    if (typeof imageString === 'string' && 
+                        imageString.startsWith('[') && 
+                        imageString.endsWith(']')) {
+                        // Parse chuỗi thành mảng và lấy URL đầu tiên
+                        const imageArray = JSON.parse(imageString.replace(/'/g, '"'));
+                        if (imageArray && imageArray.length > 0) {
+                            return imageArray[0];
+                        }
+                    }
+                    // Nếu không phải chuỗi mảng, trả về nguyên gốc
+                    return imageString;
+                } catch (error) {
+                    console.error('Lỗi khi xử lý chuỗi hình ảnh:', error);
+                    return 'https://picsum.photos/seed/error/300/400'; // Ảnh dự phòng khi lỗi
+                }
+            },
             formatPrice(price) {
                 return new Intl.NumberFormat('vi-VN', {
                     style: 'currency',

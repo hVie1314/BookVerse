@@ -1,37 +1,37 @@
 <template>
     <nav class="order-category">
-      <div 
-        class="category-item" 
-        :class="{ active: activeCategory === 'all' }"
-        @click="changeCategory('all')"
-      >
-        <h2 class="category-text">Tất cả</h2>
-        <div class="category-underline" v-if="activeCategory === 'all'"></div>
-      </div>
-      <div 
-        class="category-item"
-        :class="{ active: activeCategory === 'pending' }"
-        @click="changeCategory('pending')"
-      >
-        <h2 class="category-text pending">Chờ thanh toán</h2>
-        <div class="category-underline" v-if="activeCategory === 'pending'"></div>
-      </div>
-      <div 
-        class="category-item"
-        :class="{ active: activeCategory === 'success' }"
-        @click="changeCategory('success')"
-      >
-        <h2 class="category-text success">Hoàn thành</h2>
-        <div class="category-underline" v-if="activeCategory === 'success'"></div>
-      </div>
-      <div 
-        class="category-item"
-        :class="{ active: activeCategory === 'cancelled' }"
-        @click="changeCategory('cancelled')"
-      >
-        <h2 class="category-text cancelled">Đã hủy</h2>
-        <div class="category-underline" v-if="activeCategory === 'cancelled'"></div>
-      </div>
+        <div 
+            class="category-item" 
+            :class="{ active: activeCategory === 'all' }"
+            @click="changeCategory('all')"
+        >
+            <h2 class="category-text">Tất cả</h2>
+            <div class="category-underline" v-if="activeCategory === 'all'"></div>
+        </div>
+        <div 
+            class="category-item"
+            :class="{ active: activeCategory === 'pending' }"
+            @click="changeCategory('pending')"
+        >
+            <h2 class="category-text pending">Chờ thanh toán</h2>
+            <div class="category-underline" v-if="activeCategory === 'pending'"></div>
+        </div>
+        <div 
+            class="category-item"
+            :class="{ active: activeCategory === 'success' }"
+            @click="changeCategory('success')"
+        >
+            <h2 class="category-text success">Hoàn thành</h2>
+            <div class="category-underline" v-if="activeCategory === 'success'"></div>
+        </div>
+        <div 
+            class="category-item"
+            :class="{ active: activeCategory === 'cancelled' }"
+            @click="changeCategory('cancelled')"
+        >
+            <h2 class="category-text cancelled">Đã hủy</h2>
+            <div class="category-underline" v-if="activeCategory === 'cancelled'"></div>
+        </div>
     </nav>
 </template>
   

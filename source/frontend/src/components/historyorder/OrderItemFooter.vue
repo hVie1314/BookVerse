@@ -1,38 +1,38 @@
 <template>
     <footer class="order-footer">
-      <div v-if="cancelMessage" class="cancel-message">
-        {{ cancelMessage }}
-      </div>
-      <div class="total-container">
-        <p class="total-label">Thành tiền:</p>
-        <p class="total-amount">{{ total }}</p>
-      </div>
-      <div v-if="showActions" class="action-buttons">
-        <button class="action-button payment" @click="$emit('pay')">Thanh toán</button>
-        <button class="action-button cancel" @click="$emit('cancel')">Hủy đơn</button>
-      </div>
+        <div v-if="cancelMessage" class="cancel-message">
+            {{ cancelMessage }}
+        </div>
+        <div class="total-container">
+            <p class="total-label">Thành tiền:</p>
+            <p class="total-amount">{{ total }}</p>
+        </div>
+        <div v-if="showActions" class="action-buttons">
+            <button class="action-button payment" @click="$emit('pay')">Thanh toán</button>
+            <button class="action-button cancel" @click="$emit('cancel')">Hủy đơn</button>
+        </div>
     </footer>
 </template>
   
 <script>
-  export default {
-    name: 'OrderItemFooter',
-    props: {
-      total: {
-        type: String,
-        required: true
-      },
-      showActions: {
-        type: Boolean,
-        default: false
-      },
-      cancelMessage: {
-        type: String,
-        default: ''
-      }
-    },
-    emits: ['pay', 'cancel']
-  }
+    export default {
+        name: 'OrderItemFooter',
+        props: {
+            total: {
+                type: String,
+                required: true
+            },
+            showActions: {
+                type: Boolean,
+                default: false
+            },
+            cancelMessage: {
+                type: String,
+                default: ''
+            }
+        },
+        emits: ['pay', 'cancel']
+    }
 </script>
   
 <style scoped>
@@ -107,15 +107,15 @@
     
     @media (max-width: 991px) {
         .order-footer {
-        margin-top: 40px;
+            margin-top: 40px;
         }
     
         .action-buttons {
-        margin: 40px 2px 0 0;
+            margin: 40px 2px 0 0;
         }
     
         .action-button {
-        padding: 17px 20px;
+            padding: 17px 20px;
         }
     }
 </style>

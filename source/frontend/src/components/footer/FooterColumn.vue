@@ -1,62 +1,62 @@
 <template>
     <article class="footer-column">
-      <header>
-        <h2 class="column-title">
-          <strong>{{ title }}</strong>
-        </h2>
-      </header>
-      <div class="column-content">
-        <slot></slot>
-      </div>
+        <header>
+            <h2 class="column-title">
+                <strong>{{ title }}</strong>
+            </h2>
+        </header>
+        <div class="column-content">
+            <slot></slot>
+        </div>
     </article>
-  </template>
+</template>
   
-  <script>
-  export default {
-    name: 'FooterColumn',
-    props: {
-      title: {
-        type: String,
-        required: true
-      }
-    }
-  };
-  </script>
+<script>
+    export default {
+        name: 'FooterColumn',
+        props: {
+            title: {
+                type: String,
+                required: true
+            }
+        }
+    };
+</script>
   
-  <style scoped>
-  .footer-column {
-    display: flex;
-    flex-direction: column;
-    /* justify-content: center; */
-    gap: 0;
-    align-items: start;
-    width: 100%;
-  }
-  
-  .column-title {
-    font-size: 18px;
-    color: rgb(255, 255, 255);
-    font-weight: 700;
-    margin-bottom: 10px;
-    /* margin-bottom: 1rem; */
-  }
-  
-  .column-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: start;
-    align-items: start;
-    gap: 10px;
-    font-size: 11px;
-    color: #fff;
-    font-weight: 400;
-    /* line-height: 26px; */
-  }
-  
-  @media (max-width: 991px) {
+<style scoped>
     .footer-column {
-      margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        /* justify-content: center; */
+        gap: 0;
+        align-items: start;
+        width: 100%;
     }
-  }
-  </style>
+  
+    .column-title {
+        font-size: 18px;
+        color: rgb(255, 255, 255);
+        font-weight: 700;
+        margin-bottom: 10px;
+        /* margin-bottom: 1rem; */
+    }  
+  
+    .column-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: start;
+        align-items: start;
+        gap: 10px;
+        font-size: 11px;
+        color: #fff;
+        font-weight: 400;
+        /* line-height: 26px; */
+    }
+  
+    @media (max-width: 991px) {
+        .footer-column {
+            margin-top: 20px;
+        }
+    }
+</style>
   

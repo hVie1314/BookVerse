@@ -1,80 +1,80 @@
 <template>
     <section class="rating-section">
-      <h2 class="rating-title">Đánh giá</h2>
+        <h2 class="rating-title">Đánh giá</h2>
   
-      <div v-if="loading" class="loading-message">
-        <p>Đang tải dữ liệu đánh giá...</p>
-      </div>
+        <div v-if="loading" class="loading-message">
+            <p>Đang tải dữ liệu đánh giá...</p>
+        </div>
       
-      <div v-else-if="error" class="error-message">
-        <p>{{ error }}</p>
-      </div>
+        <div v-else-if="error" class="error-message">
+            <p>{{ error }}</p>
+        </div>
       
-      <div v-else class="rating-container">
-        <div class="rating-layout">
-          <!-- Cột tóm tắt đánh giá -->
-          <div class="rating-summary-column">
-            <div class="rating-summary">
-              <p class="average-rating">{{ averageRating.toFixed(1) }}/5</p>
-              <div class="star-total">
-                <i v-for="index in 5" 
-                   :key="`total-star-${index}`" 
-                   :class="[
-                     index <= Math.floor(averageRating) ? 'fas fa-star filled-star' : 'far fa-star empty-star'
-                   ]"
-                ></i>
-              </div>
-              <p class="total-reviews">{{ reviewCount }} đánh giá</p>
-            </div>
-          </div>
-  
-          <!-- Cột chi tiết theo số sao -->
-          <div class="rating-details-column">
-            <div class="rating-details">
-              <div class="rating-row" v-for="star in 5" :key="`star-${star}`">
-                <div class="star-label-container">
-                  <span class="star-label">{{ star }}</span>
-                  <div class="progress-container">
-                    <div class="progress-bar" :style="`width: ${getPercentage(star)}%`"></div>
-                  </div>
+        <div v-else class="rating-container">
+            <div class="rating-layout">
+                <!-- Cột tóm tắt đánh giá -->
+                <div class="rating-summary-column">
+                    <div class="rating-summary">
+                        <p class="average-rating">{{ averageRating.toFixed(1) }}/5</p>
+                            <div class="star-total">
+                                <i v-for="index in 5" 
+                                    :key="`total-star-${index}`" 
+                                    :class="[
+                                        index <= Math.floor(averageRating) ? 'fas fa-star filled-star' : 'far fa-star empty-star'
+                                    ]"
+                                ></i>
+                            </div>
+                        <p class="total-reviews">{{ reviewCount }} đánh giá</p>
+                    </div>
                 </div>
-                <span class="count-label">{{ getRatingCount(star) }}</span>
-              </div>
-            </div>
-          </div>
   
-          <!-- Phần viết đánh giá - giữ nguyên -->
-          <div class="rating-action-column">
-            <div class="rating-action">
-                <!-- Chỉ hiển thị thông báo khi chưa đăng nhập -->
-                <p v-if="!isLoggedIn" class="login-message">
-                Vui lòng đăng nhập hoặc đăng ký để đánh giá sản phẩm!
-                </p>
+                <!-- Cột chi tiết theo số sao -->
+                <div class="rating-details-column">
+                    <div class="rating-details">
+                        <div class="rating-row" v-for="star in 5" :key="`star-${star}`">
+                            <div class="star-label-container">
+                                <span class="star-label">{{ star }}</span>
+                                <div class="progress-container">
+                                    <div class="progress-bar" :style="`width: ${getPercentage(star)}%`"></div>
+                                </div>
+                            </div>
+                            <span class="count-label">{{ getRatingCount(star) }}</span>
+                        </div>
+                    </div>
+                </div>
+  
+                <!-- Phần viết đánh giá - giữ nguyên -->
+                <div class="rating-action-column">
+                    <div class="rating-action">
+                        <!-- Chỉ hiển thị thông báo khi chưa đăng nhập -->
+                        <p v-if="!isLoggedIn" class="login-message">
+                            Vui lòng đăng nhập hoặc đăng ký để đánh giá sản phẩm!
+                        </p>
                 
-                <!-- Chỉ hiển thị nút khi đã đăng nhập -->
-                <div v-else class="write-review-container">
-                <button class="write-review-button" @click="handleWriteReview">
-                    <img
-                    src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/cb33a1d71faef1ae7e405602e6c9ca474fd29e55?placeholderIfAbsent=true"
-                    class="write-icon"
-                    alt="Write icon"
-                    />
-                    <span class="write-text">Viết đánh giá</span>
-                </button>
+                        <!-- Chỉ hiển thị nút khi đã đăng nhập -->
+                        <div v-else class="write-review-container">
+                            <button class="write-review-button" @click="handleWriteReview">
+                                <img
+                                    src="https://cdn.builder.io/api/v1/image/assets/ff3206db0ce44bea881af38d023ef911/cb33a1d71faef1ae7e405602e6c9ca474fd29e55?placeholderIfAbsent=true"
+                                    class="write-icon"
+                                    alt="Write icon"
+                                />
+                                <span class="write-text">Viết đánh giá</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        </div>
-      </div>
 
-      <!-- Form viết đánh giá - giữ nguyên -->
-      <div v-if="showReviewForm" class="review-form-overlay">
-        <ReviewForm 
-          :bookId="bookId" 
-          @close="showReviewForm = false"
-          @submit-success="handleReviewSubmitted"
-        />
-      </div>
+        <!-- Form viết đánh giá - giữ nguyên -->
+        <div v-if="showReviewForm" class="review-form-overlay">
+            <ReviewForm 
+                :bookId="bookId" 
+                @close="showReviewForm = false"
+                @submit-success="handleReviewSubmitted"
+            />
+        </div>
     </section>
 </template>
   

@@ -1,68 +1,68 @@
 <template>
-  <section class="recommended-section">
-    <div v-if="loading" class="loading-message">
-      <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
-    </div>
-    
-    <div v-else-if="error" class="error-message">
-      {{ error }}
-    </div>
-    
-    <div v-else class="recommended-container">
-      <!-- Navigation Arrow Left - Trực tiếp thay vì dùng component -->
-      <button 
-        v-if="books.length > booksPerPage && currentPage > 1"
-        @click="previousPage" 
-        class="carousel-control-prev"
-        type="button"
-      >
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-      </button>
-      
-      <div class="best-seller-content">
-        <h2 class="carousel-title">TOP SÁCH BÁN CHẠY</h2>
-        
-        <div class="book-grid">
-          <BookCard
-            v-for="book in currentPageBooks"
-            :key="book.id"
-            :bookId="book.id"
-            :image="book.image"
-            :price="`${book.price.toLocaleString('vi-VN')} đ`"
-            :originalPrice="book.originalPrice ? `${book.originalPrice.toLocaleString('vi-VN')} đ` : ''"
-            :title="book.title"
-            :author="book.author"
-            :cartText="'Thêm vào giỏ hàng'"
-            :sold="String(book.sold)"
-            :rating="book.rating || 0"
-            :showProgressBar="true"
-          />
+    <section class="recommended-section">
+        <div v-if="loading" class="loading-message">
+            <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
         </div>
-      </div>
-      
-      <!-- Navigation Arrow Right - Trực tiếp thay vì dùng component -->
-      <button 
-        v-if="books.length > booksPerPage && currentPage < totalPages"
-        @click="nextPage" 
-        class="carousel-control-next"
-        type="button"
-      >
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-      </button>
-    </div>
     
-    <!-- Pagination Indicators -->
-    <div v-if="books.length > 0" class="pagination-dots">
-      <span 
-        v-for="page in totalPages" 
-        :key="page"
-        :class="['pagination-dot', { active: currentPage === page }]"
-        @click="currentPage = page"
-      ></span>
-    </div>
-  </section>
+        <div v-else-if="error" class="error-message">
+            {{ error }}
+        </div>
+    
+        <div v-else class="recommended-container">
+            <!-- Navigation Arrow Left - Trực tiếp thay vì dùng component -->
+            <button 
+                v-if="books.length > booksPerPage && currentPage > 1"
+                @click="previousPage" 
+                class="carousel-control-prev"
+                type="button"
+            >
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+      
+            <div class="best-seller-content">
+                <h2 class="carousel-title">TOP SÁCH BÁN CHẠY</h2>
+        
+                <div class="book-grid">
+                    <BookCard
+                        v-for="book in currentPageBooks"
+                        :key="book.id"
+                        :bookId="book.id"
+                        :image="book.image"
+                        :price="`${book.price.toLocaleString('vi-VN')} đ`"
+                        :originalPrice="book.originalPrice ? `${book.originalPrice.toLocaleString('vi-VN')} đ` : ''"
+                        :title="book.title"
+                        :author="book.author"
+                        :cartText="'Thêm vào giỏ hàng'"
+                        :sold="String(book.sold)"
+                        :rating="book.rating || 0"
+                        :showProgressBar="true"
+                    />
+                </div>
+            </div>
+      
+            <!-- Navigation Arrow Right - Trực tiếp thay vì dùng component -->
+            <button 
+                v-if="books.length > booksPerPage && currentPage < totalPages"
+                @click="nextPage" 
+                class="carousel-control-next"
+                type="button"
+            >
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    
+        <!-- Pagination Indicators -->
+        <div v-if="books.length > 0" class="pagination-dots">
+            <span 
+                v-for="page in totalPages" 
+                :key="page"
+                :class="['pagination-dot', { active: currentPage === page }]"
+                @click="currentPage = page"
+            ></span>
+        </div>
+    </section>
 </template>
 
 <script>
@@ -72,122 +72,122 @@ import CartService from '@/services/CartService';
 import eventBus from '@/eventBus.js';
 
 export default {
-  name: "BestSeller",
-  components: {
+    name: "BestSeller",
+    components: {
     BookCard
-  },
-  data() {
+    },
+    data() {
     return {
-      books: [],
-      loading: true,
-      error: null,
-      currentPage: 1,
-      booksPerPage: 5,
-      totalBooks: 20 // Giới hạn tổng số sách cần lấy
+        books: [],
+        loading: true,
+        error: null,
+        currentPage: 1,
+        booksPerPage: 5,
+        totalBooks: 20 // Giới hạn tổng số sách cần lấy
     };
-  },
-  computed: {
-    // Tính số trang dựa trên số sách và số sách mỗi trang
-    totalPages() {
-      return Math.ceil(this.books.length / this.booksPerPage);
     },
-    // Lấy sách cho trang hiện tại
-    currentPageBooks() {
-      const startIndex = (this.currentPage - 1) * this.booksPerPage;
-      const endIndex = startIndex + this.booksPerPage;
-      return this.books.slice(startIndex, endIndex);
-    }
-  },
-  methods: {
-    // Các phương thức giữ nguyên như trước
-    async fetchTopSellingBooks() {
-      this.loading = true;
-      try {
-        const response = await BookService.getTopSellingBooks(this.totalBooks);
-        
-        // Xử lý linh hoạt với nhiều cấu trúc có thể có từ response
-        if (response.data && response.data.success && response.data.data && response.data.data.books) {
-          // Cấu trúc từ responseFormatterMiddleware
-          this.books = response.data.data.books.map(book => this.formatBookData(book));
-        } else if (response.data && response.data.books) {
-          // Cấu trúc trả về trực tiếp từ controller
-          this.books = response.data.books.map(book => this.formatBookData(book));
-        } else if (Array.isArray(response.data)) {
-          // Mảng sách trực tiếp
-          this.books = response.data.map(book => this.formatBookData(book));
-        } else {
-          throw new Error("Định dạng dữ liệu không hợp lệ từ API");
+    computed: {
+        // Tính số trang dựa trên số sách và số sách mỗi trang
+        totalPages() {
+            return Math.ceil(this.books.length / this.booksPerPage);
+        },
+        // Lấy sách cho trang hiện tại
+        currentPageBooks() {
+            const startIndex = (this.currentPage - 1) * this.booksPerPage;
+            const endIndex = startIndex + this.booksPerPage;
+            return this.books.slice(startIndex, endIndex);
         }
-        
-        this.loading = false;
-      } catch (error) {
-        console.error("Error fetching top selling books:", error);
-        this.error = "Không thể tải danh sách sách bán chạy. Vui lòng thử lại sau.";
-        this.loading = false;
-      }
     },
-
-    formatBookData(book) {
-      // Xử lý ảnh từ chuỗi mảng thành URL đầu tiên
-      let imageUrl = '/images/default-book-cover.jpg';
-      
-      if (book.image) {
-        try {
-          // Kiểm tra nếu image là chuỗi mảng
-          if (book.image.startsWith('[') && book.image.endsWith(']')) {
-            // Parse chuỗi thành mảng
-            const imageArray = JSON.parse(book.image.replace(/'/g, '"'));
-            // Lấy URL đầu tiên nếu có
-            if (imageArray && imageArray.length > 0) {
-              imageUrl = imageArray[0];
+    methods: {
+        // Các phương thức giữ nguyên như trước
+        async fetchTopSellingBooks() {
+            this.loading = true;
+            try {
+                const response = await BookService.getTopSellingBooks(this.totalBooks);
+            
+                // Xử lý linh hoạt với nhiều cấu trúc có thể có từ response
+                if (response.data && response.data.success && response.data.data && response.data.data.books) {
+                // Cấu trúc từ responseFormatterMiddleware
+                this.books = response.data.data.books.map(book => this.formatBookData(book));
+                } else if (response.data && response.data.books) {
+                // Cấu trúc trả về trực tiếp từ controller
+                this.books = response.data.books.map(book => this.formatBookData(book));
+                } else if (Array.isArray(response.data)) {
+                // Mảng sách trực tiếp
+                this.books = response.data.map(book => this.formatBookData(book));
+                } else {
+                throw new Error("Định dạng dữ liệu không hợp lệ từ API");
+                }
+            
+                this.loading = false;
+            } catch (error) {
+                console.error("Error fetching top selling books:", error);
+                this.error = "Không thể tải danh sách sách bán chạy. Vui lòng thử lại sau.";
+                this.loading = false;
             }
-          } else {
-            // Nếu image không phải chuỗi mảng, sử dụng trực tiếp
-            imageUrl = book.image;
-          }
-        } catch (error) {
-          console.error("Lỗi xử lý URL hình ảnh:", error);
-        }
-      }
-      
-      return {
-        id: book._id,
-        image: imageUrl,
-        price: book.price,
-        originalPrice: book.originalPrice > book.price ? book.originalPrice : null,
-        title: book.title,
-        author: book.author,
-        sold: String(book.sold || 0),
-        rating: book.rating || 0
-      };
-    },
-    
-    nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
-      }
-    },
-    previousPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-      }
-    },
-    
-    async addToCart(bookId) {
-      try {
-        await CartService.addToCart({ bookId, quantity: 1 });
-        this.$toast.success("Đã thêm sách vào giỏ hàng");
+        },
 
-        eventBus.emit("cart-updated"); // Phát sự kiện để cập nhật giỏ hàng
-      } catch (error) {
-        console.error("Error adding book to cart:", error);
-        this.$toast.error("Không thể thêm sách vào giỏ hàng.");
-      }
+        formatBookData(book) {
+            // Xử lý ảnh từ chuỗi mảng thành URL đầu tiên
+            let imageUrl = '/images/default-book-cover.jpg';
+        
+            if (book.image) {
+                try {
+                    // Kiểm tra nếu image là chuỗi mảng
+                    if (book.image.startsWith('[') && book.image.endsWith(']')) {
+                        // Parse chuỗi thành mảng
+                        const imageArray = JSON.parse(book.image.replace(/'/g, '"'));
+                        // Lấy URL đầu tiên nếu có
+                        if (imageArray && imageArray.length > 0) {
+                            imageUrl = imageArray[0];
+                        }
+                    } else {
+                        // Nếu image không phải chuỗi mảng, sử dụng trực tiếp
+                        imageUrl = book.image;
+                    }
+                } catch (error) {
+                    console.error("Lỗi xử lý URL hình ảnh:", error);
+                }
+            }
+      
+            return {
+                id: book._id,
+                image: imageUrl,
+                price: book.price,
+                originalPrice: book.originalPrice > book.price ? book.originalPrice : null,
+                title: book.title,
+                author: book.author,
+                sold: String(book.sold || 0),
+                rating: book.rating || 0
+            };
+        },
+    
+        nextPage() {
+            if (this.currentPage < this.totalPages) {
+            this.currentPage++;
+            }
+        },
+        previousPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+            }
+        },
+    
+        async addToCart(bookId) {
+            try {
+                await CartService.addToCart({ bookId, quantity: 1 });
+                this.$toast.success("Đã thêm sách vào giỏ hàng");
+
+                eventBus.emit("cart-updated"); // Phát sự kiện để cập nhật giỏ hàng
+            } catch (error) {
+                console.error("Error adding book to cart:", error);
+                this.$toast.error("Không thể thêm sách vào giỏ hàng.");
+            }
+        }
+    },
+    mounted() {
+        this.fetchTopSellingBooks();
     }
-  },
-  mounted() {
-    this.fetchTopSellingBooks();
-  }
 };
 </script>
 
