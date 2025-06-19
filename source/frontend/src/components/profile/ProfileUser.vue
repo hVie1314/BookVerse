@@ -300,15 +300,16 @@ export default {
   
 <style scoped>
 
-.staff-mode {
-    background-color: transparent;
-    padding-left: 280px; /* Để không bị đè bởi sidebar */
-}
+    .staff-mode {
+        background-color: transparent;
+        padding-left: 280px; /* Để không bị đè bởi sidebar */
+    }
 
-.staff-layout {
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
+    .staff-layout {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    
     .profile-user-container {
         width: 100%;
         display: flex;

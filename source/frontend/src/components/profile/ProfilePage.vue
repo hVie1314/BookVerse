@@ -798,6 +798,7 @@ export default {
             transform: translateY(0);
         }
     }
+
     /* Buttons */
     .button-container {
         display: flex;
@@ -911,221 +912,221 @@ export default {
 
     /* Thêm vào phần style */
     .required-star {
-    color: #ff3333;
-    margin-left: 4px;
-    font-weight: bold;
+        color: #ff3333;
+        margin-left: 4px;
+        font-weight: bold;
     }
 
     .field-note {
-    font-size: 14px;
-    color: #777;
-    margin-top: 10px;
-    margin-bottom: 20px;
-    text-align: center;
-    font-family: "Montserrat", sans-serif;
+        font-size: 14px;
+        color: #777;
+        margin-top: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-family: "Montserrat", sans-serif;
     }
 
     /* Style cho input disabled */
     .field-input:disabled {
-    background-color: #f5f5f5;
-    border-color: #ddd;
-    color: #777;
-    cursor: not-allowed;
+        background-color: #f5f5f5;
+        border-color: #ddd;
+        color: #777;
+        cursor: not-allowed;
     }
 
     /* Giữ nguyên các style hiện tại */
 
     /* Thêm style cho hiển thị lỗi trường mật khẩu cũ */
     .field-error {
-  color: #e74c3c;
-  margin-top: 5px;
-  font-size: 14px;
-  font-family: "Montserrat", sans-serif;
-}
+        color: #e74c3c;
+        margin-top: 5px;
+        font-size: 14px;
+        font-family: "Montserrat", sans-serif;
+    }
 
-.input-container .error {
-  border-color: #e74c3c;
-}
+    .input-container .error {
+        border-color: #e74c3c;
+    }
 
-.validation-error {
-  color: #e74c3c;
-  margin: 15px 0;
-  text-align: center;
-  font-family: "Montserrat", sans-serif;
-  font-size: 14px;
-  padding: 10px;
-  background-color: rgba(231, 76, 60, 0.1);
-  border-left: 3px solid #e74c3c;
-  border-radius: 3px;
-  width: 80%;
-}
+    .validation-error {
+        color: #e74c3c;
+        margin: 15px 0;
+        text-align: center;
+        font-family: "Montserrat", sans-serif;
+        font-size: 14px;
+        padding: 10px;
+        background-color: rgba(231, 76, 60, 0.1);
+        border-left: 3px solid #e74c3c;
+        border-radius: 3px;
+        width: 80%;
+    }
 
-.password-note {
-  color: #e67e22;
-  margin: 15px 0;
-  text-align: center;
-  font-family: "Montserrat", sans-serif;
-  font-size: 14px;
-  font-style: italic;
-  width: 80%;
-}
+    .password-note {
+        color: #e67e22;
+        margin: 15px 0;
+        text-align: center;
+        font-family: "Montserrat", sans-serif;
+        font-size: 14px;
+        font-style: italic;
+        width: 80%;
+    }
 
-/* Thêm vào phần <style> của ProfilePage.vue */
-.field-error-container {
-  width: 100%;
-  margin-left: 16%;
-  margin-bottom:20px;
-  margin-top: -5px;
-  display: flex;
-  /* justify-content: flex-start; */
-}
+    /* Thêm vào phần <style> của ProfilePage.vue */
+    .field-error-container {
+        width: 100%;
+        margin-left: 16%;
+        margin-bottom:20px;
+        margin-top: -5px;
+        display: flex;
+        /* justify-content: flex-start; */
+    }
 
-.field-error {
-  color: #e74c3c;
-  font-size: 14px;
-  font-family: "Montserrat", sans-serif;
-  display: flex;
-  align-items: center;
-  background-color: rgba(231, 76, 60, 0.08);
-  padding: 6px 12px;
-  border-radius: 4px;
-  border-left: 3px solid #e74c3c;
-  max-width: 100%;
-}
+    .field-error {
+        color: #e74c3c;
+        font-size: 14px;
+        font-family: "Montserrat", sans-serif;
+        display: flex;
+        align-items: center;
+        background-color: rgba(231, 76, 60, 0.08);
+        padding: 6px 12px;
+        border-radius: 4px;
+        border-left: 3px solid #e74c3c;
+        max-width: 100%;
+    }
 
-.error-icon {
-  margin-right: 8px;
-  font-size: 14px;
-}
+    .error-icon {
+        margin-right: 8px;
+        font-size: 14px;
+    }
 
-/* Sửa tên class để tránh conflict */
-.error-input {
-  border-color: #e74c3c !important;
-  background-color: rgba(231, 76, 60, 0.03) !important;
-}
+    /* Sửa tên class để tránh conflict */
+    .error-input {
+        border-color: #e74c3c !important;
+        background-color: rgba(231, 76, 60, 0.03) !important;
+    }
 
-/* Thêm hiệu ứng làm nổi bật thông báo lỗi */
-@keyframes errorPulse {
-  0% { opacity: 0.8; }
-  50% { opacity: 1; }
-  100% { opacity: 0.8; }
-}
+    /* Thêm hiệu ứng làm nổi bật thông báo lỗi */
+    @keyframes errorPulse {
+        0% { opacity: 0.8; }
+        50% { opacity: 1; }
+        100% { opacity: 0.8; }
+    }
 
-.field-error {
-  animation: errorPulse 2s infinite;
-}
+    .field-error {
+        animation: errorPulse 2s infinite;
+    }
 
-.input-wrapper {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
+    .input-wrapper {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
 
-.field-error {
-  color: #e74c3c;
-  font-size: 14px;
-  font-family: "Montserrat", sans-serif;
-  display: flex;
-  align-items: center;
-  background-color: rgba(231, 76, 60, 0.08);
-  padding: 6px 12px;
-  border-radius: 4px;
-  border-left: 3px solid #e74c3c;
-  margin-top: 8px;
-  animation: errorPulse 2s infinite;
-}
+    .field-error {
+        color: #e74c3c;
+        font-size: 14px;
+        font-family: "Montserrat", sans-serif;
+        display: flex;
+        align-items: center;
+        background-color: rgba(231, 76, 60, 0.08);
+        padding: 6px 12px;
+        border-radius: 4px;
+        border-left: 3px solid #e74c3c;
+        margin-top: 8px;
+        animation: errorPulse 2s infinite;
+    }
 
-/* Điều chỉnh style hiện có */
-.profile-field {
-  width: 80%;
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 20px;
-  gap: 30px;
-}
+    /* Điều chỉnh style hiện có */
+    .profile-field {
+        width: 80%;
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        gap: 30px;
+    }
 
-.field-label {
-  width: 20%;
-  min-width: 150px; /* Đảm bảo kích thước tối thiểu cho label */
-}
+    .field-label {
+        width: 20%;
+        min-width: 150px; /* Đảm bảo kích thước tối thiểu cho label */
+    }
 
-/* Xóa bỏ field-error-container hiện tại */
-.field-error-container {
-  width: 80%;
-  margin-left: calc(20% + 30px); /* Căn chỉnh theo label + gap */
-  margin-bottom: 20px;
-  margin-top: -10px;
-  display: flex;
-}
+    /* Xóa bỏ field-error-container hiện tại */
+    .field-error-container {
+        width: 80%;
+        margin-left: calc(20% + 30px); /* Căn chỉnh theo label + gap */
+        margin-bottom: 20px;
+        margin-top: -10px;
+        display: flex;
+    }
 
-/* Đảm bảo input container có kích thước đồng nhất */
-.input-container {
-  position: relative;
-  width: 100%;
-  margin-bottom: 5px;
-  transition: transform 0.3s ease;
-}
+    /* Đảm bảo input container có kích thước đồng nhất */
+    .input-container {
+        position: relative;
+        width: 100%;
+        margin-bottom: 5px;
+        transition: transform 0.3s ease;
+    }
 
-/* Đảm bảo các input có kích thước đồng nhất */
-.field-input {
-  width: 100%;
-  height: 50px;
-  box-sizing: border-box;
-}
+    /* Đảm bảo các input có kích thước đồng nhất */
+    .field-input {
+        width: 100%;
+        height: 50px;
+        box-sizing: border-box;
+    }
 
-/* Định dạng cho .password-change-section */
-.password-change-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+    /* Định dạng cho .password-change-section */
+    .password-change-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
 
-.field-error {
-  color: #e74c3c;
-  font-size: 14px;
-  font-family: "Montserrat", sans-serif;
-  display: flex;
-  align-items: center;
-  background-color: rgba(231, 76, 60, 0.08);
-  padding: 6px 12px;
-  border-radius: 4px;
-  border-left: 3px solid #e74c3c;
-  animation: errorPulse 2s infinite;
-}
+    .field-error {
+        color: #e74c3c;
+        font-size: 14px;
+        font-family: "Montserrat", sans-serif;
+        display: flex;
+        align-items: center;
+        background-color: rgba(231, 76, 60, 0.08);
+        padding: 6px 12px;
+        border-radius: 4px;
+        border-left: 3px solid #e74c3c;
+        animation: errorPulse 2s infinite;
+    }
 
-.password-change-section .field-label {
-  display: flex;
-  width: 20%;
-  min-width: 180px; /* Tăng min-width để đủ chỗ cho label dài hơn */
-  white-space: nowrap; /* Ngăn label xuống dòng */
-  font-family: "Montserrat", sans-serif;
-  font-weight: 600;
-  font-size: 16px;
-  color: #4d2900;
-  position: relative; /* Cho phép đặt required-star tương đối với label */
-}
+    .password-change-section .field-label {
+        display: flex;
+        width: 20%;
+        min-width: 180px; /* Tăng min-width để đủ chỗ cho label dài hơn */
+        white-space: nowrap; /* Ngăn label xuống dòng */
+        font-family: "Montserrat", sans-serif;
+        font-weight: 600;
+        font-size: 16px;
+        color: #4d2900;
+        position: relative; /* Cho phép đặt required-star tương đối với label */
+    }
 
-/* Điều chỉnh vị trí của dấu sao */
-.password-change-section .required-star {
-  color: #ff3333;
-  margin-left: 4px;
-  font-weight: bold;
-  position: absolute;
-  right: -12px; /* Đặt dấu sao bên phải label */
-  top: 0;
-}
+    /* Điều chỉnh vị trí của dấu sao */
+    .password-change-section .required-star {
+        color: #ff3333;
+        margin-left: 4px;
+        font-weight: bold;
+        position: absolute;
+        right: -12px; /* Đặt dấu sao bên phải label */
+        top: 0;
+    }
 
-/* Đảm bảo chiều rộng đồng nhất */
-.password-change-section .profile-field {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  gap: 30px;
-}
+    /* Đảm bảo chiều rộng đồng nhất */
+    .password-change-section .profile-field {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        gap: 30px;
+    }
 
-/* Điều chỉnh chiều rộng của phần input container */
-.password-change-section .input-container {
-  width: 80%;
-}
+    /* Điều chỉnh chiều rộng của phần input container */
+    .password-change-section .input-container {
+        width: 80%;
+    }
 </style>
