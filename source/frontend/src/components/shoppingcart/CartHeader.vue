@@ -54,7 +54,6 @@
       width: 60%; /* Tương ứng với product-info trong ProductCard */
     }
       
-      
     .quantity-label {
       color: rgba(77, 41, 0, 1);
       font-size: 24px;
@@ -63,7 +62,6 @@
       text-align: left;
       width: 20%; /* Tương ứng với quantity-controls trong ProductCard */
     }
-
       
     .price-label {
       color: rgba(77, 41, 0, 1);

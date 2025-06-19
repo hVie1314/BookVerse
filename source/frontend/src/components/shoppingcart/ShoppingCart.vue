@@ -650,47 +650,47 @@ async createOrderWithoutPayment() {
       },
 
       async removeSelectedItems(selectedIds) {
-  try {
-    this.loading = true;
-    
-    const user = AuthenticationService.getCurrentUser();
-    
-    if (user && user.id) {
-      // Xử lý xóa các sản phẩm đã chọn cho người dùng đã đăng nhập
-      for (const productId of selectedIds) {
-        await CartService.removeFromUserCart(user.id, productId);
-      }
-    } else {
-      // Xử lý xóa các sản phẩm đã chọn cho khách
-      const guestCartId = localStorage.getItem('guestCartId');
-      if (guestCartId) {
-        for (const productId of selectedIds) {
-          await CartService.removeFromGuestCart(guestCartId, productId);
+        try {
+          this.loading = true;
+          
+          const user = AuthenticationService.getCurrentUser();
+          
+          if (user && user.id) {
+            // Xử lý xóa các sản phẩm đã chọn cho người dùng đã đăng nhập
+            for (const productId of selectedIds) {
+              await CartService.removeFromUserCart(user.id, productId);
+            }
+          } else {
+            // Xử lý xóa các sản phẩm đã chọn cho khách
+            const guestCartId = localStorage.getItem('guestCartId');
+            if (guestCartId) {
+              for (const productId of selectedIds) {
+                await CartService.removeFromGuestCart(guestCartId, productId);
+              }
+            }
+          }
+          
+          // Clear selected items
+          this.selectedItems = [];
+          
+          // Reload cart data
+          await this.fetchCartData();
+          
+          // Thay đổi từ event bus sang toast
+          this.toast.success(`Đã xóa ${selectedIds.length} sản phẩm khỏi giỏ hàng`, {
+            timeout: 2000
+          });
+        } catch (error) {
+          console.error('Lỗi khi xóa sản phẩm đã chọn:', error);
+          
+          // Thay đổi từ event bus sang toast
+          this.toast.error("Không thể xóa sản phẩm. Vui lòng thử lại sau.", {
+            timeout: 1500
+          });
+        } finally {
+          this.loading = false;
         }
       }
-    }
-    
-    // Clear selected items
-    this.selectedItems = [];
-    
-    // Reload cart data
-    await this.fetchCartData();
-    
-    // Thay đổi từ event bus sang toast
-    this.toast.success(`Đã xóa ${selectedIds.length} sản phẩm khỏi giỏ hàng`, {
-      timeout: 2000
-    });
-  } catch (error) {
-    console.error('Lỗi khi xóa sản phẩm đã chọn:', error);
-    
-    // Thay đổi từ event bus sang toast
-    this.toast.error("Không thể xóa sản phẩm. Vui lòng thử lại sau.", {
-      timeout: 1500
-    });
-  } finally {
-    this.loading = false;
-  }
-}
     },
   };
   </script>
@@ -739,6 +739,7 @@ async createOrderWithoutPayment() {
   .checkout-summary-container.is-sticky {
     box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
   }
+
   @media (max-width: 991px) {
     .container {
       width: 95%;
