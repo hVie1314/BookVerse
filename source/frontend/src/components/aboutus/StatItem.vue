@@ -1,25 +1,25 @@
 <template>
     <article class="stat-item">
-      <h3 class="stat-value">{{ value }}</h3>
-      <p class="stat-label">{{ label }}</p>
+        <h3 class="stat-value">{{ value }}</h3>
+        <p class="stat-label">{{ label }}</p>
     </article>
-  </template>
+</template>
   
-  <script>
-  export default {
-    name: "StatItem",
-    props: {
-      value: {
-        type: String,
-        required: true,
-      },
-      label: {
-        type: String,
-        required: true,
-      },
-    },
-  };
-  </script>
+<script>
+    export default {
+        name: "StatItem",
+        props: {
+            value: {
+                type: String,
+                required: true,
+            },
+            label: {
+                type: String,
+                required: true,
+            },
+        },
+    };
+</script>
   
 <style scoped>
     .stat-item {

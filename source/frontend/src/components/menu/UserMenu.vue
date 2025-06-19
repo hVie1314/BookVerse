@@ -90,35 +90,35 @@ export default {
 </script>
 
 <style>
-/* CSS global (không scoped) để ghi đè Bootstrap */
-body {
-  /* Ngăn không cho Bootstrap thay đổi padding */
-  padding-right: 0 !important; 
-  overflow-y: auto !important;
-}
+    /* CSS global (không scoped) để ghi đè Bootstrap */
+    body {
+        /* Ngăn không cho Bootstrap thay đổi padding */
+        padding-right: 0 !important; 
+        overflow-y: auto !important;
+    }
 
-/* Giữ nguyên vị trí header */
-.header-container {
-  padding-right: 0 !important;
-  width: 100% !important;
-}
+    /* Giữ nguyên vị trí header */
+    .header-container {
+        padding-right: 0 !important;
+        width: 100% !important;
+    }
 
-/* Sửa lỗi backdrop */
-.offcanvas-backdrop {
-  width: 100vw !important;
-  position: fixed !important;
-}
+    /* Sửa lỗi backdrop */
+    .offcanvas-backdrop {
+        width: 100vw !important;
+        position: fixed !important;
+    }
 
-/* Sửa lỗi offcanvas */
-.offcanvas {
-  position: fixed !important;
-}
+    /* Sửa lỗi offcanvas */
+    .offcanvas {
+        position: fixed !important;
+    }   
 
-/* Ngăn không cho backdrop và modal ảnh hưởng tới layout */
-.modal-open .modal,
-.offcanvas-open .offcanvas-backdrop {
-  padding-right: 0 !important;
-}
+    /* Ngăn không cho backdrop và modal ảnh hưởng tới layout */
+    .modal-open .modal,
+    .offcanvas-open .offcanvas-backdrop {
+        padding-right: 0 !important;
+    }
 </style>
 
 <style scoped>
@@ -255,5 +255,4 @@ body {
         opacity: 0;
         transform: translateX(40px);
     }
-
 </style>

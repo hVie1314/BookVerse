@@ -238,27 +238,27 @@ export default {
     },
 
     // Lấy sách liên quan
-   // Lấy sách liên quan
-getRelatedBooks(bookId, limit = 20) {
-    console.log(`Gọi API lấy sách liên quan với ID: ${bookId}, limit: ${limit}`);
-    
-    // Đảm bảo cung cấp token nếu cần
-    const headers = {};
-    const token = localStorage.getItem('token');
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    return Api().get(`book/related/${bookId}/${limit}`, { headers })
-        .then(response => {
-            console.log('Kết quả API sách liên quan:', response.data);
-            return response;
-        })
-        .catch(error => {
-            console.error(`Lỗi khi lấy sách liên quan:`, error.response?.data || error.message);
-            throw error;
-        });
-},
+    // Lấy sách liên quan
+    getRelatedBooks(bookId, limit = 20) {
+        console.log(`Gọi API lấy sách liên quan với ID: ${bookId}, limit: ${limit}`);
+        
+        // Đảm bảo cung cấp token nếu cần
+        const headers = {};
+        const token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        return Api().get(`book/related/${bookId}/${limit}`, { headers })
+            .then(response => {
+                console.log('Kết quả API sách liên quan:', response.data);
+                return response;
+            })
+            .catch(error => {
+                console.error(`Lỗi khi lấy sách liên quan:`, error.response?.data || error.message);
+                throw error;
+            });
+    },
     
     // Lấy đánh giá trung bình của sách
     getBookRating(bookId) {

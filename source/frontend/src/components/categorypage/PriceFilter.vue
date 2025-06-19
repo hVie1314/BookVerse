@@ -1,20 +1,20 @@
 <template>
     <section class="filter-card">
-      <h2 class="filter-title">Giá thành</h2>
+        <h2 class="filter-title">Giá thành</h2>
       
-      <!-- Danh sách các mức giá với checkbox -->
-      <div 
-        v-for="(range, index) in priceRanges" 
-        :key="index"
-        class="price-item"
-        :class="{ active: selectedRanges.includes(index) }"
-        @click="selectPriceRange(index)"
-      >
-        <div class="checkbox">
-          <i v-if="selectedRanges.includes(index)" class="fa-solid fa-check"></i>
+        <!-- Danh sách các mức giá với checkbox -->
+        <div 
+            v-for="(range, index) in priceRanges" 
+            :key="index"
+            class="price-item"
+            :class="{ active: selectedRanges.includes(index) }"
+            @click="selectPriceRange(index)"
+            >
+            <div class="checkbox">
+                <i v-if="selectedRanges.includes(index)" class="fa-solid fa-check"></i>
+            </div>
+            <p class="price-range-text">{{ range.label }}</p>
         </div>
-        <p class="price-range-text">{{ range.label }}</p>
-      </div>
     </section>
 </template>
     
@@ -26,29 +26,29 @@
             selectedRanges: [],
             priceRanges: [
                 { 
-                label: '0đ - 150,000đ', 
-                min: 0, 
-                max: 150000 
+                    label: '0đ - 150,000đ', 
+                    min: 0, 
+                    max: 150000 
                 },
                 { 
-                label: '150,000đ - 300,000đ', 
-                min: 150000, 
-                max: 300000 
+                    label: '150,000đ - 300,000đ', 
+                    min: 150000, 
+                    max: 300000 
                 },
                 { 
-                label: '300,000đ - 500,000đ', 
-                min: 300000, 
-                max: 500000 
+                    label: '300,000đ - 500,000đ', 
+                    min: 300000, 
+                    max: 500000 
                 },
                 { 
-                label: '500,000đ - 700,000đ', 
-                min: 500000, 
-                max: 700000 
+                    label: '500,000đ - 700,000đ', 
+                    min: 500000, 
+                    max: 700000 
                 },
                 { 
-                label: '700,000đ - Trở lên', 
-                min: 700000, 
-                max: Number.MAX_SAFE_INTEGER 
+                    label: '700,000đ - Trở lên', 
+                    min: 700000, 
+                    max: Number.MAX_SAFE_INTEGER 
                 }
             ]
             };

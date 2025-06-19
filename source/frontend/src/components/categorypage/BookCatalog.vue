@@ -59,34 +59,34 @@
             <p>Đang cập nhật danh sách yêu thích...</p>
         </div>
     
-    <div v-if="loading" class="loading-indicator">
-      <div class="spinner"></div>
-      <p>Đang tải sách...</p>
-    </div>
+        <div v-if="loading" class="loading-indicator">
+            <div class="spinner"></div>
+            <p>Đang tải sách...</p>
+        </div>
     
-    <div v-else-if="error" class="error-message">
-      {{ error }}
-    </div>
-    <div v-else-if="isWishlistPage && books.length === 0" class="empty-wishlist">
-        <i class="fa-regular fa-heart fa-3x"></i>
-        <p>Danh sách yêu thích của bạn đang trống</p>
-        <router-link to="/category" class="browse-books-btn">Khám phá sách</router-link>
-    </div>
-    <div v-else>
-      <BookGrid 
-            :books="books" 
-            :isWishlistPage="isWishlistPage"  
-            @remove-from-wishlist="handleRemoveFromWishlist"
-        />
+        <div v-else-if="error" class="error-message">
+            {{ error }}
+        </div>
+        <div v-else-if="isWishlistPage && books.length === 0" class="empty-wishlist">
+            <i class="fa-regular fa-heart fa-3x"></i>
+            <p>Danh sách yêu thích của bạn đang trống</p>
+            <router-link to="/category" class="browse-books-btn">Khám phá sách</router-link>
+        </div>
+        <div v-else>
+            <BookGrid 
+                :books="books" 
+                :isWishlistPage="isWishlistPage"  
+                @remove-from-wishlist="handleRemoveFromWishlist"
+            />
     
-      <Pagination
-        :currentPage="currentPage"
-        :totalPages="totalPages"
-        @page-change="handlePageChange"
-      />
+            <Pagination
+                :currentPage="currentPage"
+                :totalPages="totalPages"
+                @page-change="handlePageChange"
+            />
+        </div>
     </div>
-  </div>
-  </template>
+</template>
   
 <script>
     import BookGrid from './BookGrid.vue';
@@ -447,55 +447,55 @@
                     const timestamp = new Date().getTime();
                     const response = await WishlistService.getWishlist(timestamp);
                     
-                    if (response.data && response.data.success && response.data.data) {
-                        // Xử lý dữ liệu wishlist
-                        const wishlistData = response.data.data.wishlist || response.data.data;
-                        let products = [];
-                        
-                        if (wishlistData && wishlistData.products && Array.isArray(wishlistData.products)) {
-                        products = wishlistData.products;
-                        }
-                        
-                        // Cập nhật danh sách sản phẩm
-                        this.wishlistAllBooks = products.map(item => {
-                        if (item.productId && typeof item.productId === 'object') {
-                            // Xử lý hình ảnh sách
-                            let image = item.productId.image;
-                            if (typeof image === 'string' && image.startsWith('[') && image.endsWith(']')) {
-                            try {
-                                const images = JSON.parse(image.replace(/'/g, '"'));
-                                image = images[0];
-                            } catch (e) {
-                                console.error('Lỗi xử lý ảnh:', e);
-                            }
+                        if (response.data && response.data.success && response.data.data) {
+                            // Xử lý dữ liệu wishlist
+                            const wishlistData = response.data.data.wishlist || response.data.data;
+                            let products = [];
+                            
+                            if (wishlistData && wishlistData.products && Array.isArray(wishlistData.products)) {
+                            products = wishlistData.products;
                             }
                             
-                            return {
-                            _id: item.productId._id,
-                            id: item.productId._id,
-                            title: item.productId.title,
-                            author: item.productId.author,
-                            price: item.productId.price,
-                            image: image,
-                            };
+                            // Cập nhật danh sách sản phẩm
+                            this.wishlistAllBooks = products.map(item => {
+                                if (item.productId && typeof item.productId === 'object') {
+                                    // Xử lý hình ảnh sách
+                                    let image = item.productId.image;
+                                    if (typeof image === 'string' && image.startsWith('[') && image.endsWith(']')) {
+                                    try {
+                                        const images = JSON.parse(image.replace(/'/g, '"'));
+                                        image = images[0];
+                                    } catch (e) {
+                                        console.error('Lỗi xử lý ảnh:', e);
+                                    }
+                                    }
+                                    
+                                    return {
+                                    _id: item.productId._id,
+                                    id: item.productId._id,
+                                    title: item.productId.title,
+                                    author: item.productId.author,
+                                    price: item.productId.price,
+                                    image: image,
+                                    };
+                                }
+                            return null;
+                            }).filter(book => book !== null);
+                            
+                            // Cập nhật thông tin phân trang
+                            this.totalBooks = this.wishlistAllBooks.length;
+                            this.totalPages = Math.ceil(this.totalBooks / this.wishlistBooksPerPage);
+                            
+                            // Xử lý trường hợp trang hiện tại không còn sản phẩm
+                            if (this.wishlistAllBooks.length === 0) {
+                            this.currentPage = 1;
+                            } else if (this.currentPage > this.totalPages) {
+                            this.currentPage = this.totalPages;
+                            }
+                            
+                            // Thực hiện phân trang
+                            this.paginateWishlistBooks();
                         }
-                        return null;
-                        }).filter(book => book !== null);
-                        
-                        // Cập nhật thông tin phân trang
-                        this.totalBooks = this.wishlistAllBooks.length;
-                        this.totalPages = Math.ceil(this.totalBooks / this.wishlistBooksPerPage);
-                        
-                        // Xử lý trường hợp trang hiện tại không còn sản phẩm
-                        if (this.wishlistAllBooks.length === 0) {
-                        this.currentPage = 1;
-                        } else if (this.currentPage > this.totalPages) {
-                        this.currentPage = this.totalPages;
-                        }
-                        
-                        // Thực hiện phân trang
-                        this.paginateWishlistBooks();
-                    }
                     }
                     
                     // Phát sự kiện để các component khác cũng cập nhật
@@ -582,218 +582,218 @@
     font-weight: 600;
 }
 .empty-wishlist {
-  text-align: center;
-  padding: 40px;
-  color: #4d2900;
-  background-color: rgba(244, 235, 225, 0.5);
-  border-radius: 8px;
-  margin: 20px 0;
+    text-align: center;
+    padding: 40px;
+    color: #4d2900;
+    background-color: rgba(244, 235, 225, 0.5);
+    border-radius: 8px;
+    margin: 20px 0;
 }
 
 .empty-wishlist i {
-  color: #724e4e;
-  margin-bottom: 15px;
+    color: #724e4e;
+    margin-bottom: 15px;
 }
 
 .empty-wishlist p {
-  font-family: "Montserrat", sans-serif;
-  font-size: 18px;
-  margin-bottom: 20px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    margin-bottom: 20px;
 }
 
 .browse-books-btn {
-  display: inline-block;
-  background-color: #4d2900;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 5px;
-  text-decoration: none;
-  font-family: "Montserrat", sans-serif;
-  font-weight: 600;
-  transition: all 0.3s ease;
+    display: inline-block;
+    background-color: #4d2900;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
 .browse-books-btn:hover {
-  background-color: #724e4e;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #724e4e;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-    .carousel {
-            width: 100%;
-            border-radius: 16px;
-            overflow: visible;
-            background-color: transparent;
-            margin-bottom: 30px;
-    }
+.carousel {
+    width: 100%;
+    border-radius: 16px;
+    overflow: visible;
+    background-color: transparent;
+    margin-bottom: 30px;
+}
 
-    .carousel-inner {
+.carousel-inner {
     background-color: transparent; 
     overflow: hidden;
     border-radius: 8px;
-    }
+}
 
-    .banner {
+.banner {
     height: auto;
     width: 100%;
     object-fit: cover;
     margin: 0;
     border-radius: 0; /* Ghi đè border-radius từ class .banner cũ */
-    }
+}
 
-    .carousel-control-prev,
-    .carousel-control-next {
-        width: 40px;
-        height: 40px;
-        background-color: rgba(255, 255, 255, 0.95);
-        border-radius: 50%;
-        top: 50%;
-        transform: translateY(-50%);
-        opacity: 0.8;
-        transition: all 0.3s ease;
-        position: absolute;
-        z-index: 10;
-    }
+.carousel-control-prev,
+.carousel-control-next {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    position: absolute;
+    z-index: 10;
+}
 
-    .carousel-control-prev {
+.carousel-control-prev {
     left: 0;
     transform: translateX(-50%) translateY(-50%);
-    }
+}
 
-    .carousel-control-next {
+.carousel-control-next {
     right: 0;
     transform: translateX(50%) translateY(-50%);
-    }
+}
 
-    .carousel-control-prev:hover,
-    .carousel-control-next:hover {
-        background-color: rgba(255, 255, 255, 0.95);
-        opacity: 1;
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    }
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    background-color: rgba(255, 255, 255, 0.95);
+    opacity: 1;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
 
-    .carousel-control-prev:hover {
+.carousel-control-prev:hover {
     transform: translateX(-50%) translateY(-50%) scale(1.15);
-    }
+}
 
-    .carousel-control-next:hover {
+.carousel-control-next:hover {
     transform: translateX(50%) translateY(-50%) scale(1.15);
-    }
+}
 
-    .carousel-control-prev-icon,
-    .carousel-control-next-icon {
-        background-color: #000;
-        width: 18px; /* Giảm từ kích thước mặc định 20px */
-        height: 18px; /* Giảm từ kích thước mặc định 20px */
-        filter: invert(1); /* Làm cho icon màu đen thay vì màu trắng mặc định */
-        opacity: 0.7;
-    }
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: #000;
+    width: 18px; /* Giảm từ kích thước mặc định 20px */
+    height: 18px; /* Giảm từ kích thước mặc định 20px */
+    filter: invert(1); /* Làm cho icon màu đen thay vì màu trắng mặc định */
+    opacity: 0.7;
+}
 
-    /* Tùy chọn: Thêm hiệu ứng opacity khi hover */
-    .carousel-control-prev:hover .carousel-control-prev-icon,
-    .carousel-control-next:hover .carousel-control-next-icon {
-        opacity: 1;
-    }
+/* Tùy chọn: Thêm hiệu ứng opacity khi hover */
+.carousel-control-prev:hover .carousel-control-prev-icon,
+.carousel-control-next:hover .carousel-control-next-icon {
+    opacity: 1;
+}
 
-    /* Giảm kích thước của nút điều khiển */
-    .carousel-control-prev,
-    .carousel-control-next {
-        width: 35px; /* Giảm từ 40px */
-        height: 35px; /* Giảm từ 40px */
-    }
+/* Giảm kích thước của nút điều khiển */
+.carousel-control-prev,
+.carousel-control-next {
+    width: 35px; /* Giảm từ 40px */
+    height: 35px; /* Giảm từ 40px */
+}
 
-    .carousel-indicators {
+.carousel-indicators {
     margin-bottom: 1rem;
-    }
+}
 
-    .carousel-indicators [data-bs-target] {
+.carousel-indicators [data-bs-target] {
     width: 12px;
     height: 12px;
     border-radius: 50%;
     background-color: rgba(77, 41, 0, 0.5);
     margin: 0 5px;
-    }
+}
 
-    .carousel-indicators .active {
+.carousel-indicators .active {
     background-color: #4d2900;
     transform: scale(1.2);
-    }
+}
 
-    .book-catalog {
-        width: 100%;
-    }
+.book-catalog {
+    width: 100%;
+}
 
-    .catalog-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
+.catalog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
 
-    .results-count {
-        font-family: "Montserrat", sans-serif;
-        font-size: 14px;
-        color: #666;
-    }
+.results-count {
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    color: #666;
+}
 
-    .sort-select {
-        padding: 8px 12px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-family: "Montserrat", sans-serif;
-        font-size: 14px;
-        color: #333;
-        background-color: #fff;
-    }
+.sort-select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+}
 
-    .sort-select:focus {
-        outline: none;
-        border-color: #4d2900;
-    }
+.sort-select:focus {
+    outline: none;
+    border-color: #4d2900;
+}
 
-    .wishlist-loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.8);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(2px);
+.wishlist-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
 }
 
 .wishlist-spinner {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  margin-bottom: 15px;
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
 }
 
 .wishlist-spinner-circle {
-  width: 100%;
-  height: 100%;
-  border: 4px solid rgba(77, 41, 0, 0.1);
-  border-top-color: #4d2900;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+    width: 100%;
+    height: 100%;
+    border: 4px solid rgba(77, 41, 0, 0.1);
+    border-top-color: #4d2900;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
 .wishlist-loading-overlay p {
-  font-family: "Montserrat", sans-serif;
-  font-size: 16px;
-  color: #4d2900;
-  margin-top: 10px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    color: #4d2900;
+    margin-top: 10px;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 </style>

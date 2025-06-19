@@ -1,34 +1,34 @@
 <template>
     <div class="pagination">
-      <button 
-        class="pagination-button" 
-        :disabled="currentPage === 1"
-        @click="changePage(currentPage - 1)"
-      >
-        <i class="fa-solid fa-chevron-left"></i>
-      </button>
-      
-      <div class="page-numbers">
         <button 
-          v-for="page in displayedPages" 
-          :key="page"
-          class="page-number"
-          :class="{ active: currentPage === page }"
-          @click="changePage(page)"
+            class="pagination-button" 
+            :disabled="currentPage === 1"
+            @click="changePage(currentPage - 1)"
         >
-          {{ page }}
+            <i class="fa-solid fa-chevron-left"></i>
         </button>
-      </div>
       
-      <button 
-        class="pagination-button" 
-        :disabled="currentPage === totalPages"
-        @click="changePage(currentPage + 1)"
-      >
-        <i class="fa-solid fa-chevron-right"></i>
-      </button>
+        <div class="page-numbers">
+        <button 
+            v-for="page in displayedPages" 
+            :key="page"
+            class="page-number"
+            :class="{ active: currentPage === page }"
+            @click="changePage(page)"
+        >
+            {{ page }}
+        </button>
+        </div>
+      
+        <button 
+            class="pagination-button" 
+            :disabled="currentPage === totalPages"
+            @click="changePage(currentPage + 1)"
+        >
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
     </div>
-  </template>
+</template>
   
 <script>
     export default {
@@ -73,7 +73,7 @@
 </script>
   
 <style scoped>
-        .pagination {
+    .pagination {
         display: flex;
         justify-content: center;
         align-items: center;

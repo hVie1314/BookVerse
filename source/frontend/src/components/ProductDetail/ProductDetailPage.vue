@@ -68,37 +68,37 @@
     </div>
 
     <!-- Thêm vào cuối template, trước </div> cuối cùng -->
-<div v-if="showGalleryModal" class="gallery-modal" @click.self="showGalleryModal = false">
-  <div class="gallery-content">
-    <button class="close-button" @click="showGalleryModal = false">×</button>
+    <div v-if="showGalleryModal" class="gallery-modal" @click.self="showGalleryModal = false">
+        <div class="gallery-content">
+            <button class="close-button" @click="showGalleryModal = false">×</button>
     
-    <div class="main-gallery-image-container">
-      <img 
-        :src="currentGalleryImage" 
-        class="main-gallery-image" 
-        alt="Book image"
-        :style="{ transform: `scale(${zoomLevel})` }"
-      />
+            <div class="main-gallery-image-container">
+                <img 
+                    :src="currentGalleryImage" 
+                    class="main-gallery-image" 
+                    alt="Book image"
+                    :style="{ transform: `scale(${zoomLevel})` }"
+                />
       
-      <div class="zoom-controls">
-        <button class="zoom-btn" @click="zoomIn" title="Phóng to">+</button>
-        <button class="zoom-btn" @click="zoomOut" title="Thu nhỏ">-</button>
-        <button class="zoom-btn" @click="resetZoom" title="Khôi phục">↺</button>
-      </div>
-    </div>
+                <div class="zoom-controls">
+                    <button class="zoom-btn" @click="zoomIn" title="Phóng to">+</button>
+                    <button class="zoom-btn" @click="zoomOut" title="Thu nhỏ">-</button>
+                    <button class="zoom-btn" @click="resetZoom" title="Khôi phục">↺</button>
+                </div>
+            </div>
     
-    <div class="gallery-thumbnails">
-      <img 
-        v-for="(image, index) in bookImages" 
-        :key="index"
-        :src="image"
-        :class="['gallery-thumbnail', { active: currentGalleryImage === image }]"
-        @click="currentGalleryImage = image; resetZoom()"
-        @error="handleThumbnailError($event, index)"
-      />
+            <div class="gallery-thumbnails">
+                <img 
+                    v-for="(image, index) in bookImages" 
+                    :key="index"
+                    :src="image"
+                    :class="['gallery-thumbnail', { active: currentGalleryImage === image }]"
+                    @click="currentGalleryImage = image; resetZoom()"
+                    @error="handleThumbnailError($event, index)"
+                />
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 </template>
     
   
@@ -380,7 +380,7 @@
     
     @media (max-width: 991px) {
         .product-section {
-        max-width: 100%;
+            max-width: 100%;
         }
     }
     
@@ -402,9 +402,9 @@
     
     @media (max-width: 991px) {
         .product-layout {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0px;
         }
     }
     
@@ -421,7 +421,7 @@
     
     @media (max-width: 991px) {
         .product-image-column {
-        width: 100%;
+            width: 100%;
         }
     }
     
@@ -437,8 +437,8 @@
     
     @media (max-width: 991px) {
         .product-image {
-        max-width: 100%;
-        margin-top: 40px;
+            max-width: 100%;
+            margin-top: 40px;
         }
     }
     
@@ -453,9 +453,9 @@
     
     @media (max-width: 991px) {
         .product-info-column {
-        width: 100%;
-        margin-left: 0; /* Xóa margin cho màn hình nhỏ */
-        margin-top: 20px; /* Thêm margin-top */
+            width: 100%;
+            margin-left: 0; /* Xóa margin cho màn hình nhỏ */
+            margin-top: 20px; /* Thêm margin-top */
         }
     }
     
@@ -485,221 +485,221 @@
     }
 
     /* Thêm style mới cho figure.product-image-detail-column */
-.product-image-detail-column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 35%;
-  margin: 0;
-  position: relative;
-}
-
-/* Cải thiện hiển thị ảnh chính */
-.product-detail-image {
-  width: 100%;
-  height: 400px; /* Kích thước cố định */
-  object-fit: contain; /* Giữ nguyên tỷ lệ ảnh và hiển thị toàn bộ */
-  border-radius: 8px;
-  margin-bottom: 20px;
-  background-color: #f9f9f9;
-  transition: transform 0.3s ease;
-  cursor: zoom-in;
-}
-
-/* Style cho lưới hình thu nhỏ */
-.thumbnails-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  width: 100%;
-  position: relative;
-}
-
-/* Điều chỉnh hiển thị thumbnail */
-.thumbnail {
-  aspect-ratio: 1/1; /* Giữ tỷ lệ vuông */
-  width: 100%;
-  border-radius: 4px;
-  object-fit: cover; /* Mặc định hiển thị thumbnail kiểu cover */
-  cursor: pointer;
-  opacity: 0.8;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-}
-
-.thumbnail:hover {
-    opacity: 1;
-    transform: scale(1.05);
-}
-
-.active-thumbnail {
-    border-color: #4d2900;
-    opacity: 1;
-}
-
-/* Style cho overlay "xem thêm hình ảnh" */
-.more-images-overlay {
-    position: absolute;
-    right: 0%; /* Điều chỉnh để nằm ở góc phải ảnh thứ 3 */
-    bottom: 0;
-    width: 25%; /* Giữ nguyên kích thước bằng 1/4 lưới */
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    border-radius: 4px;
-    cursor: pointer;
-    z-index: 5; /* Đảm bảo hiển thị trên cùng */
-}
-
-/* Responsive styles */
-@media (max-width: 991px) {
     .product-image-detail-column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 35%;
+        margin: 0;
+        position: relative;
+    }
+
+    /* Cải thiện hiển thị ảnh chính */
+    .product-detail-image {
         width: 100%;
+        height: 400px; /* Kích thước cố định */
+        object-fit: contain; /* Giữ nguyên tỷ lệ ảnh và hiển thị toàn bộ */
+        border-radius: 8px;
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+        transition: transform 0.3s ease;
+        cursor: zoom-in;
     }
-    
-    .image-container, .product-detail-image {
-        height: 450px; /* Giảm chiều cao trên thiết bị nhỏ hơn nhưng vẫn cao hơn trước */
+
+    /* Style cho lưới hình thu nhỏ */
+    .thumbnails-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        width: 100%;
+        position: relative;
     }
-    
-    /* Điều chỉnh vị trí overlay khi responsive */
+
+    /* Điều chỉnh hiển thị thumbnail */
+    .thumbnail {
+        aspect-ratio: 1/1; /* Giữ tỷ lệ vuông */
+        width: 100%;
+        border-radius: 4px;
+        object-fit: cover; /* Mặc định hiển thị thumbnail kiểu cover */
+        cursor: pointer;
+        opacity: 0.8;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .thumbnail:hover {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    .active-thumbnail {
+        border-color: #4d2900;
+        opacity: 1;
+    }
+
+    /* Style cho overlay "xem thêm hình ảnh" */
     .more-images-overlay {
-        right: 25%;
+        position: absolute;
+        right: 0%; /* Điều chỉnh để nằm ở góc phải ảnh thứ 3 */
+        bottom: 0;
+        width: 25%; /* Giữ nguyên kích thước bằng 1/4 lưới */
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        border-radius: 4px;
+        cursor: pointer;
+        z-index: 5; /* Đảm bảo hiển thị trên cùng */
     }
-}
 
-@media (max-width: 576px) {
-    .image-container, .product-detail-image {
-        height: 350px; /* Giảm tiếp chiều cao trên thiết bị rất nhỏ */
+    /* Responsive styles */
+    @media (max-width: 991px) {
+        .product-image-detail-column {
+            width: 100%;
+        }
+        
+        .image-container, .product-detail-image {
+            height: 450px; /* Giảm chiều cao trên thiết bị nhỏ hơn nhưng vẫn cao hơn trước */
+        }
+        
+        /* Điều chỉnh vị trí overlay khi responsive */
+        .more-images-overlay {
+            right: 25%;
+        }
     }
-}
 
-/* Modal gallery styles */
-.gallery-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
+    @media (max-width: 576px) {
+        .image-container, .product-detail-image {
+            height: 350px; /* Giảm tiếp chiều cao trên thiết bị rất nhỏ */
+        }
+    }
 
-.gallery-content {
-  width: 90%;
-  max-width: 1000px;
-  max-height: 90vh;
-  background-color: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
+    /* Modal gallery styles */
+    .gallery-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
 
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 30px;
-  background: none;
-  border: none;
-  color: #333;
-  cursor: pointer;
-  z-index: 1001;
-}
+    .gallery-content {
+        width: 90%;
+        max-width: 1000px;
+        max-height: 90vh;
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
 
-.main-gallery-image-container {
-    width: 100%;
-    height: 600px; /* Tăng từ 500px lên 600px */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background-color: #f8f8f8;
-    position: relative;
-}
+    .close-button {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 30px;
+        background: none;
+        border: none;
+        color: #333;
+        cursor: pointer;
+        z-index: 1001;
+    }
 
-/* Cải thiện hiển thị ảnh trong modal */
-.main-gallery-image {
-  max-width: 95%;
-  max-height: 95%;
-  object-fit: contain;
-  transition: transform 0.3s ease;
-}
+    .main-gallery-image-container {
+        width: 100%;
+        height: 600px; /* Tăng từ 500px lên 600px */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background-color: #f8f8f8;
+        position: relative;
+    }
 
-.gallery-thumbnails {
-  display: flex;
-  overflow-x: auto;
-  padding: 15px;
-  gap: 10px;
-  background-color: #f0f0f0;
-}
+    /* Cải thiện hiển thị ảnh trong modal */
+    .main-gallery-image {
+        max-width: 95%;
+        max-height: 95%;
+        object-fit: contain;
+        transition: transform 0.3s ease;
+    }
 
-.gallery-thumbnail {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 4px;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 0.2s;
-}
+    .gallery-thumbnails {
+        display: flex;
+        overflow-x: auto;
+        padding: 15px;
+        gap: 10px;
+        background-color: #f0f0f0;
+    }
 
-.gallery-thumbnail.active {
-  border-color: #4d2900;
-}
+    .gallery-thumbnail {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 4px;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s;
+    }
 
-.gallery-thumbnail:hover {
-  transform: scale(1.05);
-}
+    .gallery-thumbnail.active {
+        border-color: #4d2900;
+    }
 
-.image-container {
-    width: 100%;
-    height: 550px; /* Tăng từ 400px lên 550px */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    margin-bottom: 20px;
-}
+    .gallery-thumbnail:hover {
+        transform: scale(1.05);
+    }
 
-/* Thêm các nút zoom */
-.zoom-controls {
-  position: absolute;
-  bottom: 15px;
-  right: 15px;
-  display: flex;
-  gap: 10px;
-  z-index: 1002;
-}
+    .image-container {
+        width: 100%;
+        height: 550px; /* Tăng từ 400px lên 550px */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        margin-bottom: 20px;
+    }
 
-.zoom-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.8);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 20px;
-  color: #333;
-  transition: all 0.2s;
-}
+    /* Thêm các nút zoom */
+    .zoom-controls {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        display: flex;
+        gap: 10px;
+        z-index: 1002;
+    }
 
-.zoom-btn:hover {
-  background-color: white;
-  transform: scale(1.1);
-}
+    .zoom-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.8);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 20px;
+        color: #333;
+        transition: all 0.2s;
+    }
+
+    .zoom-btn:hover {
+        background-color: white;
+        transform: scale(1.1);
+    }
 </style>

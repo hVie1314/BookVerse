@@ -1,29 +1,29 @@
 <template>
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;900&display=swap"
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;900&display=swap"
     />
     <section class="about-us-container">
-      <h2 class="about-us-title">Về chúng tôi</h2>
-      <div class="stats-grid">
-        <StatItem value="35" label="thể loại sách" />
-        <StatItem value="1567" label="đầu sách" />
-        <StatItem value="1000+" label="lượt mua" />
-        <StatItem value="200+" label="lượt ưa thích" />
-      </div>
+        <h2 class="about-us-title">Về chúng tôi</h2>
+        <div class="stats-grid">
+            <StatItem value="35" label="thể loại sách" />
+            <StatItem value="1567" label="đầu sách" />
+            <StatItem value="1000+" label="lượt mua" />
+            <StatItem value="200+" label="lượt ưa thích" />
+        </div>
     </section>
-  </template>
+</template>
   
-  <script>
-  import StatItem from "./StatItem.vue";
+<script>
+    import StatItem from "./StatItem.vue";
   
-  export default {
-    name: "AboutUsStats",
-    components: {
-      StatItem,
-    },
-  };
-  </script>
+    export default {
+        name: "AboutUsStats",
+        components: {
+            StatItem,
+        },
+    };
+</script>
   
 <style scoped>
     .about-us-container {
