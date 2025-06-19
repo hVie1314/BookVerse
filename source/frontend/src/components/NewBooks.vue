@@ -192,142 +192,142 @@ export default {
 </script>
   
 <style scoped>
-    .recommended-section {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        position: relative; /* Thêm position relative để định vị các nút control */
-        padding: 0 20px; /* Tạo không gian cho các nút control nằm một nửa bên ngoài */
-        margin-bottom: 40px;
-    }
+.recommended-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative; /* Thêm position relative để định vị các nút control */
+    padding: 0 20px; /* Tạo không gian cho các nút control nằm một nửa bên ngoài */
+    margin-bottom: 40px;
+}
 
-    .recommended-container {
-        width: 88%; /* Chiều rộng container */
-        display: flex;
-        align-items: center;
-        justify-content: center; /* Căn giữa nội dung */
-        position: relative;
-        padding: 0; /* Bỏ padding và để các nút nằm ngoài container */
-        margin: 30px 0; /* Thêm margin thay vì dùng padding */
-    }
-    
-    .recommended-products {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .carousel-title {
-        font-family: "Montserrat", sans-serif;
-        font-weight: 900;
-        font-size: 22px;
-        color: #4d2900;
-        margin-bottom: 20px;
-    }
-    
+.recommended-container {
+    width: 88%; /* Chiều rộng container */
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Căn giữa nội dung */
+    position: relative;
+    padding: 0; /* Bỏ padding và để các nút nằm ngoài container */
+    margin: 30px 0; /* Thêm margin thay vì dùng padding */
+}
+
+.recommended-products {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.carousel-title {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 900;
+    font-size: 22px;
+    color: #4d2900;
+    margin-bottom: 20px;
+}
+
+.book-grid {
+    display: flex;
+    align-items: stretch;
+    gap: 0; /* Bỏ gap và dùng space-between để các card cách đều nhau */
+    width: 100%;
+    justify-content: space-between; /* Thay đổi từ center sang space-between */
+    flex-wrap: nowrap; /* Không cho phép xuống dòng để các card cách đều nhau */
+}
+
+.pagination-dots {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 8px;
+}
+
+.pagination-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    cursor: pointer;
+}
+
+.pagination-dot.active {
+    background-color: #4d2900;
+}
+
+.loading-message, .error-message {
+    width: 100%;
+    text-align: center;
+    padding: 20px 0;
+    font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+    color: #4d2900;
+}
+
+.error-message {
+    color: #e74c3c;
+}
+
+@media (max-width: 991px) {
     .book-grid {
-        display: flex;
-        align-items: stretch;
-        gap: 0; /* Bỏ gap và dùng space-between để các card cách đều nhau */
-        width: 100%;
-        justify-content: space-between; /* Thay đổi từ center sang space-between */
-        flex-wrap: nowrap; /* Không cho phép xuống dòng để các card cách đều nhau */
-    }
-    
-    .pagination-dots {
-        display: flex;
         justify-content: center;
-        margin-top: 20px;
-        gap: 8px;
     }
-    
-    .pagination-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background-color: #e0e0e0;
-        cursor: pointer;
-    }
-    
-    .pagination-dot.active {
-        background-color: #4d2900;
-    }
-    
-    .loading-message, .error-message {
-        width: 100%;
-        text-align: center;
-        padding: 20px 0;
-        font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
-        color: #4d2900;
-    }
-    
-    .error-message {
-        color: #e74c3c;
-    }
-    
-    @media (max-width: 991px) {
-        .book-grid {
-            justify-content: center;
-        }
-    }
-    
-    @media (max-width: 640px) {
-        .carousel-title {
-            font-size: 18px;
-        }
-    }
+}
 
-    /* Style cho nút điều khiển */
-    .carousel-control-prev,
-    .carousel-control-next {
-        width: 35px;
-        height: 35px;
-        background-color: rgba(255, 255, 255, 0.95);
-        border-radius: 50%;
-        top: 50%;
-        transform: translateY(-50%);
-        opacity: 0.8;
-        transition: all 0.3s ease;
-        position: absolute;
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: none;
+@media (max-width: 640px) {
+    .carousel-title {
+        font-size: 18px;
     }
+}
 
-    .carousel-control-prev {
-        left: 0;
-        transform: translateX(-50%) translateY(-50%);
-    }
+/* Style cho nút điều khiển */
+.carousel-control-prev,
+.carousel-control-next {
+    width: 35px;
+    height: 35px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    position: absolute;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
 
-    .carousel-control-next {
-        right: 0;
-        transform: translateX(50%) translateY(-50%);
-    }
+.carousel-control-prev {
+    left: 0;
+    transform: translateX(-50%) translateY(-50%);
+}
 
-    .carousel-control-prev:hover,
-    .carousel-control-next:hover {
-        background-color: rgba(255, 255, 255, 0.95);
-        opacity: 1;
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    }
+.carousel-control-next {
+    right: 0;
+    transform: translateX(50%) translateY(-50%);
+}
 
-    .carousel-control-prev:hover {
-        transform: translateX(-50%) translateY(-50%) scale(1.15);
-    }
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    background-color: rgba(255, 255, 255, 0.95);
+    opacity: 1;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
 
-    .carousel-control-next:hover {
-        transform: translateX(50%) translateY(-50%) scale(1.15);
-    }
+.carousel-control-prev:hover {
+    transform: translateX(-50%) translateY(-50%) scale(1.15);
+}
 
-    .carousel-control-prev-icon,
-    .carousel-control-next-icon {
-        background-color: #000;
-        width: 18px;
-        height: 18px;
-        filter: invert(1); /* Làm cho icon màu đen */
-        opacity: 0.7;
-    }
+.carousel-control-next:hover {
+    transform: translateX(50%) translateY(-50%) scale(1.15);
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: #000;
+    width: 18px;
+    height: 18px;
+    filter: invert(1); /* Làm cho icon màu đen */
+    opacity: 0.7;
+}
 </style>
