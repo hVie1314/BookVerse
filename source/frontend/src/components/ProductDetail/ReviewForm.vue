@@ -94,7 +94,9 @@
             timeout: 1500,
             closeOnClick: true
           });
+
           this.$emit('submit-success');
+          
         } catch (error) {
           console.error('Lỗi khi gửi đánh giá:', error);
           
