@@ -862,6 +862,7 @@ export default {
 }
 
 .category-item,
+
 .sort-item {
   display: flex;
   align-items: center;
@@ -871,11 +872,13 @@ export default {
 }
 
 .category-item:hover,
+
 .sort-item:hover {
   background-color: #f5f5f5;
 }
 
 .category-item.active,
+
 .sort-item.active {
   background-color: rgba(77, 41, 0, 0.1);
 }
@@ -893,6 +896,7 @@ export default {
 }
 
 .category-name,
+
 .sort-name {
   font-family: "Montserrat", sans-serif;
   font-size: 14px;
@@ -931,7 +935,9 @@ export default {
 }
 
 .add-product-btn,
+
 .refresh-btn,
+
 .filter-btn {
   border: none;
   padding: 12px 20px;
@@ -973,6 +979,7 @@ export default {
 }
 
 .filter-btn:hover,
+
 .filter-btn.active {
   background-color: #4d2900;
   color: white;
@@ -1007,6 +1014,7 @@ export default {
 }
 
 .loading,
+
 .no-books {
   text-align: center;
   padding: 40px;
@@ -1189,6 +1197,7 @@ export default {
 }
 
 .cancel-btn,
+
 .confirm-btn {
   padding: 10px 20px;
   border-radius: 5px;
