@@ -67,12 +67,7 @@ export default {
       }
     }
   },
-  // mounted() {
-  //   this.$root.$on('show-alert', (alertOptions) => {
-  //     this.alertOptions = { ...alertOptions };
-  //     this.showAlert = alertOptions.show;
-  //   });
-  // },
+
   created() {
     this.isLoggedIn = AuthenticationService.isLoggedIn();
     
@@ -283,6 +278,7 @@ export default {
 .fade-out-enter-active, .fade-out-leave-active {
   transition: opacity 0.3s;
 }
+
 .fade-out-leave-to {
   opacity: 0;
 }
@@ -291,6 +287,7 @@ export default {
 .fade-in-enter-active {
   transition: opacity 0.5s, transform 0.5s;
 }
+
 .fade-in-enter {
   opacity: 0;
   transform: translateY(10px);

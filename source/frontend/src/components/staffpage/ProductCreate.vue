@@ -900,6 +900,7 @@ resetForm() {
 }
 
 .form-input,
+
 .form-textarea {
   font-family: "Montserrat", sans-serif; /* Thêm font-family cho form */
 }

@@ -109,8 +109,9 @@
         this.fetchReviews();
       } 
     },
+    
     methods: {
-      async fetchReviews() {
+    async fetchReviews() {
     this.loading = true;
     this.error = null;
     
@@ -217,7 +218,9 @@
   }
   
   .loading-message,
+
   .error-message,
+  
   .no-reviews-message {
     padding: 20px;
     text-align: center;

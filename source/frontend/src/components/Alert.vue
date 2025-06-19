@@ -176,7 +176,6 @@
   </script>
   
 <style scoped>
-
 .alert-input-container {
   margin: 15px 0;
   width: 100%;
@@ -231,7 +230,6 @@
 .error {
   border-left: 4px solid #F44336;
 }
-
 
 /* Success check icon at the top */
 .success-check-container {

@@ -345,6 +345,7 @@ export default {
     font-size: 12px;
   }
 }
+
 /* Thêm vào <style scoped> */
 .product-image-link {
   display: block;
