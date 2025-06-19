@@ -24,70 +24,70 @@
   </script>
   
 <style scoped>
+.shipping-container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin: 0 auto;
+    padding: 62px 0;
+    color: #4d2900;
+    font-family: "Montserrat", sans-serif;
+    text-align: center;
+}
+
+@media (max-width: 991px) {
     .shipping-container {
-        width: 100%;
-        margin-left: auto;
-        margin-right: auto;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        margin: 0 auto;
-        padding: 62px 0;
-        color: #4d2900;
-        font-family: "Montserrat", sans-serif;
-        text-align: center;
+        max-width: 991px;
     }
+}
 
-    @media (max-width: 991px) {
-        .shipping-container {
-            max-width: 991px;
-        }
+@media (max-width: 640px) {
+    .shipping-container {
+        max-width: 640px;
     }
+}
 
-    @media (max-width: 640px) {
-        .shipping-container {
-            max-width: 640px;
-        }
-    }
+.shipping-title {
+    font-size: 25px;
+    font-weight: 900;
+    line-height: 49px;
+    margin-bottom: 20px;
+}
 
+@media (max-width: 991px) {
     .shipping-title {
-        font-size: 25px;
-        font-weight: 900;
-        line-height: 49px;
-        margin-bottom: 20px;
+        font-size: 22px;
     }
+}
 
-    @media (max-width: 991px) {
-        .shipping-title {
-            font-size: 22px;
-        }
+@media (max-width: 640px) {
+    .shipping-title {
+        font-size: 20px;
     }
+}
 
-    @media (max-width: 640px) {
-        .shipping-title {
-            font-size: 20px;
-        }
-    }
+.shipping-description {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 29px;
+    width: 88%;
+}
 
+@media (max-width: 991px) {
     .shipping-description {
-        font-size: 15px;
-        font-weight: 400;
-        line-height: 29px;
-        width: 88%;
+        font-size: 14px;
     }
+}
 
-    @media (max-width: 991px) {
-        .shipping-description {
-            font-size: 14px;
-        }
+@media (max-width: 640px) {
+    .shipping-description {
+        font-size: 13px;
     }
-
-    @media (max-width: 640px) {
-        .shipping-description {
-            font-size: 13px;
-        }
-    }
+}
 </style>
   
