@@ -61,7 +61,7 @@
     }
 
     @media (max-width: 991px) {
-    . auth-container {
+    .auth-container {
             max-width: 991px;
             width: 100%;
             padding: 20px;
