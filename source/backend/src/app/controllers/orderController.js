@@ -5,7 +5,7 @@ const Book = require('../models/Book');
 
 class OrderController {
 
-    // Create a new order
+    // [POST] /order/create
     async createOrder(req, res, next) {
         try {
             const { userId, items, totalAmount, paymentMethod } = req.body;
@@ -60,7 +60,7 @@ class OrderController {
         }
     }
 
-    // Get all orders for a user
+    // [GET] /order/history/:userId
     async getAllOrdersOfUser(req, res, next) {
         try {
             const { userId } = req.params;
@@ -91,7 +91,7 @@ class OrderController {
         }
     }
 
-    // Get order details by order ID
+    // [GET] /order/details/:id
     async getOrderById(req, res, next) {
         try {
             // Join with Book and User collections to get book details and user details

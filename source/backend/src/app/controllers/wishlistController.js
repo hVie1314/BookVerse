@@ -1,7 +1,6 @@
 const AppError = require('../../utils/appError');
 const WishlistService = require('../../services/wishlistService');
 
-
 class WishlistController {
    
    // USER WISHLIST
